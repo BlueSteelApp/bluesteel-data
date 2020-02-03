@@ -1,0 +1,31 @@
+{
+	"parser": "babel-eslint",
+	"parserOptions": {
+		"ecmaVersion": 6,
+		"sourceType": "module"
+	},
+	"env": {
+		"amd": true,
+		"node": true,
+		"es6": true,
+		"mocha":true
+	},
+	"rules": {
+		"semi": "error",
+		"indent": ["error", "tab"],
+		"no-multi-spaces": "error",
+		"no-unsafe-negation": "error",
+		"no-trailing-spaces": "error",
+		"no-const-assign":"error",
+		"no-undef": "error",
+		"no-unexpected-multiline": "error",
+		"no-throw-literal":"error",
+		"no-mixed-spaces-and-tabs":"error",
+		"no-use-before-define":"error",
+		"no-restricted-properties": ["error", {
+      "object": "db",
+      "property": "collection",
+			"message": "use context.collection instead to ensure user context"
+    }]
+	}
+}

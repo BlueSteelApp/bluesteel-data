@@ -1,18 +1,14 @@
 /* jshint indent: 1 */
 
 module.exports = function(sequelize, DataTypes) {
-	return sequelize.define('person', {
+	return sequelize.define('address', {
 		id: {
 			type: DataTypes.INTEGER(11),
 			allowNull: false,
 			primaryKey: true
 		},
-		given_name: {
-			type: DataTypes.STRING(255),
-			allowNull: true
-		},
-		family_name: {
-			type: DataTypes.STRING(255),
+		person_id: {
+			type: DataTypes.INTEGER(11),
 			allowNull: true
 		},
 		email: {
@@ -23,12 +19,32 @@ module.exports = function(sequelize, DataTypes) {
 			type: DataTypes.STRING(24),
 			allowNull: true
 		},
-		dwid: {
-			type: DataTypes.INTEGER(11),
+		street_1: {
+			type: DataTypes.STRING(255),
 			allowNull: true
 		},
-		source_code: {
+		street_2: {
 			type: DataTypes.STRING(255),
+			allowNull: true
+		},
+		city: {
+			type: DataTypes.STRING(255),
+			allowNull: true
+		},
+		region: {
+			type: DataTypes.STRING(255),
+			allowNull: true
+		},
+		postal_code: {
+			type: DataTypes.STRING(16),
+			allowNull: true
+		},
+		latitude: {
+			type: DataTypes.DECIMAL,
+			allowNull: true
+		},
+		longitude: {
+			type: DataTypes.DECIMAL,
 			allowNull: true
 		},
 		createdAt: {
@@ -40,8 +56,12 @@ module.exports = function(sequelize, DataTypes) {
 			type: DataTypes.DATE,
 			allowNull: false,
 			defaultValue: sequelize.literal('CURRENT_TIMESTAMP')
+		},
+		personId: {
+			type: DataTypes.INTEGER(11),
+			allowNull: true
 		}
 	}, {
-		tableName: 'person'
+		tableName: 'address'
 	});
 };
