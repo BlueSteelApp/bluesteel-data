@@ -80,6 +80,7 @@ db.generateTypeDefs=function(object,plural){
 	input ${uc(object)}Filter {
 			q: String
 			id: ID
+			ids: [ID]
 			${fields.map(d=>d.name+":String").join("\n\t\t")}
 	}`;
 	return q;
@@ -89,7 +90,13 @@ db.generateGraphQLImpl=function(object,plural){
 	return {
 		Query: {
 			[uc(object)]: async (obj, args, context, info) => db[object].findByPk(args.id),
-			["all"+uc(plural)]: async (obj,{perPage=50,page=0}) => db[object].findAll({limit:perPage,offset:page*perPage}),
+			["all"+uc(plural)]: async (obj,{perPage=50,page=0,filter}) =>{
+				let where={};
+				if (filter.ids){
+					where={id:filter.ids};
+				}else{where=filter;};
+				return db[object].findAll({where,limit:perPage,offset:page*perPage});
+			},
 			["_all"+uc(plural)+"Meta"]:async()=>{
 				let count=await db[object].count();
 				return {count};

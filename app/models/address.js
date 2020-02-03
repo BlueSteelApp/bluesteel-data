@@ -7,10 +7,6 @@ module.exports = function(sequelize, DataTypes) {
 			allowNull: false,
 			primaryKey: true
 		},
-		person_id: {
-			type: DataTypes.INTEGER(11),
-			allowNull: true
-		},
 		email: {
 			type: DataTypes.STRING(255),
 			allowNull: true
@@ -57,7 +53,7 @@ module.exports = function(sequelize, DataTypes) {
 			allowNull: false,
 			defaultValue: sequelize.literal('CURRENT_TIMESTAMP')
 		},
-		personId: {
+		person_id: {
 			type: DataTypes.INTEGER(11),
 			allowNull: true
 		}
