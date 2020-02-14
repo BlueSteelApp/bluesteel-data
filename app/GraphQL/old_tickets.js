@@ -19,7 +19,6 @@ export const typeDefs = gql`
         assigned_to_person_id: Int
         assigned_to_person: Person
     }
-`
 
 export const resolvers = {
     Query: {
