@@ -89,12 +89,12 @@ db.generateTypeDefs=function(object,plural){
 db.generateGraphQLImpl=function(object,plural){
 	return {
 		Query: {
-			[uc(object)]: async (obj, args, context, info) => db[object].findByPk(args.id),
+			[uc(object)]: async (obj, args) => db[object].findByPk(args.id),
 			["all"+uc(plural)]: async (obj,{perPage=50,page=0,filter}) =>{
 				let where={};
 				if (filter.ids){
 					where={id:filter.ids};
-				}else{where=filter;};
+				} else{where=filter;}
 				return db[object].findAll({where,limit:perPage,offset:page*perPage});
 			},
 			["_all"+uc(plural)+"Meta"]:async()=>{
@@ -103,13 +103,13 @@ db.generateGraphQLImpl=function(object,plural){
 			}
 		},
 		Mutation:{
-			["create"+uc(object)]:async (obj, args, context, info) => db[object].create({values:args}),
-			["update"+uc(object)]:async (obj, args, context, info) => {
+			["create"+uc(object)]:async (obj, args) => db[object].create({values:args}),
+			["update"+uc(object)]:async (obj, args) => {
 				console.error(args);
-				let count=await db[object].update(args,{where:{id:args.id}});
+				// let count=await db[object].update(args,{where:{id:args.id}});
 				return db[object].findByPk(args.id);
 			},
-			["remove"+uc(object)]:async (obj, args, context, info) => db[object].destroy({where:{id:args.id}})
+			["remove"+uc(object)]:async (obj, args) => db[object].destroy({where:{id:args.id}})
 		}
 	};
 };
