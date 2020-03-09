@@ -23,20 +23,16 @@ module.exports = function(sequelize, DataTypes) {
 			type: DataTypes.STRING(24),
 			allowNull: true
 		},
-		dwid: {
-			type: DataTypes.INTEGER(11),
-			allowNull: true
-		},
 		source_code: {
 			type: DataTypes.STRING(255),
 			allowNull: true
 		},
-		createdAt: {
+		created_at: {
 			type: DataTypes.DATE,
 			allowNull: false,
 			defaultValue: sequelize.literal('CURRENT_TIMESTAMP')
 		},
-		updatedAt: {
+		updated_at: {
 			type: DataTypes.DATE,
 			allowNull: false,
 			defaultValue: sequelize.literal('CURRENT_TIMESTAMP')
