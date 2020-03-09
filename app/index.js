@@ -32,7 +32,7 @@ async function init() {
 
 	const server = new ApolloServer({
 		modules: [
-			require('./GraphQL/common'),
+			require('./common'),
 		].concat(modules),
 	});
 
