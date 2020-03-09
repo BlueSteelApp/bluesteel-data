@@ -16,6 +16,9 @@ async function init() {
 		plural: 'people'
 	}];
 
+	console.log(Object.keys(defined.person));
+	console.log(defined.person.tableAttributes, defined.person.fieldRawAttributesMap);
+
 	await validate();
 
 	const modules = getGql({types});
