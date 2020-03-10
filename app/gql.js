@@ -9,9 +9,10 @@ function generateTypeDefs(model,object,plural){
 	if (!model) throw new Error("Could not find model "+object+", are you sure it exists?");
 
 	let fields=Object.keys(model.tableAttributes)
-		.filter(d=>['id','createdAt','updateAt'].indexOf(d)<0)
+		.filter(d=>['id','created_at','updated_at'].indexOf(d)<0)
 		.map(name=>{
-			return Object.assign({},model.tableAttributes,{name});
+			return {name};
+			// return Object.assign({},model.tableAttributes,{name});
 		});
 
 	let q=`extend type Query {

@@ -1,38 +1,26 @@
-/* jshint indent: 1 */
 const sequelize=require('sequelize');
-module.exports = function() {
+module.exports=function() {
 	return {
-		name: 'person',
-		plural: 'people',
+		name: 'fileImport',
+		plural: 'fileImports',
+		tableName: 'file_import',
 		fields: {
 			id: {
 				type: sequelize.INTEGER(11),
 				allowNull: false,
 				primaryKey: true
 			},
-			given_name: {
+			import_type: {
 				type: sequelize.STRING(255),
-				allowNull: true
+				allowNull: false,
 			},
-			family_name: {
+			filepath: {
+				type: sequelize.TEXT(),
+				allowNull: false,
+			},
+			status: {
 				type: sequelize.STRING(255),
-				allowNull: true
-			},
-			email: {
-				type: sequelize.STRING(255),
-				allowNull: true,
-				unique: true,
-				validate: {
-					isEmail: true
-				}
-			},
-			phone: {
-				type: sequelize.STRING(24),
-				allowNull: true
-			},
-			source_code: {
-				type: sequelize.STRING(255),
-				allowNull: true
+				allowNull: false,
 			},
 			created_at: {
 				type: sequelize.DATE,

@@ -9,12 +9,8 @@ const getInst = require('../core');
 const getGql = require('./gql');
 
 async function init() {
-	const {defined,validate} = await getInst();
-	const types = [{
-		model: defined.person,
-		name: 'person',
-		plural: 'people'
-	}];
+	const {defined,fraktureDefs,validate} = await getInst();
+	const types = Object.values(fraktureDefs);
 
 	console.log(Object.keys(defined.person));
 	console.log(defined.person.tableAttributes, defined.person.fieldRawAttributesMap);

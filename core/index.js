@@ -1,4 +1,3 @@
-const Sequelize=require('sequelize');
 const sqlize=require('./sqlize');
 const models = require('./models');
 const fs=require('fs');
@@ -8,9 +7,17 @@ module.exports = async function(options) {
 	const inst = options.inst || await sqlize();
 
 	const defined={};
+	const fraktureDefs = {};
 	Object.values(models).forEach(model => {
-		const seqModel = model(inst, Sequelize);
+		const fraktureDef = model();
+		const{name,plural,fields}=fraktureDef;
+		fraktureDefs[name]=fraktureDef;
+		if(!name||!plural||!fields) throw new Error('name, plural and fields are required for each model');
+		const seqModel = inst.define(name,fields,{
+			tableName: fraktureDef.tableName || name
+		});
 		defined[seqModel.name] = seqModel;
+		fraktureDef.model = seqModel;
 	});
 
 	// validating the migrations occurred
@@ -29,6 +36,7 @@ module.exports = async function(options) {
 
 	return {
 		inst,
+		fraktureDefs,
 		defined,
 		validate
 	};
