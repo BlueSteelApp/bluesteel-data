@@ -71,6 +71,7 @@ function generateResolvers(model,object,plural){
 
 module.exports=function(options) {
 	const {types}=options;
+	console.log('types:',types);
 	if(!types||!types.length) throw new Error('types must be non empty array');
 	const invalid = types.filter(x=>!x.model||!x.name||!x.plural);
 	if(invalid.length) throw new Error('each type must have (model,name,plural) defined');

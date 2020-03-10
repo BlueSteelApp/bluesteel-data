@@ -8,15 +8,13 @@ const cors = require('cors');
 const getInst = require('../core');
 const getGql = require('./gql');
 
+require('dotenv').config();
+
 async function init() {
-	const {defined,fraktureDefs,validate} = await getInst();
-	const types = Object.values(fraktureDefs);
+	const wrapper = await getInst();
+	await wrapper.validate();
 
-	console.log(Object.keys(defined.person));
-	console.log(defined.person.tableAttributes, defined.person.fieldRawAttributesMap);
-
-	await validate();
-
+	const types = wrapper.getTypes();
 	const modules = getGql({types});
 
 	console.log('initializing',modules);
