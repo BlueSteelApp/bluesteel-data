@@ -5,11 +5,11 @@ module.exports = function() {
 		name: 'person',
 		plural: 'people',
 		fields: {
-			id: {
-				type: sequelize.INTEGER(11),
-				allowNull: false,
-				primaryKey: true
-			},
+			// id: {
+			// 	type: sequelize.INTEGER(11),
+			// 	allowNull: false,
+			// 	primaryKey: true
+			// },
 			given_name: {
 				type: sequelize.STRING(255),
 				allowNull: true
@@ -34,16 +34,16 @@ module.exports = function() {
 				type: sequelize.STRING(255),
 				allowNull: true
 			},
-			created_at: {
-				type: sequelize.DATE,
-				allowNull: false,
-				defaultValue: sequelize.literal('CURRENT_TIMESTAMP')
-			},
-			updated_at: {
-				type: sequelize.DATE,
-				allowNull: false,
-				defaultValue: sequelize.literal('CURRENT_TIMESTAMP')
-			}
+			// created_at: {
+			// 	type: sequelize.DATE,
+			// 	allowNull: false,
+			// 	defaultValue: sequelize.literal('CURRENT_TIMESTAMP')
+			// },
+			// updated_at: {
+			// 	type: sequelize.DATE,
+			// 	allowNull: false,
+			// 	defaultValue: sequelize.literal('CURRENT_TIMESTAMP')
+			// }
 		}
 	};
 };
