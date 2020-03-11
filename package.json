@@ -31,15 +31,14 @@
         "sequelize-graphql-schema": "^0.1.71",
         "webpack-cli": "^3.2.3"
     },
-		"husky": {
-    "hooks": {
-      "pre-commit": "lint-staged"
-    }
-	  },
-	  "lint-staged": {
-	    "./src/**/*.js": "eslint"
-	  },
-
+    "husky": {
+        "hooks": {
+            "pre-commit": "lint-staged"
+        }
+    },
+    "lint-staged": {
+        "./src/**/*.js": "eslint"
+    },
     "devDependencies": {
         "babel-eslint": "^10.0.3",
         "eslint": "^6.8.0",

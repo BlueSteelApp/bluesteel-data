@@ -1,4 +1,5 @@
 import { gql } from 'apollo-server-express';
 import * as db from '../database';
-export const typeDefs = gql(db.generateTypeDefs('segment','segments'));
-export const resolvers = db.generateGraphQLImpl('segment','segments');
+let o={name:'segment',graphQLType:'Segment',graphQLPlural:'Segments'};
+export const typeDefs = gql(db.generateTypeDefs(o));
+export const resolvers = db.generateGraphQLImpl(o);

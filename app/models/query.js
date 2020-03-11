@@ -1,7 +1,7 @@
 /* jshint indent: 1 */
 
 module.exports = function(sequelize, DataTypes) {
-	return sequelize.define('search', {
+	return sequelize.define('query', {
 		id: {
 			type: DataTypes.INTEGER(11),
 			allowNull: false,
@@ -26,6 +26,6 @@ module.exports = function(sequelize, DataTypes) {
 			defaultValue: sequelize.literal('CURRENT_TIMESTAMP')
 		}
 	}, {
-		tableName: 'search'
+		tableName: 'query'
 	});
 };

@@ -14,7 +14,7 @@ const server = new ApolloServer({
 		require('./GraphQL/person'),
 		require('./GraphQL/segment'),
 		require('./GraphQL/address'),
-		require('./GraphQL/search')
+		require('./GraphQL/query')
 	],
 });
 

@@ -30,7 +30,7 @@ let models = {
 	person:require('./models/person.js'),
 	segment:require('./models/segment.js'),
 	address:require('./models/address.js'),
-	search:require('./models/search.js')
+	query:require('./models/query.js')
 };
 
 // Initialize models
@@ -50,9 +50,9 @@ const uc = (s) => {
 	return s.charAt(0).toUpperCase() + s.slice(1);
 };
 
-db.generateTypeDefs=function(object,plural){
-	let model=sequelize["modelManager"].getModel(object);
-	if (!model) throw new Error("Could not find model "+object+", are you sure it exists?");
+db.generateTypeDefs=function({name,graphQLType,graphQLPlural}){
+	let model=sequelize["modelManager"].getModel(name);
+	if (!model) throw new Error("Could not find model "+name+", are you sure it exists?");
 
 	let fields=Object.keys(model.tableAttributes)
 		.filter(d=>['id','createdAt','updateAt'].indexOf(d)<0)
@@ -61,23 +61,23 @@ db.generateTypeDefs=function(object,plural){
 		});
 
 	let q=`extend type Query {
-		${uc(object)}(id: ID!): ${uc(object)}
-		all${uc(plural)}(page: Int, perPage: Int, sortField: String, sortOrder: String, filter: ${uc(object)}Filter): [${uc(object)}]
-		_all${uc(plural)}Meta(page: Int, perPage: Int, sortField: String, sortOrder: String, filter: ${uc(object)}Filter): ListMetadata
+		${uc(graphQLType)}(id: ID!): ${uc(graphQLType)}
+		all${uc(graphQLPlural)}(page: Int, perPage: Int, sortField: String, sortOrder: String, filter: ${uc(graphQLType)}Filter): [${uc(graphQLType)}]
+		_all${uc(graphQLPlural)}Meta(page: Int, perPage: Int, sortField: String, sortOrder: String, filter: ${uc(graphQLType)}Filter): ListMetadata
 	}
 	extend type Mutation {
-		create${uc(object)}(
+		create${uc(graphQLType)}(
 				${fields.map(d=>d.name+":String").join("\n\t\t")}
-		):${uc(object)}
-		update${uc(object)}(id:ID!,${fields.map(d=>d.name+":String").join(",")}):${uc(object)}
-		delete${uc(object)}(id:ID!):${uc(object)}
+		):${uc(graphQLType)}
+		update${uc(graphQLType)}(id:ID!,${fields.map(d=>d.name+":String").join(",")}):${uc(graphQLType)}
+		delete${uc(graphQLType)}(id:ID!):${uc(graphQLType)}
 	}
-	type ${uc(object)} {
+	type ${uc(graphQLType)} {
 			id: ID!
 			${fields.map(d=>d.name+":String").join("\n\t\t")}
 	}
 
-	input ${uc(object)}Filter {
+	input ${uc(graphQLType)}Filter {
 			q: String
 			id: ID
 			ids: [ID]
@@ -86,30 +86,30 @@ db.generateTypeDefs=function(object,plural){
 	return q;
 };
 
-db.generateGraphQLImpl=function(object,plural){
+db.generateGraphQLImpl=function({name,graphQLType,graphQLPlural}){
 	return {
 		Query: {
-			[uc(object)]: async (obj, args, context, info) => db[object].findByPk(args.id),
-			["all"+uc(plural)]: async (obj,{perPage=50,page=0,filter}) =>{
+			[uc(graphQLType)]: async (obj, args, context, info) => db[name].findByPk(args.id),
+			["all"+uc(graphQLPlural)]: async (obj,{perPage=50,page=0,filter={}}) =>{
 				let where={};
 				if (filter.ids){
 					where={id:filter.ids};
 				}else{where=filter;};
-				return db[object].findAll({where,limit:perPage,offset:page*perPage});
+				return db[name].findAll({where,limit:perPage,offset:page*perPage});
 			},
-			["_all"+uc(plural)+"Meta"]:async()=>{
-				let count=await db[object].count();
+			["_all"+uc(graphQLPlural)+"Meta"]:async()=>{
+				let count=await db[name].count();
 				return {count};
 			}
 		},
 		Mutation:{
-			["create"+uc(object)]:async (obj, args, context, info) => db[object].create({values:args}),
-			["update"+uc(object)]:async (obj, args, context, info) => {
+			["create"+uc(graphQLType)]:async (obj, args, context, info) => db[name].create({values:args}),
+			["update"+uc(graphQLType)]:async (obj, args, context, info) => {
 				console.error(args);
-				let count=await db[object].update(args,{where:{id:args.id}});
-				return db[object].findByPk(args.id);
+				let count=await db[name].update(args,{where:{id:args.id}});
+				return db[name].findByPk(args.id);
 			},
-			["remove"+uc(object)]:async (obj, args, context, info) => db[object].destroy({where:{id:args.id}})
+			["remove"+uc(graphQLType)]:async (obj, args, context, info) => db[name].destroy({where:{id:args.id}})
 		}
 	};
 };
