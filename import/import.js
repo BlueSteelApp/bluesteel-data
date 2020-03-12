@@ -2,7 +2,7 @@ const CsvStreamer=require('./csv');
 const through2batch=require('through2-batch');
 const through2=require('through2');
 const es=require('event-stream');
-const DataTypes = require('sequelize');
+const DataTypes=require('sequelize'), {Op}=DataTypes;
 
 function Importer(wrapper) {
 	const {sequelize}=wrapper;
@@ -103,6 +103,21 @@ Importer.prototype.loadImportTableFromStream=async function(options) {
 	};
 };
 
+Importer.prototype.getImportOverview=async function(options) {
+	const {importModel,existing} = this.getImportType(options);
+	const existing_count = await importModel.count({
+		include: {
+			model: existing,
+			as: 'existingRecord',
+			where: {id: {[Op.not]:null}}
+		}
+	});
+	const total_count = await importModel.count({});
+	return {
+		total_count,existing_count,new_count:total_count-existing_count
+	};
+}
+
 const IMPORT_BATCH_SIZE=1000;
 Importer.prototype.loadFromImportTable=async function(options) {
 	const {sequelize,wrapper}=this;
@@ -139,6 +154,10 @@ Importer.prototype.importCsv=async function(options) {
 	options=Object.assign({},options,{stream});
 	const{importTableName}=await this.loadImportTableFromStream(options);
 	const finalOptions = Object.assign({},options,{importTableName});
+
+	const stats = await this.getImportOverview(finalOptions);
+	console.log(stats);
+
 	await this.loadFromImportTable(finalOptions);
 }
 
