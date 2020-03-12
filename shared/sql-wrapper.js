@@ -1,6 +1,8 @@
 const Sequelize=require('sequelize');
 const Umzug = require('umzug');
 const fs=require('fs');
+const through2=require('through2');
+const es=require('event-stream');
 
 function buildSequelize(options) {
 	const { DATABASE_NAME, DATABASE_USER, DATABASE_PASSWORD } = process.env;
@@ -56,6 +58,68 @@ function Wrapper(options) {
 	this.migrationsPath=options.migrationsPath;
 }
 
+Wrapper.prototype.exportWithStream=function(model,options) {
+	options=options||{};
+	const stream = this.streamQuery(model,options);
+	return new Promise((resolve,reject) => {
+		stream.pipe(es.writeArray((e,r) => {
+			if(e) return reject(e);
+			resolve(r);
+		}));
+	});
+}
+
+const QUERY_STREAM_PAGE_SIZE=1000;
+Wrapper.prototype.streamQuery=function(model,options) {
+	options=options||{};
+	const {limit,offset}=options;
+	const findOptions = Object.assign({},options);
+	delete findOptions.limit;
+
+	let total=0;
+	let currentOffset=offset||0;
+	const outStream=through2.obj();
+
+	function endStream(e) {
+		if(e) outStream.destroy(e);
+		outStream.end();
+	}
+
+	async function streamPage() {
+		let page;
+
+		try {
+			page = await model.findAll(Object.assign({},findOptions,{
+				limit: QUERY_STREAM_PAGE_SIZE,
+				offset: currentOffset
+			}));
+		} catch(e) {
+			return endStream(e);
+		}
+
+		if(!page.length) return endStream();
+		async function pushNext(a) {
+			if(!a||!a.length) return;
+			if(!outStream.write(a[0])) await new Promise((res,rej) => outStream.once('drain', (e) => {
+				if(e) return rej(e); res(); }));
+			total++;
+			if(limit && total>=limit) return;
+			pushNext(a.slice(1));
+		}
+		await pushNext(page);
+
+		if(limit && total>=limit) return endStream();
+		// only one chain will be running through here, so it is safe
+		// eslint-disable-next-line require-atomic-updates
+		currentOffset+=page.length;
+		return streamPage();
+	}
+
+	streamPage();
+
+	return outStream;
+};
+
 Wrapper.prototype.getModels=function() {
 	return Object.values(this.defined).map(x=>x.model);
 }
@@ -100,6 +164,10 @@ Wrapper.prototype.confirmMigrations=async function() {
 
 Wrapper.prototype.validate=async function() {
 	await this.confirmMigrations();
+}
+
+Wrapper.prototype.close=async function() {
+	return await this.sequelize.close();
 }
 
 module.exports=Wrapper;
