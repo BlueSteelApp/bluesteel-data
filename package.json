@@ -4,11 +4,12 @@
   "description": "",
   "main": "app.js",
   "scripts": {
-    "start": "npm-run-all --parallel run:watch",
+    "start": "npm-run-all migrate:full run:watch",
     "test": "echo \"Error: no test specified\" && exit 1",
     "lint": "eslint ./app",
     "build": "webpack",
     "build:watch": "webpack --watch",
+		"migrate:full": "node ./core/migrate.js",
     "run": "node ./app/",
     "run:watch": "nodemon ./app"
   },
@@ -21,6 +22,7 @@
     "apollo-server-express": "^2.7.0",
     "babel-loader": "^8.0.5",
     "body-parser": "^1.18.3",
+    "bull": "^3.13.0",
     "cors": "^2.8.5",
     "csv-parse": "^4.8.8",
     "dotenv": "^8.2.0",
