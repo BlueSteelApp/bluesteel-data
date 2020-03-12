@@ -6,11 +6,16 @@ module.exports = {
 		return queryInterface.createTable('import_file', {
 			id: {
 				type: sequelize.INTEGER(11),
+				autoIncrement: true,
 				allowNull: false,
 				primaryKey: true
 			},
 			import_type: {
 				type: sequelize.STRING(255),
+				allowNull: false,
+			},
+			import_table: {
+				type: sequelize.STRING(64),
 				allowNull: false,
 			},
 			filepath: {

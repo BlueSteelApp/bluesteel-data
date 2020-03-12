@@ -1,11 +1,11 @@
-const getCore=require('./core-import');
+const getCoreImport=require('./core-import');
 require('dotenv').config();
 
 const[type,filename]=process.argv.slice(2);
 if(!type||!filename) throw new Error('expected format: node cli <type> <filename>');
 
 (async function() {
-	const core = await getCore();
+	const core = await getCoreImport();
 	try {
 		await core.validate();
 	} catch(e) {
@@ -19,4 +19,6 @@ if(!type||!filename) throw new Error('expected format: node cli <type> <filename
 		console.error('failed to import',e);
 		throw e;
 	}
+
+	await core.close();
 })();

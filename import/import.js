@@ -21,16 +21,12 @@ function Importer(wrapper) {
 	};
 }
 
-const IMPORT_RAW_BATCH_SIZE=1000;
-Importer.prototype.loadImportTable=async function(options) {
+Importer.prototype.getImportType=function(options) {
 	const{sequelize,wrapper}=this;
-	const{type,stream}=options||{};
-	if(!type||!stream) throw new Error('type and stream are required');
+	const{type,importTableName}=options||{};
+	if(!type||!importTableName) throw new Error('type and importTableName are required');
 
-	const importId=options.importId || type+'_'+(new Date()).getTime().toString();
 	const typeDef = wrapper.getTypes().find(x=>x.name==type);
-
-	const importTableName = '_import_'+importId;
 	const importFields = Object.assign({}, {
 		import_row_id: {
 			type: DataTypes.INTEGER(11),
@@ -59,6 +55,19 @@ Importer.prototype.loadImportTable=async function(options) {
 		// having no constraints gives us freedom to have records _without_ a match
 		constraints: false
 	});
+
+	return {importModel,importFields,existing:typeDef.model};
+}
+
+const IMPORT_RAW_BATCH_SIZE=1000;
+Importer.prototype.loadImportTableFromStream=async function(options) {
+	const{sequelize}=this;
+	const{type,stream}=options||{};
+	if(!type||!stream) throw new Error('type and stream are required');
+
+	const importId=options.importId || type+'_'+(new Date()).getTime().toString();
+	const importTableName = options.importTableName||'_import_'+importId;
+	const {importModel,importFields,existing} = this.getImportType({type,importId,importTableName});
 
 	await sequelize.transaction(async transaction => {
 		await sequelize.queryInterface.createTable(importTableName, importFields);
@@ -90,18 +99,18 @@ Importer.prototype.loadImportTable=async function(options) {
 	return {
 		importModel,
 		importTableName,
-		existing:typeDef.model
+		existing
 	};
 };
 
 const IMPORT_BATCH_SIZE=1000;
-Importer.prototype.importStream=async function(options) {
+Importer.prototype.loadFromImportTable=async function(options) {
 	const {sequelize,wrapper}=this;
-	const {importModel,existing} = await this.loadImportTable(options);
+	const {importModel,existing} = await this.getImportType(options);
 
 	const ignoreExisting=options.ignoreExisting||true;
 
-	sequelize.transaction(async transaction => {
+	return sequelize.transaction(async transaction => {
 		await new Promise((resolve,reject) => wrapper.streamQuery(importModel, {
 			transaction,
 			include: 'existingRecord'
@@ -128,7 +137,13 @@ Importer.prototype.importCsv=async function(options) {
 	const csv=new CsvStreamer(this);
 	const stream = await csv.getStream(options);
 	options=Object.assign({},options,{stream});
-	this.importStream(options);
+	const{importTableName}=await this.loadImportTableFromStream(options);
+	const finalOptions = Object.assign({},options,{importTableName});
+	await this.loadFromImportTable(finalOptions);
 }
+
+Importer.prototype.close=function() {
+	this.wrapper.close();
+};
 
 module.exports=Importer;

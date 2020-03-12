@@ -166,4 +166,8 @@ Wrapper.prototype.validate=async function() {
 	await this.confirmMigrations();
 }
 
+Wrapper.prototype.close=async function() {
+	return await this.sequelize.close();
+}
+
 module.exports=Wrapper;

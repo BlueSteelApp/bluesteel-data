@@ -14,6 +14,10 @@ module.exports=function() {
 				type: sequelize.STRING(255),
 				allowNull: false,
 			},
+			import_table: {
+				type: sequelize.STRING(64),
+				allowNull: false,
+			},
 			filepath: {
 				type: sequelize.TEXT(),
 				allowNull: false,
