@@ -9,7 +9,7 @@
     "lint": "eslint ./app",
     "build": "webpack",
     "build:watch": "webpack --watch",
-		"migrate:full": "node ./core/migrate.js",
+    "migrate:full": "node ./modules/migrate.js",
     "run": "node ./app/",
     "run:watch": "nodemon ./app"
   },
@@ -25,6 +25,7 @@
     "bull": "^3.13.0",
     "cors": "^2.8.5",
     "csv-parse": "^4.8.8",
+    "dataloader": "^2.0.0",
     "dotenv": "^8.2.0",
     "event-stream": "^4.0.1",
     "express": "^4.16.4",
