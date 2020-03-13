@@ -3,8 +3,11 @@ const Umzug = require('umzug');
 const fs=require('fs');
 const through2=require('through2');
 const es=require('event-stream');
+require('dotenv').config();
 
 function buildSequelize(options) {
+	options = options || {};
+
 	const { DATABASE_NAME, DATABASE_USER, DATABASE_PASSWORD } = process.env;
 	const {auth:{name,user,password}={
 		name:DATABASE_NAME,
@@ -17,6 +20,7 @@ function buildSequelize(options) {
 		}
 		throw new Error('auth overrides (name, user, or password) were not fully set');
 	}
+
 	return new Sequelize(name,user,password, {
 		host: process.env.DATABASE_HOST,
 		port: process.env.DATABASE_PORT,
@@ -35,6 +39,7 @@ function buildSequelize(options) {
 }
 
 function assembleModels(sequelize,options) {
+	console.log('assembling models');
 	const defined = {};
 	let {models}=options;
 	if(!models) throw new Error('models is a required parameter');
@@ -49,6 +54,16 @@ function assembleModels(sequelize,options) {
 		});
 		defined[name]=Object.assign({},x,{model});
 	});
+	models.forEach(x => {
+		if(typeof x == 'function') x = x();
+		if(x.associations) x.associations.forEach(a => {
+			const {name,build}=a;
+			if(!name) throw new Error('invalid association - name is required');
+			const target = sequelize.model(name);
+			if(!target) throw new Error('model does not exist');
+			build(defined[x.name].model,target);
+		});
+	});
 	return defined;
 }
 
@@ -57,6 +72,7 @@ function Wrapper(options) {
 	this.defined=assembleModels(this.sequelize,options);
 	this.migrationsPath=options.migrationsPath;
 }
+Wrapper.buildSequelize = buildSequelize;
 
 Wrapper.prototype.exportWithStream=function(model,options) {
 	options=options||{};
@@ -145,7 +161,7 @@ Wrapper.prototype.runMigrations=async function() {
 		storageOptions: { sequelize }
 	});
   await umzug.up();
-  console.log('All migrations performed successfully');
+  // console.log('All migrations performed successfully');
 	await sequelize.close();
 }
 
@@ -154,9 +170,9 @@ Wrapper.prototype.confirmMigrations=async function() {
 	let [results] = await sequelize.query('select * from SequelizeMeta');
 	if(!results||!results.length) throw new Error('invalid migration data - please run migrations to update database');
 	results = results.map(x=>x.name);
-	console.log('confirmed',results.length,'migrations confirmed');
+	// console.log('confirmed',results.length,'migrations confirmed');
 	const files = fs.readdirSync(this.migrationsPath);
-	console.log('checking against',files);
+	// console.log('checking against',files);
 
 	const missing = files.filter(x=>!results.find(y=>y==x));
 	if(missing.length) throw new Error('missing '+missing.join(',')+' migrations');
