@@ -28,6 +28,7 @@ Wrapper.prototype.getModelDefsAndResolvers=function(type) {
 		return context.cachedDataLoaders[name];
 	}
 
+	const fieldResolvers = {};
 	const topLevelResolvers = {};
 	const associationDefs = (associations||[]).map(a => {
 		const targetName=a.name;
@@ -42,35 +43,35 @@ Wrapper.prototype.getModelDefsAndResolvers=function(type) {
 		}
 
 		let defs = [];
-		const {identifierField} = targetAssociation;
 		if(targetAssociation.isMultiAssociation) {
 			defs.push(`
 				extend type ${name} {
 					${targetName}List: [${targetName}]
 				}
 			`);
-			topLevelResolvers[name]={
-				[targetName+'List']: ({id}) => {
-					console.log('1Finding',targetName,'for',name);
-					return targetModel.findAll({[identifierField]:id})
+			fieldResolvers[targetName+'List'] = async ({id}) => {
+				const root = await model.findByPk(id);try {
+					const r = await root['get'+targetName]();
+					return r;
+				} catch(e) {
+					console.error(e);
+					throw e;
 				}
-			}
+			};
 		} else {
 			defs.push(`
 				extend type ${name} {
 					${targetName}: ${targetName}
 				}
 			`);
-			topLevelResolvers[name]={
-				[targetName]: async ({id}) => {
-					console.log('2Finding',targetName,'for',name);
-					const root = targetModel.findByPk(id);
-					try {
-						return await root['get'+targetName]();
-					} catch(e) {
-						console.error(e);
-						throw e;
-					}
+			fieldResolvers[targetName] = async ({id}) => {
+				const root = await model.findByPk(id);
+				try {
+					const r = await root['get'+targetName]();
+					return r;
+				} catch(e) {
+					console.error(e);
+					throw e;
 				}
 			}
 		}
@@ -83,7 +84,6 @@ Wrapper.prototype.getModelDefsAndResolvers=function(type) {
 			`);
 			topLevelResolvers[targetName]={
 				[name+'List']: async ({id}) => {
-					console.log('3Finding',name,'for',targetName,id);
 					const root=await targetModel.findByPk(id);
 					// const accessor=reverseAssociation.get;
 					try {
@@ -102,9 +102,7 @@ Wrapper.prototype.getModelDefsAndResolvers=function(type) {
 			`);
 			topLevelResolvers[targetName]={
 				[name]: async ({id}) => {
-					console.log('4Finding',targetName,'for',name);
 					const root=await targetModel.findByPk(id);
-					// const accessor=reverseAssociation.get;
 					try {
 						return await root['get'+name]();
 					} catch(e) {
@@ -128,7 +126,6 @@ Wrapper.prototype.getModelDefsAndResolvers=function(type) {
 	}
 	${associationDefs}`;
 
-	const fieldResolvers = {};
 	Object.keys(fields).forEach(x => {
 		fieldResolvers[x] = async (root,args,context) => {
 			if(root[x]) return root[x];
