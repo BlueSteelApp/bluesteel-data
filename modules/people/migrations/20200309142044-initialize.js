@@ -18,15 +18,6 @@ module.exports = {
 				type: Sequelize.STRING(255),
 				allowNull: true
 			},
-			email: {
-				type: Sequelize.STRING(255),
-				allowNull: true,
-				unique: true
-			},
-			phone: {
-				type: Sequelize.STRING(24),
-				allowNull: true
-			},
 			source_code: {
 				type: Sequelize.STRING(255),
 				allowNull: true

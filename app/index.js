@@ -1,23 +1,31 @@
-// import '@babel/polyfill';
-// import express from 'express';
 const express = require('express');
 const bodyParser = require('body-parser');
 const { ApolloServer } = require('apollo-server-express');
 const cors = require('cors');
 
-const getInst = require('../core');
-const getGql = require('./gql');
+const {buildSequelize} = require('../shared/sql-wrapper');
 
 require('dotenv').config();
 
 async function init() {
-	const wrapper = await getInst();
-	await wrapper.validate();
+	const sequelize = buildSequelize();
+	const configuredModules = require('../modules')({sequelize});
 
-	const types = wrapper.getTypes();
-	const modules = getGql({types});
-
-	console.log('initializing',modules);
+	const gqlModules = [];
+	configuredModules.installed.forEach(x=>{
+		let gql = x.gql;
+		if(gql) {
+			if(!Array.isArray(gql)) gql=[gql];
+			if(!gql.length) {
+				// console.log('empty gql found for ',x);
+				return;
+			}
+			if(typeof gql[0] != 'object') {
+				throw new Error('elements of gql must be object, not '+typeof gql[0]);
+			}
+			x.gql.forEach(y=>gqlModules.push(y))
+		}
+	});
 
 	const app = express();
 	app.use(bodyParser.json());
@@ -27,7 +35,7 @@ async function init() {
 	const server = new ApolloServer({
 		modules: [
 			require('./common'),
-		].concat(modules),
+		].concat(gqlModules),
 	});
 
 	server.applyMiddleware({ app });
