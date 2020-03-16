@@ -7,5 +7,8 @@ module.exports={
 		count: Int!
 	}
 	scalar Date
+
+	scalar Email
+	scalar Phone
 	`)
 };

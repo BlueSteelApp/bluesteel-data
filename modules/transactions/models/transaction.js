@@ -22,6 +22,12 @@ module.exports = function() {
 				allowNull: true
 			},
 		},
+		hooks: {
+			beforeCreate: async (instance) => {
+				const person = await instance.getPerson();
+				if(!person) throw new Error('person does not exist');
+			}
+		},
 		associations: [{
 			name: 'Person',
 			build: (Transaction,Person) => {

@@ -14,7 +14,10 @@ Wrapper.prototype.getSaveDefAndResolvers=function(type) {
 	const typeDefs=gql`
 	input ${name}Save {
 		id:ID
-		${Object.keys(fields).map(x=>`${x}:String`)}
+		${Object.entries(fields).map(([x,def])=>{
+			const type = def.gqlType || 'String';
+			return `${x}:${type}`
+		})}
 	}
 	extend type Mutation {
 		${name}Save(save:${name}Save!): ${name}
@@ -69,7 +72,10 @@ Wrapper.prototype.getModelDefsAndResolvers=function(type) {
 	const associationDefs = (associations||[]).map(a => {
 		const targetName=a.name;
 		const targetAssociation = model.associations[targetName];
-		if(!targetAssociation) throw new Error('invalid - no sequelize association defined between '+name+' and '+targetName);
+		if(!targetAssociation) {
+			console.log(name,targetName,model.associations);
+			throw new Error('invalid - no sequelize association defined between '+name+' and '+targetName);
+		}
 		const targetModel = sequelize.model(targetName);
 		if(!targetModel) throw new Error('model with name '+targetName+' does not exist');
 		const reverseAssociation = targetModel.associations[name];
@@ -153,7 +159,11 @@ Wrapper.prototype.getModelDefsAndResolvers=function(type) {
 	const typeDefs=gql`
 	type ${name} {
 		id:ID!
-		${Object.keys(fields).map(x=>`${x}:String`)}
+		${Object.entries(fields).map(([x,def])=>{
+			let type = def.gqlType || 'String';
+			if(!def.allowNull) type+='!';
+			return `${x}:${type}`;
+		})}
 		created_at: Date
 		updated_at: Date
 	}
@@ -180,6 +190,7 @@ Wrapper.prototype.getModelDefsAndResolvers=function(type) {
 
 	// console.log(associationDefs);
 	// console.log(topLevelResolvers);
+	// console.log(resolvers[name]);
 
 	return {
 		typeDefs, resolvers:Object.assign({},topLevelResolvers,resolvers),

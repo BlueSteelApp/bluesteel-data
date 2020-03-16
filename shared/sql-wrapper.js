@@ -7,7 +7,7 @@ require('dotenv').config();
 
 let globalSqlize;
 function buildSequelize(options) {
-	if(globalSqlize) throw new Error('already defined globalSqlize');
+	if(globalSqlize) console.error('already defined globalSqlize');
 	options = options || {};
 
 	const { DATABASE_NAME, DATABASE_USER, DATABASE_PASSWORD } = process.env;
@@ -52,9 +52,11 @@ function assembleModels(sequelize,options) {
 		const{name,fields,tableName}=x;
 		if(!name||!fields) throw new Error('name and fields are required for each model');
 		const model=sequelize.define(name,fields,{
-			tableName: tableName||name
+			tableName: tableName||name,
+			hooks: x.hooks||{}
 		});
 		defined[name]=Object.assign({},x,{model});
+		if(x.hooks) console.log(model.hooks);
 	});
 	models.forEach(x => {
 		if(typeof x == 'function') x = x();
@@ -143,7 +145,6 @@ Wrapper.prototype.getModels=function() {
 }
 
 Wrapper.prototype.getTypes=function() {
-	console.log('getTypes:',this.defined);
 	return Object.values(this.defined);
 }
 
@@ -165,7 +166,6 @@ Wrapper.prototype.runMigrations=async function() {
 	});
   await umzug.up();
   // console.log('All migrations performed successfully');
-	await sequelize.close();
 }
 
 Wrapper.prototype.confirmMigrations=async function() {

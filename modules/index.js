@@ -5,6 +5,7 @@ module.exports=function(options) {
 	const getTransactions = require('./transactions');
 
 	const people = getPeople(options);
+	console.log('people',options.sequelize.model('Person'));
 	const segments = getSegments(options);
 	const transactions = getTransactions(options);
 

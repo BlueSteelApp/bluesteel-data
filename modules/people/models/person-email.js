@@ -8,7 +8,8 @@ module.exports = function() {
 			email: {
 				type: sequelize.STRING(255),
 				unique: true,
-				allowNull: false
+				allowNull: false,
+				gqlType: 'Email'
 			},
 			person_id: {
 				type: sequelize.INTEGER(11),
