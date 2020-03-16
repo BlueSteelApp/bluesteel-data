@@ -7,7 +7,7 @@ require('dotenv').config();
 
 let globalSqlize;
 function buildSequelize(options) {
-	if(globalSqlize) throw new Error('already defined globalSqlize');
+	if(globalSqlize) console.error('already defined globalSqlize');
 	options = options || {};
 
 	const { DATABASE_NAME, DATABASE_USER, DATABASE_PASSWORD } = process.env;
@@ -166,7 +166,6 @@ Wrapper.prototype.runMigrations=async function() {
 	});
   await umzug.up();
   // console.log('All migrations performed successfully');
-	await sequelize.close();
 }
 
 Wrapper.prototype.confirmMigrations=async function() {
