@@ -13,11 +13,7 @@ module.exports = function() {
 			person_id: {
 				type: sequelize.INTEGER(11),
 				allowNull: false
-			},
-			source_code: {
-				type: sequelize.STRING(255),
-				allowNull: true
-			},
+			}
 		},
 		associations: [{
 			name: 'Person',
@@ -32,6 +28,10 @@ module.exports = function() {
 					as: 'PersonEmail'
 				});
 			}
-		}]
+		}],
+		indexes: [
+    {fields: ['person_id']},
+		{unique:true,fields: ['email']},
+		]
 	};
 };

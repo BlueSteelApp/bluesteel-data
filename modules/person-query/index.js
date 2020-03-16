@@ -8,7 +8,7 @@ module.exports=function({sequelize}) {
 	}
 	return new ModuleWrapper({
 		sequelize,
-		name: 'Segments',
+		name: 'PersonQuery',
 		models: require('./models'),
 		migrations: path.join(__dirname,'./migrations'),
 		gql

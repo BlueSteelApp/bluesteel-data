@@ -22,7 +22,7 @@ module.exports=function(options) {
 		name: 'People',
 		gql: types.map(type=>gqlWrapper.getModelDefsAndResolvers(type)).concat([{
 			typeDefs: gql`
-				input PersonCreate {
+				input PersonSave {
 					given_name: String
 					family_name: String
 					email: String
@@ -44,7 +44,7 @@ module.exports=function(options) {
 				}
 
 				extend type Mutation {
-					PersonCreate(record:PersonCreate!): Person
+					PersonSave(record:PersonSave!): Person
 				}
 			`,
 			resolvers: {
@@ -76,7 +76,7 @@ module.exports=function(options) {
 					}
 				},
 				Mutation: {
-					PersonCreate: async (root, {record}) => {
+					PersonSave: async (root, {record}) => {
 						const{given_name,family_name,email,phone,source_code}=record;
 						console.log('Creating:',{given_name,family_name,email,phone,source_code});
 						const p = {
@@ -88,8 +88,8 @@ module.exports=function(options) {
 							const r = await Person.create(p,{transaction});
 							if(!r||!r.id) throw new Error('failed to create');
 							const person_id=r.id;
-							if(email) await PersonEmail.create({person_id,email,source_code},{transaction});
-							if(phone) await PersonPhone.create({person_id,phone,source_code},{transaction});
+							if(email) await PersonEmail.create({person_id,email},{transaction});
+							if(phone) await PersonPhone.create({person_id,phone},{transaction});
 							return r;
 						});
 					}

@@ -1,12 +1,19 @@
 // const ModuleWrapper=require('../shared');
 module.exports=function(options) {
 	const getPeople = require('./people');
+	const getSegments = require('./segments');
 	const getTransactions = require('./transactions');
 
 	const people = getPeople(options);
+	const segments = getSegments(options);
 	const transactions = getTransactions(options);
 
 	return {
-		installed: [people,transactions]
+		installed: [
+			people,
+			segments,
+			(require('./person-query'))(options),
+			transactions
+		]
 	};
 };
