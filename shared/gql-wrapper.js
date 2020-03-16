@@ -72,7 +72,10 @@ Wrapper.prototype.getModelDefsAndResolvers=function(type) {
 	const associationDefs = (associations||[]).map(a => {
 		const targetName=a.name;
 		const targetAssociation = model.associations[targetName];
-		if(!targetAssociation) throw new Error('invalid - no sequelize association defined between '+name+' and '+targetName);
+		if(!targetAssociation) {
+			console.log(name,targetName,model.associations);
+			throw new Error('invalid - no sequelize association defined between '+name+' and '+targetName);
+		}
 		const targetModel = sequelize.model(targetName);
 		if(!targetModel) throw new Error('model with name '+targetName+' does not exist');
 		const reverseAssociation = targetModel.associations[name];
