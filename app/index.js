@@ -13,6 +13,8 @@ async function init() {
 
 	const gqlModules = [];
 	configuredModules.installed.forEach(x=>{
+		if(x.init) x.init();
+
 		let gql = x.gql;
 		if(gql) {
 			if(!Array.isArray(gql)) gql=[gql];

@@ -5,7 +5,9 @@ const through2=require('through2');
 const es=require('event-stream');
 require('dotenv').config();
 
+let globalSqlize;
 function buildSequelize(options) {
+	if(globalSqlize) throw new Error('already defined globalSqlize');
 	options = options || {};
 
 	const { DATABASE_NAME, DATABASE_USER, DATABASE_PASSWORD } = process.env;
@@ -21,7 +23,7 @@ function buildSequelize(options) {
 		throw new Error('auth overrides (name, user, or password) were not fully set');
 	}
 
-	return new Sequelize(name,user,password, {
+	return globalSqlize = new Sequelize(name,user,password, {
 		host: process.env.DATABASE_HOST,
 		port: process.env.DATABASE_PORT,
 		dialect: 'mysql',
@@ -141,6 +143,7 @@ Wrapper.prototype.getModels=function() {
 }
 
 Wrapper.prototype.getTypes=function() {
+	console.log('getTypes:',this.defined);
 	return Object.values(this.defined);
 }
 
@@ -152,7 +155,7 @@ Wrapper.prototype.runMigrations=async function() {
 			// indicates the folder containing the migration .js files
 			path: this.migrationsPath,
 			// inject sequelize's QueryInterface in the migrations
-			params: [ sequelize.getQueryInterface() ]
+			params: [ sequelize.getQueryInterface(), Sequelize ]
 		},
 		// indicates that the migration data should be store in the database
 		// itself through sequelize. The default configuration creates a table
