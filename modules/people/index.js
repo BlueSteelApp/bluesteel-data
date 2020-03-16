@@ -25,8 +25,8 @@ module.exports=function(options) {
 				input PersonSave {
 					given_name: String
 					family_name: String
-					email: String
-					phone: String
+					email: Email
+					phone: Phone
 					source_code: String
 				}
 
@@ -34,8 +34,8 @@ module.exports=function(options) {
 					ids: [ID]
 					given_name: String
 					family_name: String
-					email: String
-					phone: String
+					email: Email
+					phone: Phone
 					source_code: String
 				}
 
