@@ -7,6 +7,42 @@ function Wrapper(options) {
 	this.sqlWrapper=sqlWrapper;
 }
 
+Wrapper.prototype.getSaveDefAndResolvers=function(type) {
+	const {model,name,fields}=type;
+	if(!model||!name)throw new Error('model and name required, got:'+JSON.stringify(type));
+
+	const typeDefs=gql`
+	input ${name}Save {
+		id:ID
+		${Object.keys(fields).map(x=>`${x}:String`)}
+	}
+	extend type Mutation {
+		${name}Save(save:${name}Save!): ${name}
+	}`;
+
+	const resolvers={
+		Mutation: {
+			[`${name}Save`]: async (root,{save}) => {
+				// update
+				if(save.id) {
+					const existing = await model.findByPk(save.id);
+					if(!existing) throw new Error(`${name} does not exist`);
+					Object.entries(save).forEach(([key,value]) => {
+						existing[key]=value;
+					});
+					await existing.save();
+					return existing;
+				}
+				const result = await model.create(save);
+				return result;
+			},
+		},
+	};
+	return {
+		typeDefs, resolvers,
+	};
+}
+
 Wrapper.prototype.getModelDefsAndResolvers=function(type) {
 	const {model,name,fields,associations}=type;
 	const {sequelize}=this.sqlWrapper;
@@ -143,7 +179,7 @@ Wrapper.prototype.getModelDefsAndResolvers=function(type) {
 	};
 
 	// console.log(associationDefs);
-	console.log(topLevelResolvers);
+	// console.log(topLevelResolvers);
 
 	return {
 		typeDefs, resolvers:Object.assign({},topLevelResolvers,resolvers),
