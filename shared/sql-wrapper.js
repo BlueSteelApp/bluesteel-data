@@ -58,7 +58,10 @@ function assembleModels(sequelize,options,sqlWrapper) {
 		if(!name||!fields) throw new Error('name and fields are required for each model');
 		const model=sequelize.define(name,fields,{
 			tableName: tableName||name,
-			hooks: x.hooks||{}
+			hooks: x.hooks||{},
+			timestamps: true,
+			createdAt: 'created_at',
+			updatedAt: 'updated_at'
 		});
 		defined[name]=Object.assign({},x,{model});
 		if(x.hooks) console.log(model.hooks);
