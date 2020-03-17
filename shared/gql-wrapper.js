@@ -8,8 +8,27 @@ function Wrapper(options) {
 }
 
 Wrapper.prototype.getSaveDefAndResolvers=function(type) {
-	const {model,name,fields}=type;
+	const{sqlWrapper}=this;
+	const {model,name,fields, associations}=type;
 	if(!model||!name)throw new Error('model and name required, got:'+JSON.stringify(type));
+
+	const saveExtensions=[];
+	(associations||[]).forEach(x => {
+		if(x.createWith) {
+			const target = sqlWrapper.getModel(x.name);
+			const raw = target.associations[name];
+			if(!raw) throw new Error('missing assocation');
+
+			let addedType = `${name}Save`;
+			if(raw.isMultiAssociation) addedType = `[${addedType}]`;
+
+			saveExtensions.push(`
+				extend input ${x.name}Save {
+					${name}: ${addedType}
+				}
+			`);
+		}
+	});
 
 	const typeDefs=gql`
 	input ${name}Save {
@@ -21,23 +40,72 @@ Wrapper.prototype.getSaveDefAndResolvers=function(type) {
 	}
 	extend type Mutation {
 		${name}Save(record:${name}Save!): ${name}
-	}`;
+	}
+
+	${saveExtensions.join('\n')}
+	`;
+
+	const createAssociations = [];
+	Object.entries(model.associations||{}).forEach(([target,raw]) => {
+		createAssociations.push({
+			name,
+			target,
+			targetKeyField: raw.targetKeyField,
+			foreignKeyField: raw.foreignKeyField,
+			sourceKeyField: raw.sourceKeyField,
+			identifierField: raw.identifierField,
+			targetModel: raw.target
+		});
+	});
 
 	const resolvers={
 		Mutation: {
 			[`${name}Save`]: async (root,{record}) => {
-				// update
-				if(record.id) {
-					const existing = await model.findByPk(record.id);
-					if(!existing) throw new Error(`${name} does not exist`);
-					Object.entries(record).forEach(([key,value]) => {
-						existing[key]=value;
-					});
-					await existing.save();
-					return existing;
-				}
-				const result = await model.create(record);
-				return result;
+				return sqlWrapper.sequelize.transaction(async transaction => {
+					let result;
+					if(record.id) {
+						const existing = await model.findByPk(record.id,{transaction});
+						if(!existing) throw new Error(`${name} does not exist`);
+						// only update current fields
+						Object.entries(record).filter(([x]) => fields[x]).forEach(([key,value]) => {
+							existing[key]=value;
+						});
+						await existing.save({transaction});
+						result = existing;
+					} else {
+						result = await model.create(record,{transaction});
+					}
+
+					// handle creating sub objects
+					for(let a in createAssociations) {
+						const {target,targetModel,sourceKeyField,identifierField}=createAssociations[a];
+						if(record[target]) {
+
+							let n=record[target];
+							if(!Array.isArray(n)) n=[n];
+							for(let i in n) {
+								const sub = Object.assign({},n[i]);
+								if(sub.id && !record.id) throw new Error('cannot update sub records with id if creating parent record');
+
+								if(sub[identifierField] && sub[identifierField] != record.id) {
+									throw new Error('cannot set '+identifierField+' to a different value than parent id');
+								}
+
+								sub[identifierField]=result[sourceKeyField];
+
+								if(sub.id) {
+									const existing = await targetModel.findByPk(sub.id,{transaction});
+									if(!existing) throw new Error(`${target} with id ${sub.id} does not exist`);
+									Object.assign(existing,sub);
+									await existing.save({transaction});
+								} else {
+									await targetModel.create(sub,{transaction});
+								}
+							}
+						}
+					}
+					return result;
+				});
 			},
 		},
 	};

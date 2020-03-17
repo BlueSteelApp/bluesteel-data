@@ -40,15 +40,20 @@ function buildSequelize(options) {
 	});
 }
 
-function assembleModels(sequelize,options) {
-	console.log('assembling models');
+function assembleModels(sequelize,options,sqlWrapper) {
 	const defined = {};
 	let {models}=options;
+	console.log('assembling models',models);
 	if(!models) throw new Error('models is a required parameter');
 	if(typeof models == 'object') models = Object.values(models);
 	if(!models.length) throw new Error('models must be a non empty array or object');
+
+	models = models.map(x => {
+		if(typeof x == 'function') x = x({sqlWrapper});
+		return x;
+	});
+
 	models.forEach(x => {
-		if(typeof x == 'function') x = x();
 		const{name,fields,tableName}=x;
 		if(!name||!fields) throw new Error('name and fields are required for each model');
 		const model=sequelize.define(name,fields,{
@@ -59,7 +64,6 @@ function assembleModels(sequelize,options) {
 		if(x.hooks) console.log(model.hooks);
 	});
 	models.forEach(x => {
-		if(typeof x == 'function') x = x();
 		if(x.associations) x.associations.forEach(a => {
 			const {name,build}=a;
 			if(!name) throw new Error('invalid association - name is required');
@@ -73,7 +77,7 @@ function assembleModels(sequelize,options) {
 
 function Wrapper(options) {
 	this.sequelize=options.sequelize||buildSequelize(options);
-	this.defined=assembleModels(this.sequelize,options);
+	this.defined=assembleModels(this.sequelize,options,this);
 	this.migrationsPath=options.migrationsPath;
 }
 Wrapper.buildSequelize = buildSequelize;
@@ -144,8 +148,17 @@ Wrapper.prototype.getModels=function() {
 	return Object.values(this.defined).map(x=>x.model);
 }
 
+Wrapper.prototype.getModel=function(name) {
+	return this.sequelize.model(name);
+}
+
 Wrapper.prototype.getTypes=function() {
 	return Object.values(this.defined);
+}
+
+Wrapper.prototype.getType=function(name) {
+	if(!this.defined[name]) throw new Error('type '+name+' does not exist or has not been registed');
+	return this.defined[name];
 }
 
 Wrapper.prototype.runMigrations=async function() {

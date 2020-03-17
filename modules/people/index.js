@@ -1,8 +1,137 @@
-const models=require('./models');
+// const models=require('./models');
 const SqlWrapper=require('../../shared/sql-wrapper');
 const GqlWrapper=require('../../shared/gql-wrapper');
 const path=require('path');
 const {gql} = require('apollo-server-express');
+const Sequelize=require('sequelize');
+
+const models = {
+	person: () => {
+		return {
+			name: 'Person',
+			tableName: 'person',
+			fields: {
+				given_name: {
+					type: Sequelize.STRING(255),
+					allowNull: true
+				},
+				family_name: {
+					type: Sequelize.STRING(255),
+					allowNull: true
+				},
+				source_code: {
+					type: Sequelize.STRING(255),
+					allowNull: true
+				},
+			}
+		}
+	},
+	person_email: ({sqlWrapper}) => {
+		return {
+			name: 'PersonEmail',
+			tableName: 'person_email',
+			fields: {
+				email: {
+					type: Sequelize.STRING(255),
+					unique: true,
+					allowNull: false,
+					gqlType: 'Email'
+				},
+				person_id: {
+					type: Sequelize.INTEGER(11),
+					allowNull: false
+				}
+			},
+			hooks: {
+				beforeCreate: async(instance,options) => {
+					const Person=sqlWrapper.getModel('Person');
+					const person = await Person.findByPk(instance.person_id,options);
+					if(!person) throw new Error('person does not exist');
+
+					const PersonEmail=sqlWrapper.getModel('PersonEmail');
+					const emailList = await PersonEmail.findAll({
+						where:{email:instance.email}
+					},options);
+					const email=emailList[0];
+					if(email && email.person_id != instance.person_id) {
+						throw new Error('email already exists for another person');
+					}
+				}
+			},
+			associations: [{
+				name: 'Person',
+				createWith: true,
+				build: (PersonEmail,Person) => {
+					PersonEmail.belongsTo(Person,{
+						validate:false,
+						through:'person_id',
+						as: 'Person'
+					});
+					Person.hasMany(PersonEmail,{
+						validate: false,
+						as: 'PersonEmail'
+					});
+				}
+			}],
+			indexes: [
+				{fields: ['person_id']},
+				{unique:true,fields: ['email']},
+			]
+		};
+	},
+	person_phone: ({sqlWrapper}) => {
+		return {
+			name: 'PersonPhone',
+			tableName: 'person_phone',
+			fields: {
+				phone: {
+					type: Sequelize.STRING(255),
+					unique: true,
+					allowNull: false,
+					gqlType: 'Phone'
+				},
+				person_id: {
+					type: Sequelize.INTEGER(11),
+					allowNull: false
+				}
+			},
+			hooks: {
+				beforeCreate: async(instance,options) => {
+					const Person=sqlWrapper.getModel('Person');
+					const person = await Person.findByPk(instance.person_id,options);
+					if(!person) throw new Error('person does not exist');
+
+					const PersonPhone=sqlWrapper.getModel('PersonPhone');
+					const phoneList = await PersonPhone.findAll({
+						where:{phone:instance.phone}
+					},options);
+					const phone = phoneList[0];
+					if(phone && phone.person_id != instance.person_id) {
+						throw new Error('phone already exists for another person');
+					}
+				}
+			},
+			associations: [{
+				name: 'Person',
+				createWith: true,
+				build: (PersonPhone,Person) => {
+					PersonPhone.belongsTo(Person,{
+						validate:false,
+						through:'person_id',
+						as: 'Person'
+					});
+					Person.hasMany(PersonPhone,{
+						validate:false,
+						as: 'PersonPhone'
+					});
+				}
+			}],
+			indexes: [{
+				fields: ['person_id']
+			}]
+		};
+	}
+};
 
 module.exports=function(options) {
 	const{sequelize}=options;
@@ -18,21 +147,14 @@ module.exports=function(options) {
 	const PersonEmail = sqlWrapper.sequelize.model('PersonEmail');
 	const PersonPhone = sqlWrapper.sequelize.model('PersonPhone');
 
-	const defaults=types.map(type=>gqlWrapper.getModelDefsAndResolvers(type));
+	const defaults=
+		types.map(type=>gqlWrapper.getModelDefsAndResolvers(type))
+			.concat(types.map(type=>gqlWrapper.getSaveDefAndResolvers(type)));
 
 	return {
 		name: 'People',
 		gql: defaults.concat([{
 			typeDefs: gql`
-				input PersonSaveExtra {
-					id:ID
-					given_name: String
-					family_name: String
-					email: Email
-					phone: Phone
-					source_code: String
-				}
-
 				input PersonFilterExtra {
 					ids: [ID]
 					given_name: String
@@ -44,10 +166,6 @@ module.exports=function(options) {
 
 				extend type Query {
 					PersonListExtra(filter:PersonFilterExtra,pageSize:Int, page:Int): [Person]
-				}
-
-				extend type Mutation {
-					PersonSaveExtra(record:PersonSaveExtra!): Person
 				}
 			`,
 			resolvers: {
@@ -77,62 +195,11 @@ module.exports=function(options) {
 						}
 						return Person.findAll({where,include,limit:pageSize,offset:pageSize*page});
 					}
-				},
-				Mutation: {
-					PersonSaveAll: async (root, {record}) => {
-						const{id,given_name,family_name,email,phone,source_code}=record;
-						console.log('PersonSave:',record);
-						const p = {
-							given_name,
-							family_name,
-							source_code,
-						};
-
-						return sequelize.transaction(async transaction => {
-							let person=null;
-							if(id) {
-								const existing = await Person.findByPk(id);
-								if(!existing) throw new Error(`Person ${id} does not exist`);
-								Object.entries(p).forEach(([key,value]) => {
-									existing[key]=value;
-								});
-								person=await existing.save();
-							}else{
-								person=await Person.create(p,{transaction});
-							}
-
-							const person_id=person.id;
-							if(email){
-								let existing=PersonEmail.findAll({email});
-								if (existing.length>0){
-									if (existing[0].person_id==person_id){
-										//Do nothing
-									}else{
-										throw new Error({message:"This email already exists",uri:"/obj/Person/"+existing[0].person_id});
-									}
-								}else{
-									await PersonEmail.create({person_id,email},{transaction});
-								}
-							}
-							if(phone){
-								let existing=PersonPhone.findAll({email});
-								if (existing.length>0){
-									if (existing[0].person_id==person_id){
-										//Do nothing
-									}else{
-										throw new Error({message:"This phone already exists",uri:"/obj/Person/"+existing[0].person_id});
-									}
-								}else{
-									await PersonPhone.create({person_id,phone},{transaction});
-								}
-							}
-
-							return person;
-						});
-					}
 				}
 			}
 		}]),
 		sqlWrapper,
 	};
 };
+
+module.exports.models = models;
