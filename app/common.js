@@ -10,5 +10,6 @@ module.exports={
 
 	scalar Email
 	scalar Phone
+	scalar JSON
 	`)
 };

@@ -7,6 +7,32 @@ function Wrapper(options) {
 	this.sqlWrapper=sqlWrapper;
 }
 
+function getGqlType({type,gqlType}) {
+	if(gqlType) return gqlType;
+	if(!type.key) throw new Error('Expected key on type:'+type);
+	switch(type.key) {
+		case'INTEGER':
+		case'SMALLINT':
+		case'MEDIUMINT':
+		case'BIGINT':
+			return 'Int';
+		case'NUMBER':
+		case'DECIMAL':
+		case'DOUBLE':
+			return 'Float';
+		case'TIME':
+		case'DATE':
+		case'DATEONLY':
+			return 'Date';
+		case'BOOLEAN':
+			return 'Boolean';
+		case'JSON':
+		case'JSONB':
+			return 'JSON';
+		default: return 'String';
+	}
+}
+
 Wrapper.prototype.getSaveDefAndResolvers=function(type) {
 	const{sqlWrapper}=this;
 	const {model,name,fields, associations}=type;
@@ -34,7 +60,7 @@ Wrapper.prototype.getSaveDefAndResolvers=function(type) {
 	input ${name}Save {
 		id:ID
 		${Object.entries(fields).map(([x,def])=>{
-			const type = def.gqlType || 'String';
+			const type = getGqlType(def);
 			return `${x}:${type}`
 		})}
 	}
@@ -228,7 +254,7 @@ Wrapper.prototype.getModelDefsAndResolvers=function(type) {
 	type ${name} {
 		id:ID!
 		${Object.entries(fields).map(([x,def])=>{
-			let type = def.gqlType || 'String';
+			let type = getGqlType(def);
 			if(!def.allowNull) type+='!';
 			return `${x}:${type}`;
 		})}
@@ -238,7 +264,7 @@ Wrapper.prototype.getModelDefsAndResolvers=function(type) {
 	input ${name}Filter {
 		ids:[ID]
 		${Object.entries(fields).map(([x,def])=>{
-			let type = def.gqlType || 'String';
+			let type = getGqlType(def);
 			if(!def.allowNull) type+='!';
 			return `${x}:${type}`;
 		})}
