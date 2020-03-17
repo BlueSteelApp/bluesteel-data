@@ -18,11 +18,14 @@ module.exports=function(options) {
 	const PersonEmail = sqlWrapper.sequelize.model('PersonEmail');
 	const PersonPhone = sqlWrapper.sequelize.model('PersonPhone');
 
+	const defaults=types.map(type=>gqlWrapper.getModelDefsAndResolvers(type));
+
 	return {
 		name: 'People',
-		gql: types.map(type=>gqlWrapper.getModelDefsAndResolvers(type)).concat([{
+		gql: defaults.concat([{
 			typeDefs: gql`
-				input PersonSave {
+				input PersonSaveExtra {
+					id:ID
 					given_name: String
 					family_name: String
 					email: Email
@@ -30,7 +33,7 @@ module.exports=function(options) {
 					source_code: String
 				}
 
-				input PersonFilter {
+				input PersonFilterExtra {
 					ids: [ID]
 					given_name: String
 					family_name: String
@@ -40,16 +43,16 @@ module.exports=function(options) {
 				}
 
 				extend type Query {
-					PersonList(filter:PersonFilter,pageSize:Int,page:Int): [Person]
+					PersonListExtra(filter:PersonFilterExtra,pageSize:Int, page:Int): [Person]
 				}
 
 				extend type Mutation {
-					PersonSave(record:PersonSave!): Person
+					PersonSaveExtra(record:PersonSaveExtra!): Person
 				}
 			`,
 			resolvers: {
 				Query: {
-					PersonList: async (root,{filter,pageSize,page}) => {
+					PersonListAll: async (root,{filter,pageSize,page}) => {
 						filter=filter||{};
 						pageSize = pageSize || 50;
 						page = page || 0;
@@ -76,21 +79,55 @@ module.exports=function(options) {
 					}
 				},
 				Mutation: {
-					PersonSave: async (root, {record}) => {
-						const{given_name,family_name,email,phone,source_code}=record;
-						console.log('Creating:',{given_name,family_name,email,phone,source_code});
+					PersonSaveAll: async (root, {record}) => {
+						const{id,given_name,family_name,email,phone,source_code}=record;
+						console.log('PersonSave:',record);
 						const p = {
 							given_name,
 							family_name,
 							source_code,
 						};
+
 						return sequelize.transaction(async transaction => {
-							const r = await Person.create(p,{transaction});
-							if(!r||!r.id) throw new Error('failed to create');
-							const person_id=r.id;
-							if(email) await PersonEmail.create({person_id,email},{transaction});
-							if(phone) await PersonPhone.create({person_id,phone},{transaction});
-							return r;
+							let person=null;
+							if(id) {
+								const existing = await Person.findByPk(id);
+								if(!existing) throw new Error(`Person ${id} does not exist`);
+								Object.entries(p).forEach(([key,value]) => {
+									existing[key]=value;
+								});
+								person=await existing.save();
+							}else{
+								person=await Person.create(p,{transaction});
+							}
+
+							const person_id=person.id;
+							if(email){
+								let existing=PersonEmail.findAll({email});
+								if (existing.length>0){
+									if (existing[0].person_id==person_id){
+										//Do nothing
+									}else{
+										throw new Error({message:"This email already exists",uri:"/obj/Person/"+existing[0].person_id});
+									}
+								}else{
+									await PersonEmail.create({person_id,email},{transaction});
+								}
+							}
+							if(phone){
+								let existing=PersonPhone.findAll({email});
+								if (existing.length>0){
+									if (existing[0].person_id==person_id){
+										//Do nothing
+									}else{
+										throw new Error({message:"This phone already exists",uri:"/obj/Person/"+existing[0].person_id});
+									}
+								}else{
+									await PersonPhone.create({person_id,phone},{transaction});
+								}
+							}
+
+							return person;
 						});
 					}
 				}

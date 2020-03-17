@@ -11,7 +11,7 @@ module.exports = function() {
 			},
 			description: {
 				type: sequelize.TEXT(),
-				allowNull: false
+				allowNull: true
 			}
 		},
 		associations: [{

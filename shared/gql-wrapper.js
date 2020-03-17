@@ -20,23 +20,23 @@ Wrapper.prototype.getSaveDefAndResolvers=function(type) {
 		})}
 	}
 	extend type Mutation {
-		${name}Save(save:${name}Save!): ${name}
+		${name}Save(record:${name}Save!): ${name}
 	}`;
 
 	const resolvers={
 		Mutation: {
-			[`${name}Save`]: async (root,{save}) => {
+			[`${name}Save`]: async (root,{record}) => {
 				// update
-				if(save.id) {
-					const existing = await model.findByPk(save.id);
+				if(record.id) {
+					const existing = await model.findByPk(record.id);
 					if(!existing) throw new Error(`${name} does not exist`);
-					Object.entries(save).forEach(([key,value]) => {
+					Object.entries(record).forEach(([key,value]) => {
 						existing[key]=value;
 					});
 					await existing.save();
 					return existing;
 				}
-				const result = await model.create(save);
+				const result = await model.create(record);
 				return result;
 			},
 		},
@@ -167,8 +167,21 @@ Wrapper.prototype.getModelDefsAndResolvers=function(type) {
 		created_at: Date
 		updated_at: Date
 	}
+	input ${name}Filter {
+		ids:[ID]
+		${Object.entries(fields).map(([x,def])=>{
+			let type = def.gqlType || 'String';
+			if(!def.allowNull) type+='!';
+			return `${x}:${type}`;
+		})}
+		created_before: Date
+		created_after: Date
+		updated_before: Date
+		updated_after: Date
+	}
 	extend type Query {
 		${name}(id:ID!): ${name}
+		${name}List(filter:${name}Filter,pageSize:Int,page:Int): [${name}]
 	}
 	${associationDefs}`;
 
@@ -184,7 +197,20 @@ Wrapper.prototype.getModelDefsAndResolvers=function(type) {
 	const resolvers={
 		Query: {
 			[name]: (root,{id},context) => getDataLoader(context).load(id),
-		},
+			[name+"List"]: async (root,{filter,pageSize,page}) => {
+				filter=filter||{};
+				pageSize = pageSize || 50;
+				page = page || 0;
+				if(pageSize > 1000) throw new Error('pageSize limited to 1000');
+				const where={}; const include=[];
+				if(filter.ids) where.ids=filter.ids;
+				else if(Object.keys(filter).length) {
+					Object.keys(filter).forEach(key=>{
+						where[key]=filter[key];
+					});
+				}
+				return model.findAll({where,include,limit:pageSize,offset:pageSize*page});
+			}},
 		[name]: fieldResolvers
 	};
 
