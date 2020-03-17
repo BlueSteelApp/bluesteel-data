@@ -14,5 +14,32 @@ module.exports = function() {
 				allowNull: false
 			}
 		},
+		associations: [{
+			name: 'Person',
+			build: (SegmentMembership,Person) => {
+				SegmentMembership.belongsTo(Person,{
+					validate: false,
+					as: 'Person',
+					through: 'person_id'
+				});
+				Person.hasMany(SegmentMembership,{
+					validate:false,
+					as: 'SegmentMembership',
+				});
+			}
+		},{
+			name: 'Segment',
+			build: (SegmentMembership,Segment) => {
+				SegmentMembership.belongsTo(Segment,{
+					validate: false,
+					as: 'Segment',
+					through: 'segment_id'
+				});
+				Segment.hasMany(SegmentMembership,{
+					validate:false,
+					as: 'SegmentMembership',
+				});
+			}
+		}]
 	};
 };
