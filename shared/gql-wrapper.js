@@ -265,7 +265,7 @@ Wrapper.prototype.getModelDefsAndResolvers=function(type) {
 		ids:[ID]
 		${Object.entries(fields).map(([x,def])=>{
 			let type = getGqlType(def);
-			if(!def.allowNull) type+='!';
+			//if(!def.allowNull) type+='!';  Filters dont' have required fields
 			return `${x}:${type}`;
 		})}
 		created_before: Date
