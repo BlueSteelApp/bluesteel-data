@@ -40,21 +40,30 @@ function buildSequelize(options) {
 	});
 }
 
-function assembleModels(sequelize,options,sqlWrapper) {
-	const defined = {};
-	let {models}=options;
+function Wrapper(options) {
+	this.sequelize=options.sequelize||buildSequelize(options);
+}
+Wrapper.buildSequelize = buildSequelize;
+
+Wrapper.prototype.assembleModels=function(models) {
+	const defined = this.defined = this.defined || {};
+
 	console.log('assembling models',models);
 	if(!models) throw new Error('models is a required parameter');
 	if(typeof models == 'object') models = Object.values(models);
 	if(!models.length) throw new Error('models must be a non empty array or object');
 
 	models = models.map(x => {
-		if(typeof x == 'function') x = x({sqlWrapper});
+		if(typeof x == 'function') x = x({sqlWrapper:this});
 		return x;
 	});
 
+	const {sequelize}=this;
 	models.forEach(x => {
 		const{name,fields,tableName}=x;
+
+		if(defined[name]) throw new Error('model with name '+name+' already exists');
+
 		if(!name||!fields) throw new Error('name and fields are required for each model');
 		const model=sequelize.define(name,fields,{
 			tableName: tableName||name,
@@ -75,15 +84,8 @@ function assembleModels(sequelize,options,sqlWrapper) {
 			build(defined[x.name].model,target);
 		});
 	});
-	return defined;
 }
 
-function Wrapper(options) {
-	this.sequelize=options.sequelize||buildSequelize(options);
-	this.defined=assembleModels(this.sequelize,options,this);
-	this.migrationsPath=options.migrationsPath;
-}
-Wrapper.buildSequelize = buildSequelize;
 
 Wrapper.prototype.exportWithStream=function(model,options) {
 	options=options||{};
@@ -164,8 +166,8 @@ Wrapper.prototype.getType=function(name) {
 	return this.defined[name];
 }
 
-Wrapper.prototype.runMigrations=async function() {
-	if(!this.migrationsPath) throw new Error('migrationsPath was not set');
+Wrapper.prototype.runMigrations=async function(migrationsPath) {
+	if(!migrationsPath) throw new Error('migrationsPath was not provided');
 	const{sequelize}=this;
 	const umzug = new Umzug({
 		migrations: {
@@ -184,13 +186,14 @@ Wrapper.prototype.runMigrations=async function() {
   // console.log('All migrations performed successfully');
 }
 
-Wrapper.prototype.confirmMigrations=async function() {
+Wrapper.prototype.confirmMigrations=async function(migrationsPath) {
+	if(!migrationsPath) throw new Error('migrationsPath was not provided');
 	const {sequelize}=this;
 	let [results] = await sequelize.query('select * from SequelizeMeta');
 	if(!results||!results.length) throw new Error('invalid migration data - please run migrations to update database');
 	results = results.map(x=>x.name);
 	// console.log('confirmed',results.length,'migrations confirmed');
-	const files = fs.readdirSync(this.migrationsPath);
+	const files = fs.readdirSync(migrationsPath);
 	// console.log('checking against',files);
 
 	const missing = files.filter(x=>!results.find(y=>y==x));

@@ -1,7 +1,3 @@
-// const models=require('./models');
-const SqlWrapper=require('../../shared/sql-wrapper');
-const GqlWrapper=require('../../shared/gql-wrapper');
-const path=require('path');
 const {gql} = require('apollo-server-express');
 const Sequelize=require('sequelize');
 
@@ -61,6 +57,10 @@ const models = {
 			associations: [{
 				name: 'Person',
 				createWith: true,
+				filter: {
+					filterFields: ['email'],
+					include: ({email}) => email && {email}
+				},
 				build: (PersonEmail,Person) => {
 					PersonEmail.belongsTo(Person,{
 						validate:false,
@@ -114,6 +114,10 @@ const models = {
 			associations: [{
 				name: 'Person',
 				createWith: true,
+				filter: {
+					filterFields: ['phone'],
+					include: ({phone}) => phone && {phone}
+				},
 				build: (PersonPhone,Person) => {
 					PersonPhone.belongsTo(Person,{
 						validate:false,
@@ -133,27 +137,15 @@ const models = {
 	}
 };
 
-module.exports=function(options) {
-	const{sequelize}=options;
-	const sqlWrapper = new SqlWrapper({
-		sequelize,
-		models,
-		migrationsPath: path.join(__dirname,'./migrations')
-	});
-	const gqlWrapper = new GqlWrapper({sqlWrapper});
-
-	const types = sqlWrapper.getTypes();
-	const Person = sqlWrapper.sequelize.model('Person');
-	const PersonEmail = sqlWrapper.sequelize.model('PersonEmail');
-	const PersonPhone = sqlWrapper.sequelize.model('PersonPhone');
-
-	const defaults=
-		types.map(type=>gqlWrapper.getModelDefsAndResolvers(type))
-			.concat(types.map(type=>gqlWrapper.getSaveDefAndResolvers(type)));
-
-	return {
-		name: 'People',
-		gql: defaults.concat([{
+module.exports = {
+	name: 'People',
+	models,
+	dir: __dirname,
+	gql: ({sqlWrapper: {sequelize}}) => {
+		const Person = sequelize.model('Person');
+		const PersonEmail = sequelize.model('PersonEmail');
+		const PersonPhone = sequelize.model('PersonPhone');
+		return [{
 			typeDefs: gql`
 				input PersonFilterExtra {
 					ids: [ID]
@@ -197,9 +189,6 @@ module.exports=function(options) {
 					}
 				}
 			}
-		}]),
-		sqlWrapper,
-	};
+		}]
+	}
 };
-
-module.exports.models = models;
