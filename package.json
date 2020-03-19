@@ -30,6 +30,7 @@
     "event-stream": "^4.0.1",
     "express": "^4.16.4",
     "firebase-admin": "^8.9.2",
+    "firstline": "^2.0.2",
     "graphql": "^14.3.1",
     "mysql2": "^1.6.5",
     "nodemon": "^1.18.10",

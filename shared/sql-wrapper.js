@@ -64,6 +64,8 @@ Wrapper.prototype.assembleModels=function(models) {
 
 		if(defined[name]) throw new Error('model with name '+name+' already exists');
 
+		console.log('Creating model',name);
+
 		if(!name||!fields) throw new Error('name and fields are required for each model');
 		const model=sequelize.define(name,fields,{
 			tableName: tableName||name,

@@ -49,4 +49,8 @@ ModulesWrapper.prototype.getGql=function() {
 	return gqlParts;
 };
 
+ModulesWrapper.prototype.close=function() {
+	this.sqlWrapper.close();
+}
+
 module.exports=ModulesWrapper;
