@@ -1,16 +1,27 @@
-const ModuleWrapper=require('../../shared');
-const path=require('path');
-module.exports=function({sequelize}) {
-	function gql({sqlWrapper,gqlWrapper}) {
-		const types = sqlWrapper.getTypes();
-		return types.map(type=>gqlWrapper.getModelDefsAndResolvers(type))
-			.concat(types.map(type => gqlWrapper.getSaveDefAndResolvers(type)));
+const sequelize=require('sequelize');
+
+const models = {
+	person_query: function() {
+		return {
+			name: 'PersonQuery',
+			tableName: 'person_query',
+			fields: {
+				label: {
+					type: sequelize.STRING(255),
+					unique: true,
+					allowNull: false
+				},
+				query: {
+					type: sequelize.JSON,
+					allowNull: false
+				}
+			}
+		};
 	}
-	return new ModuleWrapper({
-		sequelize,
-		name: 'PersonQuery',
-		models: require('./models'),
-		migrations: path.join(__dirname,'./migrations'),
-		gql
-	});
+};
+
+module.exports={
+	name: 'PersonQuery',
+	models,
+	dir: __dirname
 };

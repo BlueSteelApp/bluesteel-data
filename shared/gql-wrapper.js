@@ -143,6 +143,7 @@ Wrapper.prototype.getSaveDefAndResolvers=function(type) {
 Wrapper.prototype.getModelDefsAndResolvers=function(type) {
 	const {model,name,fields,associations}=type;
 	const {sequelize}=this.sqlWrapper;
+	if(!sequelize) throw new Error('missing sequelize from sqlWrapper');
 
 	if(!model||!name)throw new Error('model and name required, got:'+JSON.stringify(type));
 	function getDataLoader(context) {
