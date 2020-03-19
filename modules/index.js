@@ -17,9 +17,12 @@ function ModulesWrapper(options) {
 		require('./people'),
 		require('./segments'),
 		require('./person-query'),
-		require('./transactions')
+		require('./transactions'),
+		require('./messages'),
+		require('./email')
 	];
 	this.initialized=false;
+	console.error("Fininshed constructor");
 }
 
 ModulesWrapper.prototype.initialize=function() {

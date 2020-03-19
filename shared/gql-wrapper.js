@@ -66,6 +66,7 @@ Wrapper.prototype.getSaveDefAndResolvers=function(type) {
 	}
 	extend type Mutation {
 		${name}Save(record:${name}Save!): ${name}
+		${name}Delete(id:ID!): ${name}
 	}
 
 	${saveExtensions.join('\n')}
@@ -131,6 +132,15 @@ Wrapper.prototype.getSaveDefAndResolvers=function(type) {
 						}
 					}
 					return result;
+				});
+			},
+			[`${name}Delete`]: async (root,{id}) => {
+				return sqlWrapper.sequelize.transaction(async transaction => {
+					if(!id) throw new Error(`An id is required for delete`);
+					const existing = await model.findByPk(id,{transaction});
+					if(!existing) throw new Error(`${name} does not exist`);
+					existing.destroy();
+					return existing;
 				});
 			},
 		},
