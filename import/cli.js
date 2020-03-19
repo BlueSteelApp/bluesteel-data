@@ -1,24 +1,24 @@
-const getCoreImport=require('./core-import');
+const CsvImporter=require('./csv-import');
+const Modules=require('../modules');
+const {buildSequelize}=require('../shared/sql-wrapper');
 require('dotenv').config();
 
-const[type,filename]=process.argv.slice(2);
-if(!type||!filename) throw new Error('expected format: node cli <type> <filename>');
+const[filename]=process.argv.slice(2);
+if(!filename) throw new Error('expected format: node cli <filename>');
 
 (async function() {
-	const core = await getCoreImport();
+	const sequelize=buildSequelize();
+	const modules=new Modules({sequelize});
+	await modules.initialize();
+
+	const{sqlWrapper}=modules;
+	const core = new CsvImporter({filename, sqlWrapper});
 	try {
-		await core.validate();
+		await core.runStandardImport();
 	} catch(e) {
 		console.error('failed to validate',e);
 		throw e;
 	}
 
-	try {
-		await core.importCsv({type,filename,update:true});
-	} catch(e) {
-		console.error('failed to import',e);
-		throw e;
-	}
-
-	await core.close();
+	await modules.close();
 })();
