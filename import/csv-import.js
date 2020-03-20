@@ -58,8 +58,8 @@ CsvImporter.prototype.runStandardImport=async function() {
 
 	const importer=new Importer({importMapping, sqlWrapper:this.sqlWrapper});
 	const stream = this.csvStreamer.getStream();
-	return await importer.loadImportTableFromStream({stream});
-
+	await importer.loadImportTableFromStream({stream});
+	await importer.loadFromImportTable();
 }
 
 module.exports=CsvImporter;

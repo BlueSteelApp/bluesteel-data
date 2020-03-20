@@ -16,9 +16,16 @@ if(!filename) throw new Error('expected format: node cli <filename>');
 	try {
 		await core.runStandardImport();
 	} catch(e) {
-		console.error('failed to validate',e);
+		console.error('failed to import',e);
 		throw e;
 	}
+
+	// try {
+	// 	await core.loadFromImportTable();
+	// } catch(e) {
+	// 	console.error('failed to load from import table');
+	// 	throw e;
+	// }
 
 	await modules.close();
 })();

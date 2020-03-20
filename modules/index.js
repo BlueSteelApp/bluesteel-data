@@ -1,5 +1,6 @@
 const SqlWrapper = require('../shared/sql-wrapper');
 const GqlWrapper = require('../shared/gql-wrapper');
+const path=require('path');
 
 function ModulesWrapper(options) {
 	let{sqlWrapper,gqlWrapper}=options;
@@ -24,6 +25,17 @@ function ModulesWrapper(options) {
 	this.initialized=false;
 	console.error("Fininshed constructor");
 }
+
+ModulesWrapper.prototype.runMigrations=async function() {
+	for(let x in this.installed) {
+		const m = this.installed[x];
+		let migrationsPath; // =m.migrationsPath||path.join(m.dir,'./migrations');
+		if(m.migrations) migrationsPath=m.migrations;
+		else if(!m.dir) throw new Error('no migrations specific, nor dir');
+		else migrationsPath=path.join(m.dir,'./migrations');
+		await this.sqlWrapper.runMigrations(migrationsPath);
+	}
+};
 
 ModulesWrapper.prototype.initialize=function() {
 	if(this.initialized) throw new Error('already initialized');

@@ -101,6 +101,38 @@ Wrapper.prototype.exportWithStream=function(model,options) {
 }
 
 const QUERY_STREAM_PAGE_SIZE=1000;
+Wrapper.prototype.processPagedQuery=async function(model,options,handle) {
+	if(typeof options == 'function' && !handle) {
+		handle=options;
+		options = null;
+	}
+	options=options||{};
+	const {offset}=options;
+	const findOptions = Object.assign({},options);
+	delete findOptions.limit;
+	const pageSize = options.pageSize || QUERY_STREAM_PAGE_SIZE;
+
+	let total=0;
+	let currentOffset=offset||0;
+
+	async function processPage() {
+		let page;
+		page = await model.findAll(Object.assign({},findOptions,{
+			limit: pageSize,
+			offset: currentOffset
+		}));
+		if(!page.length) return;
+		await handle(page);
+		total+=page.length;
+		// only one chain will be running through here, so it is safe
+		// eslint-disable-next-line require-atomic-updates
+		currentOffset+=page.length;
+		return processPage();
+	}
+
+	await processPage();
+	return {total};
+}
 Wrapper.prototype.streamQuery=function(model,options) {
 	options=options||{};
 	const {limit,offset}=options;
@@ -174,7 +206,7 @@ Wrapper.prototype.runMigrations=async function(migrationsPath) {
 	const umzug = new Umzug({
 		migrations: {
 			// indicates the folder containing the migration .js files
-			path: this.migrationsPath,
+			path: migrationsPath,
 			// inject sequelize's QueryInterface in the migrations
 			params: [ sequelize.getQueryInterface(), Sequelize ]
 		},
