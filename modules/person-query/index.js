@@ -13,7 +13,7 @@ const models = {
 				},
 				query: {
 					type: sequelize.JSON,
-					allowNull: false
+					allowNull: true //sometimes we need to save before we're composing a query
 				}
 			}
 		};
