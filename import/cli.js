@@ -20,12 +20,5 @@ if(!filename) throw new Error('expected format: node cli <filename>');
 		throw e;
 	}
 
-	// try {
-	// 	await core.loadFromImportTable();
-	// } catch(e) {
-	// 	console.error('failed to load from import table');
-	// 	throw e;
-	// }
-
 	await modules.close();
 })();

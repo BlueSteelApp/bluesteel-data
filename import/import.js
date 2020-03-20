@@ -27,6 +27,7 @@ function ImportMapping(sqlWrapper,options) {
 	this.primaryType=options.primaryType;
 	this.importId=options.importId = options.importId || new Date().getTime();
 	this.importTableName=options.importTableName = options.importTableName || `_import_${options.primaryType}_${options.importId}`;
+	this.personImportTableName=this.importTableName+'_Person';
 }
 ImportMapping.getStandardImportDefinitions=function() {
 	return {
@@ -37,11 +38,25 @@ ImportMapping.getStandardImportDefinitions=function() {
 				{source:'family_name', target:{field:'family_name'}},
 				{source:'source_code', target:{field:'source_code'}},
 				{source:'email', target: {type:'PersonEmail',field:'email'}},
-				{source:'phone', target: {type:'PersonPhone',field:'phone'}}
+				{source:'phone', target: {type:'PersonPhone',field:'phone'}},
+
+				// common aliases
+				{source:'givenName', target:{field:'given_name'}},
+				{source:'firstName', target:{field:'given_name'}},
+				{source:'familyName', target:{field:'family_name'}},
+				{source:'lastName', target:{field:'family_name'}},
 			],
 			deferenceFields: ['id','email','phone']
 		}
 	};
+};
+ImportMapping.prototype.getSourcesToTargetForType=function(type) {
+	if(!type) throw new Error('type is required');
+	return this.options.sourceToTargetMap
+		.filter(x => this.sourceFields.find(y=>y==x.source))
+		.filter(x => {
+			return (x.target.type||this.primaryType)==type;
+		});
 };
 ImportMapping.prototype.getSourceFieldForTarget=function({type,field}) {
 	if(!type) type = this.primaryType;
@@ -52,13 +67,13 @@ ImportMapping.prototype.getSourceFieldForTarget=function({type,field}) {
 	return this.sourceFields.find(y=>y==match.source);
 };
 ImportMapping.prototype.getTargetsForSourceField=function(sourceField) {
-	const {sqlWrapper,options}=this;
+	const {sqlWrapper}=this;
 	const m = this.options.sourceToTargetMap.filter(x => x.source == sourceField);
 	if(!m.length) throw new Error('no valid target defined for '+sourceField);
 
 	const rawTargets = m.map(x=>x.target);
 
-	const {primaryType:primaryTypeName}=options;
+	const {primaryType:primaryTypeName}=this;
 	const primaryType = sqlWrapper.getType(primaryTypeName);
 
 	const targets = rawTargets.map(x => {
@@ -74,10 +89,14 @@ ImportMapping.prototype.getTargetsForSourceField=function(sourceField) {
 ImportMapping.prototype.getPrimaryDereferences=function() {
 	if(this.options.primaryDereferences) {
 		const targets = [];
-		this.options.primaryDereferences.forEach(field =>
-			this.getTargetsForSourceField(field).forEach(x=>targets.push(x))
-		);
+		this.options.primaryDereferences
+			.filter(field => this.sourceFields.find(y=>y==field))
+			.forEach(field =>
+				this.getTargetsForSourceField(field).forEach(x=>targets.push(x))
+			);
+		return targets;
 	}
+	throw new Error('no getPrimaryDereferences defined');
 }
 ImportMapping.prototype.getImportFields=function() {
 	const importFields = Object.assign({}, {
@@ -95,7 +114,8 @@ ImportMapping.prototype.getImportFields=function() {
 	this.options.sourceFields.forEach(x => {
 		importFields[x] = {
 			type: DataTypes.STRING(255),
-			allowNull: true
+			allowNull: true,
+			field: x
 		};
 	});
 	return importFields;
@@ -108,11 +128,16 @@ ImportMapping.prototype.getAllTargetFields=function() {
 	});
 	return targets;
 }
+ImportMapping.prototype.getTargetFieldsForType=function(type) {
+	const {primaryType:primaryTypeName}=this;
+	const all = this.getAllTargetFields();
+	return all.filter(x => (x.type.name||primaryTypeName) == type);
+}
 ImportMapping.prototype.getImportAssociations=function() {
 	const{sqlWrapper}=this;
-	const allTargets = this.getAllTargetFields();
+	const primaryRefTargets = this.getPrimaryDereferences();
 	const perType = {};
-	allTargets.forEach(x => {
+	primaryRefTargets.forEach(x => {
 		const type = x.type.name;
 		(perType[type] = perType[type]||[]).push(x);
 	});
@@ -161,6 +186,49 @@ ImportMapping.prototype.getImportModel=async function() {
 	});
 	return this.importModel;
 }
+// the model for creating new people in bulk will:
+// - hold all of the fields related to the person model
+// - make the primary dereference fields (email,phone,etc) unique
+ImportMapping.prototype.getPersonImportFields=function() {
+	const personFields = this.getSourcesToTargetForType('Person');
+	const derefs = this.getPrimaryDereferences();
+	const fields = {
+		import_row_id: {
+			type: DataTypes.INTEGER(11),
+			primaryKey: true,
+			field: 'import_row_id',
+			source: 'import_row_id'
+		},
+	};
+	// process.exit();
+	personFields.forEach(x => {
+		const target=x.target;
+		fields[target.field] = {
+			type: DataTypes.STRING(255),
+			field: target.field,
+			source: x.source
+		}
+	});
+	derefs.forEach(x => {
+		fields[x.field] = {
+			type: DataTypes.STRING(255),
+			unique: true,
+			field: x.field,
+			source: x.field
+		};
+	});
+	if(!Object.entries(fields).find(x=>!x.source||!x.field)) throw new Error('each needs source and field');
+	return fields;
+}
+ImportMapping.prototype.getPersonImportModel=async function() {
+	if(this.personImportModel) return this.personImportModel;
+	const fields = this.getPersonImportFields();
+	const importPersonModel = await this.sqlWrapper.sequelize.define(this.personImportTableName,fields, {
+		tableName: this.personImportTableName,
+		timestamps: false
+	});
+	return importPersonModel;
+}
 
 function Importer({sqlWrapper,importMapping}) {
 	this.sqlWrapper=sqlWrapper;
@@ -184,7 +252,6 @@ Importer.prototype.loadImportTableFromStream=async function({stream}) {
 			.pipe(through2.obj(function(batch,enc,cb) {
 				importModel.bulkCreate(batch, {
 					ignoreDuplicates: true,
-					validate: true
 				}).catch(e=>{
 					console.error('error',e);
 					cb(e);
@@ -213,25 +280,20 @@ Importer.prototype.getImportOverview=async function(options) {
 	};
 }
 
-const IMPORT_BATCH_SIZE=1000;
-Importer.prototype.loadFromImportTable=async function() {
+// there may be multiple records on import that have the same person
+// we want to make sure they import to the same person record, and then have
+// that id assigned to the new records
+Importer.prototype.loadNewPersonRecordsTable=async function() {
 	const {importMapping,sqlWrapper}=this;
 	const importModel = await importMapping.getImportModel();
-	const baseType = await importMapping.getBaseType();
+
+	const idSource = importMapping.getSourceFieldForTarget({type:'Person',field:'id'});
+
+	const personImportModel = await importMapping.getPersonImportModel();
+	const importPersonFields = importMapping.getPersonImportFields();
+	await sqlWrapper.sequelize.queryInterface.createTable(importMapping.personImportTableName, importPersonFields);
+
 	const importAssociations = importMapping.getImportAssociations();
-
-	debug('baseType:',baseType);
-	let idField = Object.values(baseType.fields).find(x=>x.primaryKey);
-
-	if(idField) idField = idField.field;
-	else idField='id';
-
-	const idSource = importMapping.getSourceFieldForTarget({field:idField, type:this.primaryType});
-	if(!idSource) debug('No id source in import, appending id to all records');
-
-	const idRefers = importAssociations.filter(a=>a.primaryRefer);
-	debug('refers built using:',idRefers);
-
 	await sqlWrapper.processPagedQuery(importModel, {
 		include: importAssociations.map(x=>x.reference)
 	}, async function(page) {
@@ -245,10 +307,9 @@ Importer.prototype.loadFromImportTable=async function() {
 		const withRefer=[];
 		const withBadRefer=[];
 		const withoutRefer=[];
-		const byRefer={};
 		withoutId.forEach(x => {
 			const refers={};
-			idRefers.forEach(r => {
+			importAssociations.forEach(r => {
 				const{reference}=r;
 				if(x[reference]) refers[reference]=x[reference];
 			});
@@ -263,9 +324,121 @@ Importer.prototype.loadFromImportTable=async function() {
 				else withBadRefer.push(x);
 			}
 		});
-		console.log({
-			withRefer, withBadRefer, withoutRefer
+
+		if(!withoutRefer.length) return;
+
+		const creates=withoutRefer.map(w => {
+			const temp={};
+			Object.values(importPersonFields).forEach(x => temp[x.field]=w[x.source]);
+			return temp;
 		});
+		await personImportModel.bulkCreate(creates, {ignoreDuplicates:true});
+	});
+}
+// create all fields required for new person records,
+// as well as assocations including PersonEmail, PersonPhone
+Importer.prototype.createNewPersonRecords=async function() {
+	const {importMapping,sqlWrapper}=this;
+	const personImportModel = await importMapping.getPersonImportModel();
+	const Person=sqlWrapper.getModel('Person');
+	const personFields = importMapping.getTargetFieldsForType('Person');
+
+	const personPhoneFields = importMapping.getTargetFieldsForType('PersonPhone');
+	const personEmailFields = importMapping.getTargetFieldsForType('PersonEmail');
+	if(!personPhoneFields.length && !personEmailFields.length) throw new Error('expected phone or email');
+
+	await sqlWrapper.processPagedQuery(personImportModel, async page => {
+		const creates = page.map(x => {
+			const m = {};
+			personFields.forEach(f => {
+				m[f.field]=x[f.field];
+			});
+			return m;
+		});
+		const created = await Person.bulkCreate(creates);
+
+		if(created.length != page.length) throw new Error('failed to return equal length created array');
+
+		if(personPhoneFields.length) {
+			const phones = [];
+			const PersonPhone = sqlWrapper.getModel('PersonPhone');
+			page.forEach((x,i) => {
+				const person_id=created[i].id;
+				const p = {person_id};
+				personPhoneFields.forEach(f => {
+					p[f.field]=x[f.field];
+				});
+				phones.push(p);
+			});
+			await PersonPhone.bulkCreate(phones);
+		}
+		if(personEmailFields.length) {
+			const emails = [];
+			const PersonEmail = sqlWrapper.getModel('PersonEmail');
+			page.forEach((x,i) => {
+				const person_id=created[i].id;
+				const p = {person_id};
+				personEmailFields.forEach(f => {
+					p[f.field]=x[f.field];
+				});
+				emails.push(p);
+			});
+			await PersonEmail.bulkCreate(emails);
+		}
+	});
+}
+
+Importer.prototype.loadFromImportTable=async function() {
+	const {importMapping,sqlWrapper}=this;
+	const {primaryType:primaryTypeName}=importMapping;
+	const importModel = await importMapping.getImportModel();
+	const baseType = await importMapping.getBaseType();
+	const importAssociations = importMapping.getImportAssociations();
+
+	debug('baseType:',baseType);
+	let idField = Object.values(baseType.fields).find(x=>x.primaryKey);
+
+	if(idField) idField = idField.field;
+	else idField='id';
+
+	const idSource = importMapping.getSourceFieldForTarget({field:idField, type:primaryTypeName});
+	if(!idSource) debug('No id source in import, only creating');
+
+	let personIdSource;
+	if(primaryTypeName == 'Person') personIdSource=idSource;
+	else personIdSource = importMapping.getSourceFieldForTarget({field:idField, type:'Person'});
+
+	const personPhoneFields = importMapping.getTargetFieldsForType('PersonPhone');
+	const personEmailFields = importMapping.getTargetFieldsForType('PersonEmail');
+	const primarySourceTargets = importMapping.getSourcesToTargetForType(primaryTypeName);
+
+	const primaryModel = sqlWrapper.getModel(primaryTypeName);
+	// const primaryType = sqlWrapper.getType(primaryTypeName);
+
+	if(!personIdSource && !personPhoneFields.length && !personEmailFields.length) throw new Error('No person identifier present');
+	await sqlWrapper.processPagedQuery(importModel, {
+		include: importAssociations.map(x=>x.reference)
+	}, async function(page) {
+		const bulk = page.map(x => {
+			let person_id;
+
+			if(personIdSource && x[personIdSource.field]) person_id=x[personIdSource.field];
+			if(!person_id && personPhoneFields.length && x['ExistingRecord_PersonPhone']) {
+				person_id = x['ExistingRecord_PersonPhone'].person_id;
+			}
+			if(!person_id && personEmailFields.length && x['ExistingRecord_PersonEmail']) {
+				person_id = x['ExistingRecord_PersonEmail'].person_id;
+			}
+
+			const save = {};
+			if(primaryTypeName == 'Person') save.id=person_id;
+			else save.person_id=person_id;
+			primarySourceTargets.forEach(y => save[y.target.field]=x[y.source]);
+			return save;
+		});
+		// https://sequelize.org/master/class/lib/model.js~Model.html#static-method-bulkCreate
+		const updateOnDuplicate = primarySourceTargets.map(x=>x.target.field);
+		await primaryModel.bulkCreate(bulk, {updateOnDuplicate});
 	});
 }
 Importer.prototype.close=function() {
