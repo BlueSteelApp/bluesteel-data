@@ -48,7 +48,6 @@ Wrapper.buildSequelize = buildSequelize;
 Wrapper.prototype.assembleModels=function(models) {
 	const defined = this.defined = this.defined || {};
 
-	console.log('assembling models',models);
 	if(!models) throw new Error('models is a required parameter');
 	if(typeof models == 'object') models = Object.values(models);
 	if(!models.length) throw new Error('models must be a non empty array or object');
@@ -64,8 +63,6 @@ Wrapper.prototype.assembleModels=function(models) {
 
 		if(defined[name]) throw new Error('model with name '+name+' already exists');
 
-		console.log('Creating model',name);
-
 		if(!name||!fields) throw new Error('name and fields are required for each model');
 		const model=sequelize.define(name,fields,{
 			tableName: tableName||name,
@@ -75,7 +72,6 @@ Wrapper.prototype.assembleModels=function(models) {
 			updatedAt: 'updated_at'
 		});
 		defined[name]=Object.assign({},x,{model});
-		if(x.hooks) console.log(model.hooks);
 	});
 	models.forEach(x => {
 		if(x.associations) x.associations.forEach(a => {
@@ -217,7 +213,6 @@ Wrapper.prototype.runMigrations=async function(migrationsPath) {
 		storageOptions: { sequelize }
 	});
   await umzug.up();
-  // console.log('All migrations performed successfully');
 }
 
 Wrapper.prototype.confirmMigrations=async function(migrationsPath) {
@@ -226,9 +221,7 @@ Wrapper.prototype.confirmMigrations=async function(migrationsPath) {
 	let [results] = await sequelize.query('select * from SequelizeMeta');
 	if(!results||!results.length) throw new Error('invalid migration data - please run migrations to update database');
 	results = results.map(x=>x.name);
-	// console.log('confirmed',results.length,'migrations confirmed');
 	const files = fs.readdirSync(migrationsPath);
-	// console.log('checking against',files);
 
 	const missing = files.filter(x=>!results.find(y=>y==x));
 	if(missing.length) throw new Error('missing '+missing.join(',')+' migrations');
