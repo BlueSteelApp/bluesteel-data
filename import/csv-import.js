@@ -48,7 +48,8 @@ CsvImporter.prototype.runStandardImport=async function() {
 	const header = await this.csvStreamer.getHeader();
 	const sourceFields=header;
 	console.log('Using sourceFields:',sourceFields);
-	const {sourceToTargetMap,deferenceFields}=ImportMapping.getStandardImportDefinitions().Person;
+	const primaryType = (this.options||{}).primaryType||'Person';
+	const {sourceToTargetMap,deferenceFields}=ImportMapping.getStandardImportDefinitions()[primaryType];
 
 	const importMapping = new ImportMapping(this.sqlWrapper,Object.assign({}, this.options, {
 		sourceFields,
@@ -56,7 +57,8 @@ CsvImporter.prototype.runStandardImport=async function() {
 		primaryDereferences:deferenceFields
 	}));
 
-	const importer=new Importer({importMapping, sqlWrapper:this.sqlWrapper});
+	const options=Object.assign({},this.options,{importMapping,sqlWrapper:this.sqlWrapper});
+	const importer=new Importer(options);
 	const stream = this.csvStreamer.getStream();
 	await importer.loadImportTableFromStream({stream});
 	await importer.loadNewPersonRecordsTable();

@@ -31,14 +31,31 @@ function ImportMapping(sqlWrapper,options) {
 }
 ImportMapping.getStandardImportDefinitions=function() {
 	return {
+		SegmentMembership: {
+			sourceToTargetMap: [
+				{source:'person_id', target:{field:'id',type:'Person'}},
+				{source:'given_name', target:{field:'given_name',type:'Person'}},
+				{source:'family_name', target:{field:'family_name',type:'Person'}},
+				{source:'source_code', target:{field:'source_code',type:'Person'}},
+				{source:'email', target: {type:'PersonEmail',field:'email'}},
+				{source:'phone', target: {type:'PersonPhone',field:'phone'}},
+
+				{source:'segment_id', target: {type:'Segment', field:'id'}},
+
+				{source:'id', target: {type:'SegmentMembership', field:'id'}},
+				{source:'segment_id', target: {type:'SegmentMembership', field:'segment_id'}},
+				{source:'person_id', target:{field:'person_id',type:'SegmentMembership'}},
+			],
+			deferenceFields: ['email','phone']
+		},
 		Person: {
 			sourceToTargetMap: [
 				{source:'person_id',target:{field:'id'}},
 				{source:'given_name', target:{field:'given_name'}},
 				{source:'family_name', target:{field:'family_name'}},
 				{source:'source_code', target:{field:'source_code'}},
-				{source:'email', target: {type:'PersonEmail',field:'email'}},
-				{source:'phone', target: {type:'PersonPhone',field:'phone'}},
+				{source:'email', target:{type:'PersonEmail',field:'email'}},
+				{source:'phone', target:{type:'PersonPhone',field:'phone'}},
 
 				// common aliases
 				{source:'givenName', target:{field:'given_name'}},
@@ -437,7 +454,9 @@ Importer.prototype.loadFromImportTable=async function() {
 			return save;
 		});
 		// https://sequelize.org/master/class/lib/model.js~Model.html#static-method-bulkCreate
-		const updateOnDuplicate = primarySourceTargets.map(x=>x.target.field);
+		let updateOnDuplicate = primarySourceTargets.map(x=>x.target.field);
+		console.log(updateOnDuplicate);
+		if(!updateOnDuplicate.length) updateOnDuplicate = undefined;
 		await primaryModel.bulkCreate(bulk, {updateOnDuplicate});
 	});
 }
