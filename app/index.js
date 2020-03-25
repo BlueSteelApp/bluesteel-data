@@ -11,7 +11,7 @@ require('dotenv').config();
 
 async function init() {
 	const sequelize = buildSequelize();
-	const configuredModules = new ModulesWrapper({sequelize});
+	const configuredModules = new ModulesWrapper({sequelize,all_modules:true});
 	console.log(configuredModules);
 	configuredModules.initialize();
 	const gqlModules = configuredModules.getGql();

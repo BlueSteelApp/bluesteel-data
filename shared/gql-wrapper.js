@@ -35,8 +35,10 @@ function getGqlType({type,gqlType}) {
 
 Wrapper.prototype.getSaveDefAndResolvers=function(type) {
 	const{sqlWrapper}=this;
-	const {model,name,fields, associations}=type;
+	const {model,name,fields, associations, allow_create=true,allow_update=true}=type;
 	if(!model||!name)throw new Error('model and name required, got:'+JSON.stringify(type));
+
+	if(!allow_create&&!allow_update) return null;
 
 	const saveExtensions=[];
 	(associations||[]).forEach(x => {

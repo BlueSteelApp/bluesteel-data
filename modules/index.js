@@ -2,7 +2,20 @@ const SqlWrapper = require('../shared/sql-wrapper');
 const GqlWrapper = require('../shared/gql-wrapper');
 const path=require('path');
 
+const fullModuleList = [
+	'jobs',
+
+	'people',
+	'segments',
+	'person-query',
+	'transactions',
+	'messages',
+	'email'
+];
+
 function ModulesWrapper(options) {
+	options=Object.assign({},options);
+
 	let{sqlWrapper,gqlWrapper}=options;
 	if(!sqlWrapper) {
 		sqlWrapper = new SqlWrapper(options);
@@ -14,17 +27,15 @@ function ModulesWrapper(options) {
 	this.sqlWrapper = sqlWrapper;
 	this.gqlWrapper = gqlWrapper;
 
-	this.installed = [
-		require('./people'),
-		require('./segments'),
-		require('./person-query'),
-		require('./transactions'),
-		require('./messages'),
-		require('./email')
-	];
+	if(options.all_modules) options.modules = fullModuleList;
+	if(!options.modules||!options.modules.length) throw new Error('modules is a required option');
+
+	this.installed = options.modules.map(x => require('./'+x));
 	this.initialized=false;
 	console.error("Fininshed constructor");
 }
+
+ModulesWrapper.fullModuleList=fullModuleList;
 
 ModulesWrapper.prototype.runMigrations=async function() {
 	for(let x in this.installed) {
@@ -56,12 +67,13 @@ ModulesWrapper.prototype.getGql=function() {
 		gqlParts.push(gqlWrapper.getModelDefsAndResolvers(type));
 		gqlParts.push(gqlWrapper.getSaveDefAndResolvers(type));
 	});
+
 	installed.filter(x=>x.gql).forEach(x => {
 		const r = x.gql({sqlWrapper});
 		if(Array.isArray(r)) r.forEach(y=>gqlParts.push(y));
 		else gqlParts.push(r);
 	});
-	return gqlParts;
+	return gqlParts.filter(x=>x);
 };
 
 ModulesWrapper.prototype.close=function() {

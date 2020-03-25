@@ -5,9 +5,7 @@ const through2=require('through2');
 const es=require('event-stream');
 require('dotenv').config();
 
-let globalSqlize;
 function buildSequelize(options) {
-	if(globalSqlize) console.error('already defined globalSqlize');
 	options = options || {};
 
 	const { DATABASE_NAME, DATABASE_USER, DATABASE_PASSWORD } = process.env;
@@ -23,7 +21,7 @@ function buildSequelize(options) {
 		throw new Error('auth overrides (name, user, or password) were not fully set');
 	}
 
-	return globalSqlize = new Sequelize(name,user,password, {
+	return new Sequelize(name,user,password, {
 		host: process.env.DATABASE_HOST,
 		port: process.env.DATABASE_PORT,
 		dialect: 'mysql',

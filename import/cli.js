@@ -8,7 +8,7 @@ if(!filename) {
 	filename=type;
 	type='Person';
 }
-if(!filename) throw new Error('expected format: node cli <filename>');
+if(!filename) throw new Error('expected format: node cli <?type> <filename>');
 
 (async function() {
 	const sequelize=buildSequelize();
