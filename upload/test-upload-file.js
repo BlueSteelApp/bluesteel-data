@@ -10,7 +10,7 @@ form.append('upload_file', fs.createReadStream(filename));
 
 axios.create({
 	headers: form.getHeaders()
-}).post(upload_uri, form).then(response => {
+}).post(upload_uri, form).then(response => response.json()).then(response => {
 	console.log(response);
 }).catch(error => {
 	if (error.response) {

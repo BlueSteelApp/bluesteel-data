@@ -52,6 +52,7 @@ FileUpload.prototype.uploadRequest=async function({req,res},options) {
 	if(!upload_id) throw new Error('no upload_id provided in options');
 	const upload=await this.Upload.findByPk(upload_id);
 	if(!upload) throw new Error('invalid upload_id: '+upload_id);
+	if(upload.status != 'waiting') throw new Error('upload already in progress');
 
 	upload.status = 'started';
 	await upload.save();
@@ -65,6 +66,7 @@ FileUpload.prototype.uploadRequest=async function({req,res},options) {
 		});
 	});
 
+	upload.file_path=path.join(BLUESTEEL_UPLOAD_FILE_TMP_DIR,upload.filename,req.file.filename);
 	upload.status='complete';
 	await upload.save();
 	return result;
