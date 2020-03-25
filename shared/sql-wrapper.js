@@ -87,6 +87,7 @@ Wrapper.prototype.assembleModels=function(models) {
 			createdAt: 'created_at',
 			updatedAt: 'updated_at'
 		});
+		if(x.hooks) console.log(name+' has hooks '+Object.keys(x.hooks),model.hooks);
 		defined[name]=Object.assign({},x,{model});
 	});
 	models.forEach(x => {

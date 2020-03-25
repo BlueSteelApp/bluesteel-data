@@ -9,7 +9,7 @@ const BLUESTEEL_UPLOAD_PORT=4000;
 
 async function init() {
 	const sequelize = buildSequelize();
-	const configuredModules = new ModulesWrapper({sequelize,modules:['uploads']});
+	const configuredModules = new ModulesWrapper({sequelize,modules:['jobs','uploads']});
 	configuredModules.initialize();
 
 	const upload = new FileUpload(configuredModules);

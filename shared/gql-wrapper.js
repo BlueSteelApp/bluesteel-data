@@ -177,15 +177,22 @@ Wrapper.prototype.getModelDefsAndResolvers=function(type) {
 	const fieldResolvers = {};
 	const topLevelResolvers = {};
 	const associationDefs = (associations||[]).map(a => {
+		const aliases = (a.aliases||[]);
+		if(aliases.length !=0 && aliases.length != 2) throw new Error('aliases[] must be null or array with exactly 2 values');
+
 		const targetName=a.name;
-		const targetAssociation = model.associations[targetName];
+		const [aliasedSource, aliasedTarget=targetName] = aliases;
+
+		const targetAssociation = model.associations[aliasedTarget];
 		if(!targetAssociation) {
-			console.log(name,targetName,model.associations);
+			console.log(name,targetName,aliasedTarget,model.associations);
 			throw new Error('invalid - no sequelize association defined between '+name+' and '+targetName);
 		}
+
 		const targetModel = sequelize.model(targetName);
 		if(!targetModel) throw new Error('model with name '+targetName+' does not exist');
-		const reverseAssociation = targetModel.associations[name];
+
+		const reverseAssociation = targetModel.associations[aliasedSource||name];
 		if(!reverseAssociation) {
 			console.log(targetModel.associations);
 			throw new Error('invalid - no reverse association defined from '+targetName+' to '+name);

@@ -15,9 +15,14 @@ module.exports = {
 			},
 			type: {
 				type: Sequelize.ENUM,
-				values: ['import','ping'],
+				values: ['import'],
 				allowNull: false,
 			},
+			job_definition_id: {
+				type: Sequelize.INTEGER(11),
+				allowNull: false
+			},
+
 			status: {
 				type: Sequelize.ENUM,
 				values: ['waiting','queued','started','completed','errored'],
@@ -46,6 +51,11 @@ module.exports = {
 				allowNull: false,
 				defaultValue: Sequelize.literal('CURRENT_TIMESTAMP')
 			}
+		});
+
+		await queryInterface.addIndex('job', {
+			fields: ['type','job_definition_id'],
+			unique: true
 		});
 
 		await queryInterface.createTable('job_data', {

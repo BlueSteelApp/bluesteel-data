@@ -10,11 +10,17 @@ const models = {
 				type: sequelize.STRING(255),
 				allowNull: false,
 			},
+
 			type: {
 				type: sequelize.ENUM,
 				values: ['import'],
 				allowNull: false,
 			},
+			job_definition_id: {
+				type: sequelize.INTEGER(11),
+				allowNull: false
+			},
+
 			status: {
 				type: sequelize.ENUM,
 				values: ['waiting','queued','started','completed','errored'],
@@ -85,6 +91,7 @@ module.exports={
 		const typeDefs=gql`
 		extend type Mutation {
 			pingJob(text:String): Job
+			JobStart(id:ID!): Job
 		}
 		`;
 		const resolvers = {
@@ -93,6 +100,13 @@ module.exports={
 					console.log('building ping job ',args);
 					const result = await Job.create({type:'ping',label:args.text||'ping',status:'queued'});
 					return result;
+				},
+				JobSetQueued: async (root,{id}) => {
+					const job = await Job.findByPk(id);
+					if(job.status != 'waiting') throw new Error('only waiting jobs may be moved to queued');
+					job.status='queued';
+					await job.save();
+					return job;
 				}
 			}
 		};

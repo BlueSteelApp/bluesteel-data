@@ -106,7 +106,7 @@ JobManager.prototype.manage=async function() {
 	try {
 		queued = await this.getQueuedJobs({limit:this.job_limit - active.length});
 	} catch(e) {
-		console.error('failed to get queued jobs');
+		console.error('failed to get queued jobs:\n',e);
 		return;
 	}
 	console.log('queued:',queued);

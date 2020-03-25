@@ -3,7 +3,7 @@ const sequelize = require('sequelize');
 
 module.exports = {
   up: (queryInterface) => {
-		return queryInterface.createTable('import_file', {
+		return queryInterface.createTable('upload_import', {
 			id: {
 				type: sequelize.INTEGER(11),
 				autoIncrement: true,
@@ -16,7 +16,6 @@ module.exports = {
 			},
 			import_raw_table: {
 				type: sequelize.STRING(64),
-				allowNull: false,
 			},
 			upload_id: {
 				type: sequelize.INTEGER(11),
@@ -24,7 +23,6 @@ module.exports = {
 			},
 			status: {
 				type: sequelize.STRING(255),
-				allowNull: false,
 			},
 			created_at: {
 				type: sequelize.DATE,
@@ -40,6 +38,6 @@ module.exports = {
   },
 
   down: (queryInterface) => {
-		return queryInterface.dropTable('import_file');
+		return queryInterface.dropTable('upload_import');
   }
 };

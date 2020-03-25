@@ -26,6 +26,10 @@ module.exports = {
 				allowNull: false,
 				values: ['waiting','started','complete']
 			},
+			on_finish_job_id: {
+				type: Sequelize.INTEGER(11),
+				allowNull: true
+			},
 
 			started_at: {
 				type: Sequelize.DATE,

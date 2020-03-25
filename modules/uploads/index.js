@@ -8,6 +8,12 @@ const models = {
 	upload: {
 		name: 'Upload',
 		tableName: 'upload',
+		hooks: {
+			beforeValidate: async (instance) => {
+				if(!instance.filename) instance.filename = uuid();
+				if(!instance.status) instance.status='waiting';
+			}
+		},
 		fields: {
 			label: {
 				type: sequelize.STRING(255),
@@ -27,6 +33,11 @@ const models = {
 				values: ['waiting','started','complete']
 			},
 
+			on_finish_job_id: {
+				type: sequelize.INTEGER(11),
+				allowNull: true
+			},
+
 			started_at: {
 				type: sequelize.DATE,
 				allowNull: true
@@ -37,7 +48,23 @@ const models = {
 			}
 		},
 		allow_update: false,
-		allow_create: false
+		allow_create: false,
+		associations: [{
+			name: 'Job',
+			build: (Upload,Job) => {
+				Upload.belongsTo(Job, {
+					validate: false,
+					through: 'on_finish_job_id',
+					as: 'OnFinishJob'
+				});
+				Job.hasOne(Upload, {
+					validate: false,
+					foreignKey: 'on_finish_job_id',
+					as: 'TriggeringUpload'
+				});
+			},
+			aliases: ['TriggeringUpload', 'OnFinishJob']
+		}]
 	},
 };
 
@@ -48,12 +75,14 @@ module.exports={
 	gql: ({sqlWrapper}) => {
 		const Upload=sqlWrapper.getModel('Upload');
 		const typeDefs=gql`
-		extend type Upload {
-			post_uri: String!
-		}
-		extend type Mutation {
-			createUpload(label:String!): Upload
-		}
+
+extend type Upload {
+	post_uri: String!
+}
+extend type Mutation {
+	# Represents a file that a user has uploaded, or plans to upload.
+	UploadCreate(label:String!): Upload
+}
 		`;
 		const resolvers = {
 			Upload: {
@@ -63,9 +92,9 @@ module.exports={
 				}
 			},
 			Mutation: {
-				createUpload: async (root,{label}) => {
+				UploadCreate: async (root,{label}) => {
 					const result = await Upload.create({
-						label,status:'waiting', filename: uuid()
+						label,status:'waiting'
 					});
 					return result;
 				}
