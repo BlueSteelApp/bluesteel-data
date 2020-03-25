@@ -43,6 +43,24 @@ function Wrapper(options) {
 }
 Wrapper.buildSequelize = buildSequelize;
 
+Wrapper.prototype.waitForDatabase=async function(count) {
+	if(count === undefined) count = 1;
+	if(count === 5) throw new Error('database failed to come up after 5 waits');
+	try {
+		await this.sequelize.authenticate();
+	} catch(e) {
+		if(e.toString().indexOf('SequelizeConnectionRefusedError') == 0) {
+			console.log(new Date(),'mysql not up, tries:',count);
+			return new Promise((resolve,reject) => setTimeout(async () => {
+				this.waitForDatabase(count+1).then(resolve).catch(reject);
+			},1000*count));
+		}
+		console.log('index:',e.toString().indexOf('SequelizeConnectionRefusedError'));
+		console.log(e);
+		throw e;
+	}
+};
+
 Wrapper.prototype.assembleModels=function(models) {
 	const defined = this.defined = this.defined || {};
 

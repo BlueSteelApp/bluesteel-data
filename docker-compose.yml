@@ -24,11 +24,20 @@ services:
     volumes:
     - "./:/home/node/app"
     command: "node ./modules/migrate"
-    environment:
-    - "DATABASE_HOST=mysql"
-    - "DATABASE_NAME=dev"
-    - "DATABASE_USER=dev"
-    - "DATABASE_PASSWORD=dev"
+    env_file:
+    - "./.dev.env"
+
+  bluesteel-upload:
+    image: "node:13.3"
+    working_dir: /home/node/app
+    volumes:
+    - "./:/home/node/app"
+    - "upload:/tmp/bluesteel/files"
+    command: "node_modules/nodemon/bin/nodemon ./upload/cli"
+    env_file:
+    - "./.dev.env"
+    ports:
+    - "4000:4000"
 
   bluesteel-job-manager:
     image: "node:13.2"
@@ -36,14 +45,8 @@ services:
     volumes:
     - "./:/home/node/app"
     command: "node_modules/nodemon/bin/nodemon ./jobs-manager/cli manager"
-    environment:
-    - "JOB_MANAGER_REDIS_URI=redis://redis:6379"
-    - "BLUESTEEL_JOB_QUEUE_TYPE=bull"
-    - "BLUESTEEL_JOB_QUEUE_JOB_LIMIT=10"
-    - "DATABASE_HOST=mysql"
-    - "DATABASE_NAME=dev"
-    - "DATABASE_USER=dev"
-    - "DATABASE_PASSWORD=dev"
+    env_file:
+    - "./.dev.env"
 
   bluesteel-job-client:
     image: "node:13.2"
@@ -51,10 +54,8 @@ services:
     volumes:
     - "./:/home/node/app"
     command: "node_modules/nodemon/bin/nodemon ./jobs-manager/cli client"
-    environment:
-    - "JOB_MANAGER_REDIS_URI=redis://redis:6379"
-    - "BLUESTEEL_JOB_QUEUE_TYPE=bull"
-    - "BLUESTEEL_JOB_QUEUE_JOB_LIMIT=10"
+    env_file:
+    - "./.dev.env"
 
   bluesteel-core:
     image: "node:13.2"
@@ -65,11 +66,9 @@ services:
     - "./:/home/node/app"
     command: "node_modules/nodemon/bin/nodemon ./app/"
     stop_signal: "-9"
-    environment:
-    - "DATABASE_HOST=mysql"
-    - "DATABASE_NAME=dev"
-    - "DATABASE_USER=dev"
-    - "DATABASE_PASSWORD=dev"
+    env_file:
+    - "./.dev.env"
 
 volumes:
   mysql:
+  upload:

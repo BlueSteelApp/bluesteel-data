@@ -4,6 +4,7 @@ const path=require('path');
 
 const fullModuleList = [
 	'jobs',
+	'uploads',
 
 	'people',
 	'segments',
@@ -38,6 +39,7 @@ function ModulesWrapper(options) {
 ModulesWrapper.fullModuleList=fullModuleList;
 
 ModulesWrapper.prototype.runMigrations=async function() {
+	await this.sqlWrapper.waitForDatabase();
 	for(let x in this.installed) {
 		const m = this.installed[x];
 		let migrationsPath; // =m.migrationsPath||path.join(m.dir,'./migrations');

@@ -7,6 +7,7 @@ const {buildSequelize}=require('../shared/sql-wrapper');
 async function startManager() {
 	const sequelize = buildSequelize();
 	const configuredModules = new ModulesWrapper({sequelize,modules:['jobs']});
+	await configuredModules.sqlWrapper.waitForDatabase();
 	await configuredModules.initialize();
 
 	const Job=configuredModules.sqlWrapper.getModel('Job');
