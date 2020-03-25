@@ -20,7 +20,7 @@ module.exports = {
 			},
 			status: {
 				type: Sequelize.ENUM,
-				values: ['queued','started','completed','errored'],
+				values: ['waiting','queued','started','completed','errored'],
 				allowNull: false
 			},
 

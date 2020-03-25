@@ -17,7 +17,7 @@ const models = {
 			},
 			status: {
 				type: sequelize.ENUM,
-				values: ['queued','started','completed','errored'],
+				values: ['waiting','queued','started','completed','errored'],
 				allowNull: false
 			},
 
