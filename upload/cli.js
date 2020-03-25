@@ -10,12 +10,10 @@ const BLUESTEEL_UPLOAD_PORT=4000;
 async function init() {
 	const sequelize = buildSequelize();
 	const configuredModules = new ModulesWrapper({sequelize,modules:['uploads']});
-	console.log(configuredModules);
 	configuredModules.initialize();
 
 	const upload = new FileUpload(configuredModules);
 	await upload.initialize();
-	console.log('upload:',upload);
 
 	const app = express();
 	app.use(bodyParser.json());
@@ -31,7 +29,6 @@ async function init() {
 			console.error(e);
 			res.status(500).jsonp('Failed to upload');
 		}
-
 	});
 
 	app.listen({ port: BLUESTEEL_UPLOAD_PORT }, () =>
