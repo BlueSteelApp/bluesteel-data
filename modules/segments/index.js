@@ -17,8 +17,8 @@ const models = {
 		}
 	},
 	segment_person_membership: {
-		name: 'SegmentMembership',
-		tableName: 'segment_membership',
+		name: 'SegmentPerson',
+		tableName: 'segment_person',
 		fields: {
 			segment_id: {
 				type: sequelize.INTEGER(11),
@@ -31,28 +31,28 @@ const models = {
 		},
 		associations: [{
 			name: 'Person',
-			build: (SegmentMembership,Person) => {
-				SegmentMembership.belongsTo(Person,{
+			build: (SegmentPerson,Person) => {
+				SegmentPerson.belongsTo(Person,{
 					validate: false,
 					as: 'Person',
 					through: 'person_id'
 				});
-				Person.hasMany(SegmentMembership,{
+				Person.hasMany(SegmentPerson,{
 					validate:false,
-					as: 'SegmentMembership',
+					as: 'SegmentPerson',
 				});
 			}
 		},{
 			name: 'Segment',
-			build: (SegmentMembership,Segment) => {
-				SegmentMembership.belongsTo(Segment,{
+			build: (SegmentPerson,Segment) => {
+				SegmentPerson.belongsTo(Segment,{
 					validate: false,
 					as: 'Segment',
 					through: 'segment_id'
 				});
-				Segment.hasMany(SegmentMembership,{
+				Segment.hasMany(SegmentPerson,{
 					validate:false,
-					as: 'SegmentMembership',
+					as: 'SegmentPerson',
 				});
 			}
 		}]

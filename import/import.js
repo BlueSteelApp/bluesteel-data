@@ -31,7 +31,7 @@ function ImportMapping(sqlWrapper,options) {
 }
 ImportMapping.getStandardImportDefinitions=function() {
 	return {
-		SegmentMembership: {
+		SegmentPerson: {
 			sourceToTargetMap: [
 				{source:'person_id', target:{field:'id',type:'Person'}},
 				{source:'given_name', target:{field:'given_name',type:'Person'}},
@@ -42,9 +42,9 @@ ImportMapping.getStandardImportDefinitions=function() {
 
 				{source:'segment_id', target: {type:'Segment', field:'id'}},
 
-				{source:'id', target: {type:'SegmentMembership', field:'id'}},
-				{source:'segment_id', target: {type:'SegmentMembership', field:'segment_id'}},
-				{source:'person_id', target:{field:'person_id',type:'SegmentMembership'}},
+				{source:'id', target: {type:'SegmentPerson', field:'id'}},
+				{source:'segment_id', target: {type:'SegmentPerson', field:'segment_id'}},
+				{source:'person_id', target:{field:'person_id',type:'SegmentPerson'}},
 			],
 			deferenceFields: ['email','phone']
 		},
