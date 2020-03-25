@@ -102,7 +102,13 @@ JobManager.prototype.run=async function() {
 }
 JobManager.prototype.manage=async function() {
 	const active = await this.jobQueue.getActiveJobs();
-	const queued = await this.getQueuedJobs({limit:this.job_limit - active.length});
+	let queued;
+	try {
+		queued = await this.getQueuedJobs({limit:this.job_limit - active.length});
+	} catch(e) {
+		console.error('failed to get queued jobs');
+		return;
+	}
 	console.log('queued:',queued);
 	for(let q in queued) {
 		const j=queued[q];

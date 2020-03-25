@@ -1,12 +1,12 @@
-const sequelize=require('sequelize');
-module.exports=function() {
-	return {
-		name: 'fileImport',
-		plural: 'fileImports',
-		tableName: 'file_import',
-		fields: {
+'use strict';
+const sequelize = require('sequelize');
+
+module.exports = {
+  up: (queryInterface) => {
+		return queryInterface.createTable('import_file', {
 			id: {
 				type: sequelize.INTEGER(11),
+				autoIncrement: true,
 				allowNull: false,
 				primaryKey: true
 			},
@@ -14,12 +14,12 @@ module.exports=function() {
 				type: sequelize.STRING(255),
 				allowNull: false,
 			},
-			import_table: {
+			import_raw_table: {
 				type: sequelize.STRING(64),
 				allowNull: false,
 			},
-			filepath: {
-				type: sequelize.TEXT(),
+			upload_id: {
+				type: sequelize.INTEGER(11),
 				allowNull: false,
 			},
 			status: {
@@ -36,6 +36,10 @@ module.exports=function() {
 				allowNull: false,
 				defaultValue: sequelize.literal('CURRENT_TIMESTAMP')
 			}
-		}
-	};
+		});
+  },
+
+  down: (queryInterface) => {
+		return queryInterface.dropTable('import_file');
+  }
 };

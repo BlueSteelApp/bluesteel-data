@@ -5,6 +5,7 @@ const path=require('path');
 const fullModuleList = [
 	'jobs',
 	'uploads',
+	'imports',
 
 	'people',
 	'segments',
