@@ -50,7 +50,6 @@
   "husky": {
     "hooks": {
       "pre-commit": "lint-staged && npm run build-schema-file && git add ./schema.graphql"
-			]
     }
   },
   "lint-staged": {
