@@ -1,5 +1,7 @@
 const sequelize=require('sequelize');
 const {gql}=require('apollo-server-express');
+const UploadImporter=require('../../import/upload-import');
+
 const models = {
 	upload_import: {
 		name: 'UploadImport',
@@ -60,6 +62,16 @@ module.exports={
 	name:'Imports',
 	dir: __dirname,
 	models,
+	jobs: [{
+		type: "import",
+		run: async (job, {sqlWrapper}) => {
+			const UploadImport = sqlWrapper.getModel('UploadImport');
+			const uploadImport = await UploadImport.findByPk(job.job_definition_id);
+			if(!uploadImport) throw new Error('unable to load upload import for job '+job.id);
+			const importer = new UploadImporter({sqlWrapper, uploadImport});
+			return importer.run();
+		}
+	}],
 	gql: ({sqlWrapper,sqlWrapper:{sequelize}}) => {
 		const Job = sqlWrapper.getModel('Job');
 		const Upload = sqlWrapper.getModel('Upload');

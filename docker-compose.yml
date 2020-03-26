@@ -53,6 +53,7 @@ services:
     working_dir: /home/node/app
     volumes:
     - "./:/home/node/app"
+    - "upload:/tmp/bluesteel/files"
     command: "node_modules/nodemon/bin/nodemon ./jobs-manager/cli client"
     env_file:
     - "./.dev.env"

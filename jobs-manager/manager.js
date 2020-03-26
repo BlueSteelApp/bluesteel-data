@@ -78,9 +78,10 @@ JobQueue.prototype.start=async function() {
 JobQueue.prototype.getActiveJobs=async function() {
 	return this.server.getActiveJobs();
 }
-JobQueue.prototype.addJob=async function({id,type,data}) {
+JobQueue.prototype.addJob=async function(job) {
+	const {id}=job;
 	if(!id) throw new Error('job must have id');
-	await this.server.addJob({id,type,data});
+	await this.server.addJob(job);
 	return true;
 }
 
@@ -109,7 +110,6 @@ JobManager.prototype.manage=async function() {
 		console.error('failed to get queued jobs:\n',e);
 		return;
 	}
-	console.log('queued:',queued);
 	for(let q in queued) {
 		const j=queued[q];
 		try {

@@ -3,7 +3,7 @@ const parseSync=require('csv-parse/lib/sync')
 const fs=require('fs');
 const through2=require('through2');
 const firstline=require('firstline');
-const {Importer,ImportMapping}=require('./import');
+const {Importer,ImportMapping}=require('./importer');
 
 function CsvStreamer(options) {
 	const {filename}=options;

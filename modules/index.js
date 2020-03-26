@@ -34,10 +34,27 @@ function ModulesWrapper(options) {
 
 	this.installed = options.modules.map(x => require('./'+x));
 	this.initialized=false;
-	console.error("Fininshed constructor");
+
+	this.jobRunnerDefinitions={};
+	this.installed.filter(x=>x.jobs).forEach(m => {
+		m.jobs.forEach(j => {
+			const {type:job_type,run}=j;
+			if(!job_type) throw new Error('job_type is required for job runner definitions');
+			if(typeof run != 'function') throw new Error('job runner definition must have a .run function');
+			if(this.jobRunnerDefinitions[job_type]) throw new Error('job runner definition already exists for: '+job_type);
+			this.jobRunnerDefinitions[job_type] = j;
+		});
+	});
 }
 
 ModulesWrapper.fullModuleList=fullModuleList;
+
+ModulesWrapper.prototype.getJobRunnerDefinition=function({job_type}) {
+	if(!job_type) throw new Error('options.job_type is required');
+	const def = this.jobRunnerDefinitions[job_type];
+	if(!def) throw new Error('no job runner definition found for: '+job_type);
+	return def;
+}
 
 ModulesWrapper.prototype.runMigrations=async function() {
 	await this.sqlWrapper.waitForDatabase();
