@@ -24,7 +24,20 @@ const models = {
 		allow_update: false,
 		allow_create: false,
 		associations: [{
-			// still not quite working
+			name: 'Upload',
+			build: (UploadImport,Upload) => {
+				Upload.hasOne(UploadImport, {
+					validate: false,
+					foreignKey: 'upload_id',
+					as: 'UploadImport'
+				});
+				UploadImport.belongsTo(Upload, {
+					validate: false,
+					through: 'upload_id',
+					as: 'Upload'
+				});
+			}
+		},{
 			name: 'Job',
 			build: (UploadImport,Job) => {
 				UploadImport.hasOne(Job, {
@@ -34,7 +47,8 @@ const models = {
 				});
 				Job.belongsTo(UploadImport, {
 					validate: false,
-					through: 'job_definition_id',
+					targetKey: 'id',
+					foreignKey: 'job_definition_id',
 					as: 'UploadImport'
 				});
 			}
@@ -73,7 +87,7 @@ module.exports={
 						job_definition_id: uploadImport.id
 					}, {transaction});
 
-					upload.on_finish_job_id = job.id;
+					upload.on_completed_job_id = job.id;
 					await upload.save({transaction});
 
 					return uploadImport;

@@ -1,5 +1,5 @@
-email,firstName,lastName
-jfkenel@gmail.com,justin,kenel
-jk2@gmail.com,not,justin
-jk3@gmail.com,anoter,hst
-jk3@gmail.com,anoter,hst
+email,given_name,family_name,segment_id
+jfkenel@gmail.com,justin,kenel,1
+jk2@gmail.com,not,justin,1
+jk3@gmail.com,anoter,hst,1
+jk3@gmail.com,anoter,hst,1
