@@ -26,7 +26,7 @@ module.exports = {
 				allowNull: false,
 				values: ['waiting','started','complete']
 			},
-			on_finish_job_id: {
+			on_completed_job_id: {
 				type: Sequelize.INTEGER(11),
 				allowNull: true
 			},

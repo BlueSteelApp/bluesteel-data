@@ -181,7 +181,7 @@ Wrapper.prototype.getModelDefsAndResolvers=function(type) {
 		if(aliases.length !=0 && aliases.length != 2) throw new Error('aliases[] must be null or array with exactly 2 values');
 
 		const targetName=a.name;
-		const [aliasedSource, aliasedTarget=targetName] = aliases;
+		const [aliasedSource=name, aliasedTarget=targetName] = aliases;
 
 		const targetAssociation = model.associations[aliasedTarget];
 		if(!targetAssociation) {
@@ -202,12 +202,12 @@ Wrapper.prototype.getModelDefsAndResolvers=function(type) {
 		if(targetAssociation.isMultiAssociation) {
 			defs.push(`
 				extend type ${name} {
-					${targetName}List: [${targetName}]
+					${aliasedTarget}List: [${targetName}]
 				}
 			`);
-			fieldResolvers[targetName+'List'] = async ({id}) => {
+			fieldResolvers[aliasedTarget+'List'] = async ({id}) => {
 				const root = await model.findByPk(id);try {
-					const r = await root['get'+targetName]();
+					const r = await root['get'+aliasedTarget]();
 					return r;
 				} catch(e) {
 					console.error(e);
@@ -217,13 +217,13 @@ Wrapper.prototype.getModelDefsAndResolvers=function(type) {
 		} else {
 			defs.push(`
 				extend type ${name} {
-					${targetName}: ${targetName}
+					${aliasedTarget}: ${targetName}
 				}
 			`);
-			fieldResolvers[targetName] = async ({id}) => {
+			fieldResolvers[aliasedTarget] = async ({id}) => {
 				const root = await model.findByPk(id);
 				try {
-					const r = await root['get'+targetName]();
+					const r = await root['get'+aliasedTarget]();
 					return r;
 				} catch(e) {
 					console.error(e);
@@ -235,15 +235,15 @@ Wrapper.prototype.getModelDefsAndResolvers=function(type) {
 		if(reverseAssociation.isMultiAssociation) {
 			defs.push(`
 				extend type ${targetName} {
-					${name}List: [${name}]
+					${aliasedSource}List: [${name}]
 				}
 			`);
 			topLevelResolvers[targetName]={
-				[name+'List']: async ({id}) => {
+				[aliasedSource+'List']: async ({id}) => {
 					const root=await targetModel.findByPk(id);
 					// const accessor=reverseAssociation.get;
 					try {
-						return await root['get'+name]();
+						return await root['get'+aliasedSource]();
 					} catch(e) {
 						console.error(e);
 						throw e;
@@ -253,14 +253,14 @@ Wrapper.prototype.getModelDefsAndResolvers=function(type) {
 		} else {
 			defs.push(`
 				extend type ${targetName} {
-					${name}: ${name}
+					${aliasedSource}: ${name}
 				}
 			`);
 			topLevelResolvers[targetName]={
-				[name]: async ({id}) => {
+				[aliasedSource]: async ({id}) => {
 					const root=await targetModel.findByPk(id);
 					try {
-						return await root['get'+name]();
+						return await root['get'+aliasedSource]();
 					} catch(e) {
 						console.error(e);
 						throw e;

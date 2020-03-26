@@ -8,12 +8,6 @@ const models = {
 	upload: {
 		name: 'Upload',
 		tableName: 'upload',
-		hooks: {
-			beforeValidate: async (instance) => {
-				if(!instance.filename) instance.filename = uuid();
-				if(!instance.status) instance.status='waiting';
-			}
-		},
 		fields: {
 			label: {
 				type: sequelize.STRING(255),
@@ -22,6 +16,7 @@ const models = {
 			filename: {
 				type: sequelize.STRING(255),
 				allowNull: false,
+				defaultValue: () => uuid()
 			},
 			file_path: {
 				type: sequelize.TEXT(),
@@ -30,10 +25,11 @@ const models = {
 			status: {
 				type: sequelize.ENUM(),
 				allowNull: false,
-				values: ['waiting','started','complete']
+				values: ['waiting','started','complete'],
+				defaultValue: 'waiting'
 			},
 
-			on_finish_job_id: {
+			on_completed_job_id: {
 				type: sequelize.INTEGER(11),
 				allowNull: true
 			},
@@ -52,18 +48,19 @@ const models = {
 		associations: [{
 			name: 'Job',
 			build: (Upload,Job) => {
-				Upload.belongsTo(Job, {
-					validate: false,
-					through: 'on_finish_job_id',
-					as: 'OnFinishJob'
-				});
 				Job.hasOne(Upload, {
 					validate: false,
-					foreignKey: 'on_finish_job_id',
+					foreignKey: 'on_completed_job_id',
 					as: 'TriggeringUpload'
 				});
+				Upload.belongsTo(Job, {
+					validate: false,
+					through: 'on_completed_job_id',
+					as: 'OnCompletedJob'
+				});
+
 			},
-			aliases: ['TriggeringUpload', 'OnFinishJob']
+			aliases: ['TriggeringUpload', 'OnCompletedJob']
 		}]
 	},
 };
