@@ -24,4 +24,4 @@ async function init() {
 	fs.writeFileSync(path.join(__dirname,'../schema.graphql'),printSchema(schema));
 }
 
-init();
+init().catch(e => {throw e;});
