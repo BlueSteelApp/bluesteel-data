@@ -11,7 +11,8 @@
     "build:watch": "webpack --watch",
     "migrate:full": "node ./modules/migrate.js",
     "run": "node ./app/",
-    "run:watch": "nodemon ./app"
+    "run:watch": "nodemon ./app",
+		"build-schema": "node ./modules/build-schemap-file"
   },
   "author": "Chris Steele",
   "license": "ISC",
