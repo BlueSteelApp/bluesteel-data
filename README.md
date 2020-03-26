@@ -24,6 +24,20 @@ made in local files will cause services to re-run.
 The configuration for the docker containers can be found in `.dev.env`. All shared development environment variables
 should go in that file.
 
+# Core libraries
+
+## Persistence
+
+BlueSteel uses [sequelize](https://sequelize.org/v5/) for managing a MySQL backed persistence, as well as managing automated database migrations.
+
+## Message Queue
+
+BlueSteel uses [bull](https://github.com/OptimalBits/bull) as the default implementation of job management. Bull is backed by redis.
+
+## API Layer
+
+BlueSteel uses [apollo](https://www.apollographql.com/) to expose a unified graphql API for consumption by the ui.
+
 # Modules and Services
 
 BlueSteel is composed of several services, each of which is composed of isolated or shared modules. The modules
