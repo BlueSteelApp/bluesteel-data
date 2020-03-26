@@ -77,7 +77,7 @@ extend type Upload {
 	post_uri: String!
 }
 extend type Mutation {
-	####
+	###
 	Represents a file that a user has uploaded, or plans to upload. To upload the
 	file, make a multi-form POST request to the location specified by Upload.post_uri.
 
