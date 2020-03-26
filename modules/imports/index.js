@@ -82,14 +82,14 @@ module.exports={
 			Creates the following objects:
 			- Upload: allowing a user to upload a file to be import once complete
 			- UploadImport: the configuration for importing the uploaded file
-			- Job: status set to "waiting". will be set to "queued" upon completion of the upload
+			- Job: status set to 'waiting'. will be set to 'queued' upon completion of the upload
 			"""
 			UploadImportJobCreate(label:String, import_type: String!): UploadImport
 
 			"""
 			Similar to UploadImportJobCreate, except it creates the UploadImport and Job
 			based on a previously existing Upload. The Job will be set to "waiting" - it will not
-			start until you explicitly call "Mutation.JobStart"
+			start until you explicitly call 'Mutation.JobStart'
 			"""
 			UploadImportCreate(label:String, import_type: String!, upload_id:ID!): UploadImport
 		}`;
