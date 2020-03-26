@@ -1,0 +1,492 @@
+type Campaign {
+  id: ID!
+  label: String
+  created_at: Date
+  updated_at: Date
+  MessageSetList: [MessageSet]
+}
+
+input CampaignFilter {
+  ids: [ID]
+  label: String
+  created_before: Date
+  created_after: Date
+  updated_before: Date
+  updated_after: Date
+}
+
+input CampaignSave {
+  id: ID
+  label: String
+}
+
+scalar Date
+
+"""An email string value. Is not validated immediately."""
+scalar Email
+
+type EmailBlast {
+  id: ID!
+  label: String
+  message_set_id: Int!
+  query_id: Int!
+  subject: String!
+  from_name: String!
+  from_email: String!
+  html_body: String!
+  text_body: String!
+  created_at: Date
+  updated_at: Date
+  MessageSet: MessageSet
+}
+
+input EmailBlastFilter {
+  ids: [ID]
+  label: String
+  message_set_id: Int
+  query_id: Int
+  subject: String
+  from_name: String
+  from_email: String
+  html_body: String
+  text_body: String
+  created_before: Date
+  created_after: Date
+  updated_before: Date
+  updated_after: Date
+}
+
+input EmailBlastSave {
+  id: ID
+  label: String
+  message_set_id: Int
+  query_id: Int
+  subject: String
+  from_name: String
+  from_email: String
+  html_body: String
+  text_body: String
+}
+
+type EmailTemplate {
+  id: ID!
+  label: String
+  created_at: Date
+  updated_at: Date
+}
+
+input EmailTemplateFilter {
+  ids: [ID]
+  label: String
+  created_before: Date
+  created_after: Date
+  updated_before: Date
+  updated_after: Date
+}
+
+input EmailTemplateSave {
+  id: ID
+  label: String
+}
+
+type Job {
+  id: ID!
+  label: String!
+  type: String!
+  job_definition_id: Int!
+  status: String!
+  started_at: Date
+  completed_at: Date
+  errored_at: Date
+  created_at: Date
+  updated_at: Date
+  JobData: JobData
+  TriggeringUpload: Upload
+  UploadImport: UploadImport
+}
+
+type JobData {
+  id: ID!
+  job_id: Int!
+  output: String
+  error_message: String
+  created_at: Date
+  updated_at: Date
+  Job: Job
+}
+
+input JobDataFilter {
+  ids: [ID]
+  job_id: Int
+  output: String
+  error_message: String
+  created_before: Date
+  created_after: Date
+  updated_before: Date
+  updated_after: Date
+}
+
+input JobFilter {
+  ids: [ID]
+  label: String
+  type: String
+  job_definition_id: Int
+  status: String
+  started_at: Date
+  completed_at: Date
+  errored_at: Date
+  created_before: Date
+  created_after: Date
+  updated_before: Date
+  updated_after: Date
+}
+
+scalar JSON
+
+type ListMetadata {
+  count: Int!
+}
+
+type MessageSet {
+  id: ID!
+  campaign_id: Int!
+  label: String
+  created_at: Date
+  updated_at: Date
+  Campaign: Campaign
+  EmailBlastList: [EmailBlast]
+}
+
+input MessageSetFilter {
+  ids: [ID]
+  campaign_id: Int
+  label: String
+  created_before: Date
+  created_after: Date
+  updated_before: Date
+  updated_after: Date
+}
+
+input MessageSetSave {
+  id: ID
+  campaign_id: Int
+  label: String
+}
+
+type Mutation {
+  PersonSave(record: PersonSave!): Person
+  PersonDelete(id: ID!): Person
+  PersonEmailSave(record: PersonEmailSave!): PersonEmail
+  PersonEmailDelete(id: ID!): PersonEmail
+  PersonPhoneSave(record: PersonPhoneSave!): PersonPhone
+  PersonPhoneDelete(id: ID!): PersonPhone
+  SegmentSave(record: SegmentSave!): Segment
+  SegmentDelete(id: ID!): Segment
+  SegmentPersonSave(record: SegmentPersonSave!): SegmentPerson
+  SegmentPersonDelete(id: ID!): SegmentPerson
+  PersonQuerySave(record: PersonQuerySave!): PersonQuery
+  PersonQueryDelete(id: ID!): PersonQuery
+  TransactionSave(record: TransactionSave!): Transaction
+  TransactionDelete(id: ID!): Transaction
+  CampaignSave(record: CampaignSave!): Campaign
+  CampaignDelete(id: ID!): Campaign
+  MessageSetSave(record: MessageSetSave!): MessageSet
+  MessageSetDelete(id: ID!): MessageSet
+  EmailBlastSave(record: EmailBlastSave!): EmailBlast
+  EmailBlastDelete(id: ID!): EmailBlast
+  EmailTemplateSave(record: EmailTemplateSave!): EmailTemplate
+  EmailTemplateDelete(id: ID!): EmailTemplate
+  pingJob(text: String): Job
+  JobStart(id: ID!): Job
+  UploadCreate(label: String!): Upload
+  UploadImportJobCreate(label: String, import_type: String!): UploadImport
+}
+
+type Person {
+  id: ID!
+  given_name: String
+  family_name: String
+  source_code: String
+  created_at: Date
+  updated_at: Date
+  PersonEmailList: [PersonEmail]
+  PersonPhoneList: [PersonPhone]
+  SegmentPersonList: [SegmentPerson]
+  TransactionList: [Transaction]
+}
+
+type PersonEmail {
+  id: ID!
+  email: Email!
+  person_id: Int!
+  created_at: Date
+  updated_at: Date
+  Person: Person
+}
+
+input PersonEmailFilter {
+  ids: [ID]
+  email: Email
+  person_id: Int
+  created_before: Date
+  created_after: Date
+  updated_before: Date
+  updated_after: Date
+}
+
+input PersonEmailSave {
+  id: ID
+  email: Email
+  person_id: Int
+}
+
+input PersonFilter {
+  ids: [ID]
+  given_name: String
+  family_name: String
+  source_code: String
+  created_before: Date
+  created_after: Date
+  updated_before: Date
+  updated_after: Date
+}
+
+input PersonFilterExtra {
+  ids: [ID]
+  given_name: String
+  family_name: String
+  email: Email
+  phone: Phone
+  source_code: String
+}
+
+type PersonPhone {
+  id: ID!
+  phone: Phone!
+  person_id: Int!
+  created_at: Date
+  updated_at: Date
+  Person: Person
+}
+
+input PersonPhoneFilter {
+  ids: [ID]
+  phone: Phone
+  person_id: Int
+  created_before: Date
+  created_after: Date
+  updated_before: Date
+  updated_after: Date
+}
+
+input PersonPhoneSave {
+  id: ID
+  phone: Phone
+  person_id: Int
+}
+
+type PersonQuery {
+  id: ID!
+  label: String!
+  query: JSON
+  created_at: Date
+  updated_at: Date
+}
+
+input PersonQueryFilter {
+  ids: [ID]
+  label: String
+  query: JSON
+  created_before: Date
+  created_after: Date
+  updated_before: Date
+  updated_after: Date
+}
+
+input PersonQuerySave {
+  id: ID
+  label: String
+  query: JSON
+}
+
+input PersonSave {
+  id: ID
+  given_name: String
+  family_name: String
+  source_code: String
+  PersonEmail: [PersonEmailSave]
+  PersonPhone: [PersonPhoneSave]
+}
+
+scalar Phone
+
+type Query {
+  Job(id: ID!): Job
+  JobList(filter: JobFilter, pageSize: Int, page: Int): [Job]
+  JobData(id: ID!): JobData
+  JobDataList(filter: JobDataFilter, pageSize: Int, page: Int): [JobData]
+  Upload(id: ID!): Upload
+  UploadList(filter: UploadFilter, pageSize: Int, page: Int): [Upload]
+  UploadImport(id: ID!): UploadImport
+  UploadImportList(filter: UploadImportFilter, pageSize: Int, page: Int): [UploadImport]
+  Person(id: ID!): Person
+  PersonList(filter: PersonFilter, pageSize: Int, page: Int): [Person]
+  PersonEmail(id: ID!): PersonEmail
+  PersonEmailList(filter: PersonEmailFilter, pageSize: Int, page: Int): [PersonEmail]
+  PersonPhone(id: ID!): PersonPhone
+  PersonPhoneList(filter: PersonPhoneFilter, pageSize: Int, page: Int): [PersonPhone]
+  Segment(id: ID!): Segment
+  SegmentList(filter: SegmentFilter, pageSize: Int, page: Int): [Segment]
+  SegmentPerson(id: ID!): SegmentPerson
+  SegmentPersonList(filter: SegmentPersonFilter, pageSize: Int, page: Int): [SegmentPerson]
+  PersonQuery(id: ID!): PersonQuery
+  PersonQueryList(filter: PersonQueryFilter, pageSize: Int, page: Int): [PersonQuery]
+  Transaction(id: ID!): Transaction
+  TransactionList(filter: TransactionFilter, pageSize: Int, page: Int): [Transaction]
+  Campaign(id: ID!): Campaign
+  CampaignList(filter: CampaignFilter, pageSize: Int, page: Int): [Campaign]
+  MessageSet(id: ID!): MessageSet
+  MessageSetList(filter: MessageSetFilter, pageSize: Int, page: Int): [MessageSet]
+  EmailBlast(id: ID!): EmailBlast
+  EmailBlastList(filter: EmailBlastFilter, pageSize: Int, page: Int): [EmailBlast]
+  EmailTemplate(id: ID!): EmailTemplate
+  EmailTemplateList(filter: EmailTemplateFilter, pageSize: Int, page: Int): [EmailTemplate]
+  PersonListExtra(filter: PersonFilterExtra, pageSize: Int, page: Int): [Person]
+}
+
+type Segment {
+  id: ID!
+  label: String!
+  description: String
+  created_at: Date
+  updated_at: Date
+  SegmentPersonList: [SegmentPerson]
+}
+
+input SegmentFilter {
+  ids: [ID]
+  label: String
+  description: String
+  created_before: Date
+  created_after: Date
+  updated_before: Date
+  updated_after: Date
+}
+
+type SegmentPerson {
+  id: ID!
+  segment_id: Int!
+  person_id: Int!
+  created_at: Date
+  updated_at: Date
+  Person: Person
+  Segment: Segment
+}
+
+input SegmentPersonFilter {
+  ids: [ID]
+  segment_id: Int
+  person_id: Int
+  created_before: Date
+  created_after: Date
+  updated_before: Date
+  updated_after: Date
+}
+
+input SegmentPersonSave {
+  id: ID
+  segment_id: Int
+  person_id: Int
+}
+
+input SegmentSave {
+  id: ID
+  label: String
+  description: String
+}
+
+type Transaction {
+  id: ID!
+  person_id: Int!
+  amount: String!
+  ts: Date!
+  source_code: String
+  created_at: Date
+  updated_at: Date
+  Person: Person
+}
+
+input TransactionFilter {
+  ids: [ID]
+  person_id: Int
+  amount: String
+  ts: Date
+  source_code: String
+  created_before: Date
+  created_after: Date
+  updated_before: Date
+  updated_after: Date
+}
+
+input TransactionSave {
+  id: ID
+  person_id: Int
+  amount: String
+  ts: Date
+  source_code: String
+}
+
+type Upload {
+  id: ID!
+  label: String!
+  filename: String!
+  file_path: String
+  status: String!
+  on_completed_job_id: Int
+  started_at: Date
+  completed_at: Date
+  created_at: Date
+  updated_at: Date
+  OnCompletedJob: Job
+  UploadImport: UploadImport
+  post_uri: String!
+}
+
+input UploadFilter {
+  ids: [ID]
+  label: String
+  filename: String
+  file_path: String
+  status: String
+  on_completed_job_id: Int
+  started_at: Date
+  completed_at: Date
+  created_before: Date
+  created_after: Date
+  updated_before: Date
+  updated_after: Date
+}
+
+type UploadImport {
+  id: ID!
+  import_type: String!
+  import_raw_table: String!
+  upload_id: Int!
+  status: String
+  created_at: Date
+  updated_at: Date
+  Upload: Upload
+  Job: Job
+}
+
+input UploadImportFilter {
+  ids: [ID]
+  import_type: String
+  import_raw_table: String
+  upload_id: Int
+  status: String
+  created_before: Date
+  created_after: Date
+  updated_before: Date
+  updated_after: Date
+}
