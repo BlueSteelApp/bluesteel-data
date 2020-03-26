@@ -90,7 +90,10 @@ module.exports={
 		const Job=sqlWrapper.getModel('Job');
 		const typeDefs=gql`
 		extend type Mutation {
-			pingJob(text:String): Job
+			"""
+			Set the status of a Job to "queued". This can only be called on Jobs that
+			currently have status = "waiting".
+			"""
 			JobStart(id:ID!): Job
 		}
 		`;

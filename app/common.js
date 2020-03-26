@@ -8,9 +8,6 @@ module.exports={
 	}
 	scalar Date
 
-	"""
-	An email string value. Is not validated immediately.
-	"""
 	scalar Email
 	scalar Phone
 	scalar JSON
