@@ -91,8 +91,8 @@ module.exports={
 		const typeDefs=gql`
 		extend type Mutation {
 			"""
-			Set the status of a Job to "queued". This can only be called on Jobs that
-			currently have status = "waiting".
+			Set the status of a Job to 'queued'. This can only be called on Jobs that
+			currently have status = 'waiting'.
 			"""
 			JobStart(id:ID!): Job
 		}

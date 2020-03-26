@@ -197,10 +197,17 @@ type Mutation {
   EmailTemplateDelete(id: ID!): EmailTemplate
 
   """
-  Set the status of a Job to "queued". This can only be called on Jobs that
-  currently have status = "waiting".
+  Set the status of a Job to 'queued'. This can only be called on Jobs that
+  currently have status = 'waiting'.
   """
   JobStart(id: ID!): Job
+
+  """
+  Represents a file that a user has uploaded, or plans to upload. To upload the
+  file, make a multi-form POST request to the location specified by Upload.post_uri.
+  
+  The file form should be 'upload_file'.
+  """
   UploadCreate(label: String!): Upload
 
   """

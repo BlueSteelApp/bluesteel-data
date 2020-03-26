@@ -89,9 +89,14 @@ ModulesWrapper.prototype.getGql=function() {
 	});
 
 	installed.filter(x=>x.gql).forEach(x => {
-		const r = x.gql({sqlWrapper});
-		if(Array.isArray(r)) r.forEach(y=>gqlParts.push(y));
-		else gqlParts.push(r);
+		try {
+			const r = x.gql({sqlWrapper});
+			if(Array.isArray(r)) r.forEach(y=>gqlParts.push(y));
+			else gqlParts.push(r);
+		} catch(e) {
+			console.log('Failed for: ',x.name);
+			throw e;
+		}
 	});
 	return gqlParts.filter(x=>x);
 };
