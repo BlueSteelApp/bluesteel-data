@@ -41,7 +41,7 @@ AuthHandler.prototype.attachUserToRequest=async function(req) {
 	const{external_id,external_source, external={}}=authedUser;
 	if(!external_id||!external_source) throw new Error('Missing external_id or external_source from auth source');
 
-	const matches = await this.User.findAll({external_id,external_source});
+	const matches = await this.User.findAll({where:{external_id,external_source}});
 	if(matches.length>1) throw new Error('invalid table definition - multiple users returned');
 
 	let user = matches[0];
