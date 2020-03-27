@@ -3,6 +3,8 @@ const GqlWrapper = require('../shared/gql-wrapper');
 const path=require('path');
 
 const fullModuleList = [
+	'users',
+
 	'jobs',
 	'uploads',
 	'imports',

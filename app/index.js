@@ -2,6 +2,7 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const { ApolloServer } = require('apollo-server-express');
 const cors = require('cors');
+const AuthHandler = require('../auth');
 
 const {buildSequelize} = require('../shared/sql-wrapper');
 
@@ -21,12 +22,21 @@ async function init() {
 	app.use(bodyParser.urlencoded({ extended: true }));
 	app.use(cors());
 
+	const auth = new AuthHandler({sqlWrapper:configuredModules.sqlWrapper});
+	await auth.initialize();
+
 	const server = new ApolloServer({
+		context: ({req}) => ({user:req.user}),
 		modules: [
 			require('./common'),
 		].concat(gqlModules),
 	});
 
+	app.get('/config', (req,res) => {
+		res.json({auth_method:auth.auth_method});
+	});
+
+	app.use('/graphql', (req,res,next) => auth.middleware(req,res,next));
 	server.applyMiddleware({ app });
 
 	app.get('/', (req, res) => res.send('Hello BlueSteel'));
@@ -36,4 +46,6 @@ async function init() {
 	);
 }
 
-init();
+init().catch(e => {
+	throw e;
+});

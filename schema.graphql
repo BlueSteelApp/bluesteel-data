@@ -345,6 +345,8 @@ input PersonSave {
 scalar Phone
 
 type Query {
+  User(id: ID!): User
+  UserList(filter: UserFilter, pageSize: Int, page: Int): [User]
   Job(id: ID!): Job
   JobList(filter: JobFilter, pageSize: Int, page: Int): [Job]
   JobData(id: ID!): JobData
@@ -375,6 +377,7 @@ type Query {
   EmailBlastList(filter: EmailBlastFilter, pageSize: Int, page: Int): [EmailBlast]
   EmailTemplate(id: ID!): EmailTemplate
   EmailTemplateList(filter: EmailTemplateFilter, pageSize: Int, page: Int): [EmailTemplate]
+  Me: User!
   PersonListExtra(filter: PersonFilterExtra, pageSize: Int, page: Int): [Person]
 }
 
@@ -509,6 +512,32 @@ input UploadImportFilter {
   import_raw_table: String
   upload_id: Int
   status: String
+  created_before: Date
+  created_after: Date
+  updated_before: Date
+  updated_after: Date
+}
+
+type User {
+  id: ID!
+  external_source: String!
+  external_id: String!
+  username: String!
+  email: String!
+  name: String!
+  profile_picture: String!
+  created_at: Date
+  updated_at: Date
+}
+
+input UserFilter {
+  ids: [ID]
+  external_source: String
+  external_id: String
+  username: String
+  email: String
+  name: String
+  profile_picture: String
   created_before: Date
   created_after: Date
   updated_before: Date

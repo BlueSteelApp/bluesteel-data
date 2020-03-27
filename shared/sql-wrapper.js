@@ -45,7 +45,7 @@ Wrapper.buildSequelize = buildSequelize;
 
 Wrapper.prototype.waitForDatabase=async function(count) {
 	if(count === undefined) count = 1;
-	if(count === 5) throw new Error('database failed to come up after 5 waits');
+	if(count === 10) throw new Error('database failed to come up after 5 waits');
 	try {
 		await this.sequelize.authenticate();
 	} catch(e) {
