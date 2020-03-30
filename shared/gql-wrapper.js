@@ -61,7 +61,9 @@ Wrapper.prototype.getSaveDefAndResolvers=function(type) {
 	const typeDefs=gql`
 	input ${name}Save {
 		id:ID
-		${Object.entries(fields).map(([x,def])=>{
+		${Object.entries(fields).filter(x => {
+			return !['id','created_by','updated_by'].find(y=>y==x);
+		}).map(([x,def])=>{
 			const type = getGqlType(def);
 			return `${x}:${type}`
 		})}
@@ -273,7 +275,9 @@ Wrapper.prototype.getModelDefsAndResolvers=function(type) {
 	const typeDefs=gql`
 	type ${name} {
 		id:ID!
-		${Object.entries(fields).map(([x,def])=>{
+		${Object.entries(fields).filter(([x])=>{
+			return !['id'].find(y=>y==x);
+		}).map(([x,def])=>{
 			let type = getGqlType(def);
 			if(!def.allowNull) type+='!';
 			return `${x}:${type}`;
@@ -302,6 +306,10 @@ Wrapper.prototype.getModelDefsAndResolvers=function(type) {
 	Object.keys(fields).forEach(x => {
 		fieldResolvers[x] = async (root,args,context) => {
 			if(root[x]) return root[x];
+			if(!root.id) {
+				console.error('missing id from:',root);
+				throw new Error('invalid - no id in obj');
+			}
 			const element = getDataLoader(context).load(root.id);
 			if(!element) return null;
 			return element[x];

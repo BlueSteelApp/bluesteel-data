@@ -22,11 +22,15 @@ async function init() {
 	app.use(bodyParser.urlencoded({ extended: true }));
 	app.use(cors());
 
-	const auth = new AuthHandler({sqlWrapper:configuredModules.sqlWrapper});
+	const sqlWrapper=configuredModules.sqlWrapper;
+	const auth = new AuthHandler({sqlWrapper});
 	await auth.initialize();
 
 	const server = new ApolloServer({
-		context: ({req}) => ({user:req.user}),
+		context: ({req:{user}}) => ({
+			user,
+			wrapper:sqlWrapper.getContextAwareWrapper({user})
+		}),
 		modules: [
 			require('./common'),
 		].concat(gqlModules),

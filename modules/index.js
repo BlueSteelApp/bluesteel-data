@@ -4,6 +4,7 @@ const path=require('path');
 
 const fullModuleList = [
 	'users',
+	'client-module-config',
 
 	'jobs',
 	'uploads',

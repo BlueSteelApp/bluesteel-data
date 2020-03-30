@@ -20,6 +20,27 @@ input CampaignSave {
   label: String
 }
 
+type ClientModuleConfig {
+  id: ID!
+  value: String!
+  created_by: Int!
+  updated_by: Int!
+  created_at: Date
+  updated_at: Date
+}
+
+input ClientModuleConfigFilter {
+  ids: [ID]
+  id: String
+  value: String
+  created_by: Int
+  updated_by: Int
+  created_before: Date
+  created_after: Date
+  updated_before: Date
+  updated_after: Date
+}
+
 scalar Date
 
 scalar Email
@@ -195,6 +216,7 @@ type Mutation {
   EmailBlastDelete(id: ID!): EmailBlast
   EmailTemplateSave(record: EmailTemplateSave!): EmailTemplate
   EmailTemplateDelete(id: ID!): EmailTemplate
+  ClientModuleConfigSet(id: String!, value: String!): ClientModuleConfig
 
   """
   Set the status of a Job to 'queued'. This can only be called on Jobs that
@@ -347,6 +369,8 @@ scalar Phone
 type Query {
   User(id: ID!): User
   UserList(filter: UserFilter, pageSize: Int, page: Int): [User]
+  ClientModuleConfig(id: ID!): ClientModuleConfig
+  ClientModuleConfigList(filter: ClientModuleConfigFilter, pageSize: Int, page: Int): [ClientModuleConfig]
   Job(id: ID!): Job
   JobList(filter: JobFilter, pageSize: Int, page: Int): [Job]
   JobData(id: ID!): JobData
