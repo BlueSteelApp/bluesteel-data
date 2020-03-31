@@ -24,9 +24,9 @@ async function init() {
 	app.post('/signup', async (req,res) => {
 		const {given_name,family_name,source_code,phone,email}=req;
 		try {
-			const id = await intake.addSignupRaw({given_name,family_name,source_code,phone,email});
-			console.log('received',id);
-			return res.send(id);
+			const signup_id = await intake.addSignupRaw({given_name,family_name,source_code,phone,email});
+			console.log('received',signup_id);
+			return res.status(200).jsonp({signup_id});
 		} catch(e) {
 			console.error(e);
 			return res.status(400).json({error:{message:'Failed to process signup'}});
