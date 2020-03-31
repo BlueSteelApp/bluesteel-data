@@ -17,18 +17,25 @@ async function run() {
 		});
 	}
 
+	let errors = [];
+
 	const results = await async.mapLimit(signups, concurrent, (signup,cb) => {
 		let start = new Date();
 		const {index}=signup;
-		console.log('signup:',index);
+		if(index%500==0)console.log('signup:',index);
 		axios.post('http://localhost:4343/signup', qs.stringify(signup))
-			.catch(e => cb(e))
+			.catch(e => {
+				errors.push(e);
+				console.log('error!',errors.length);
+			})
 			.then(result => {
-				console.log('done',result);
-				cb(null, {index,result, time: (new Date() - start)});
+				const time = (new Date() - start);
+				if(time > 300) console.log(index,'->',time);
+				cb(null, {index,result,time});
 			});
 	});
 	console.log(results);
+	console.log('errors:',errors.length);
 }
 
 run()
