@@ -12,7 +12,7 @@
     "migrate:full": "node ./modules/migrate.js",
     "run": "node ./app/",
     "run:watch": "nodemon ./app",
-		"build-schema-file": "node ./modules/build-schema-file"
+    "build-schema-file": "node ./modules/build-schema-file"
   },
   "author": "Chris Steele",
   "license": "ISC",
@@ -21,6 +21,7 @@
     "@babel/polyfill": "^7.2.5",
     "@babel/preset-env": "^7.3.4",
     "apollo-server-express": "^2.7.0",
+    "async": "^3.2.0",
     "axios": "^0.19.2",
     "babel-loader": "^8.0.5",
     "body-parser": "^1.18.3",

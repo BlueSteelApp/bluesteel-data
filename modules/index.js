@@ -10,6 +10,8 @@ const fullModuleList = [
 	'uploads',
 	'imports',
 
+	'signups',
+
 	'people',
 	'segments',
 	'person-query',

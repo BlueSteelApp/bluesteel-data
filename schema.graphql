@@ -194,6 +194,8 @@ input MessageSetSave {
 }
 
 type Mutation {
+  SignupRawSave(record: SignupRawSave!): SignupRaw
+  SignupRawDelete(id: ID!): SignupRaw
   PersonSave(record: PersonSave!): Person
   PersonDelete(id: ID!): Person
   PersonEmailSave(record: PersonEmailSave!): PersonEmail
@@ -379,6 +381,8 @@ type Query {
   UploadList(filter: UploadFilter, pageSize: Int, page: Int): [Upload]
   UploadImport(id: ID!): UploadImport
   UploadImportList(filter: UploadImportFilter, pageSize: Int, page: Int): [UploadImport]
+  SignupRaw(id: ID!): SignupRaw
+  SignupRawList(filter: SignupRawFilter, pageSize: Int, page: Int): [SignupRaw]
   Person(id: ID!): Person
   PersonList(filter: PersonFilter, pageSize: Int, page: Int): [Person]
   PersonEmail(id: ID!): PersonEmail
@@ -454,6 +458,39 @@ input SegmentSave {
   id: ID
   label: String
   description: String
+}
+
+type SignupRaw {
+  id: ID!
+  given_name: String
+  family_name: String
+  email: String
+  phone: String
+  source_code: String
+  created_at: Date
+  updated_at: Date
+}
+
+input SignupRawFilter {
+  ids: [ID]
+  given_name: String
+  family_name: String
+  email: String
+  phone: String
+  source_code: String
+  created_before: Date
+  created_after: Date
+  updated_before: Date
+  updated_after: Date
+}
+
+input SignupRawSave {
+  id: ID
+  given_name: String
+  family_name: String
+  email: String
+  phone: String
+  source_code: String
 }
 
 type Transaction {

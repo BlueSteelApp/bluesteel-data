@@ -18,8 +18,19 @@ services:
     ports:
     - "6379:6379"
 
+  bluesteel-signup-intake:
+    image: "node:alpine"
+    working_dir: /home/node/app
+    volumes:
+    - "./:/home/node/app"
+    command: "node_modules/nodemon/bin/nodemon ./signups/server"
+    env_file:
+    - "./.dev.env"
+    ports:
+    - "4343:4343"
+
   bluesteel-migrate:
-    image: "node:13.2"
+    image: "node:alpine"
     working_dir: /home/node/app
     volumes:
     - "./:/home/node/app"
@@ -28,7 +39,7 @@ services:
     - "./.dev.env"
 
   bluesteel-upload:
-    image: "node:13.3"
+    image: "node:alpine"
     working_dir: /home/node/app
     volumes:
     - "./:/home/node/app"
@@ -40,7 +51,7 @@ services:
     - "4000:4000"
 
   bluesteel-job-manager:
-    image: "node:13.2"
+    image: "node:alpine"
     working_dir: /home/node/app
     volumes:
     - "./:/home/node/app"
@@ -49,7 +60,7 @@ services:
     - "./.dev.env"
 
   bluesteel-job-client:
-    image: "node:13.2"
+    image: "node:alpine"
     working_dir: /home/node/app
     volumes:
     - "./:/home/node/app"
@@ -59,7 +70,7 @@ services:
     - "./.dev.env"
 
   bluesteel-core:
-    image: "node:13.2"
+    image: "node:alpine"
     ports:
     - "5000:5000"
     working_dir: /home/node/app
