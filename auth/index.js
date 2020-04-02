@@ -1,17 +1,15 @@
-const {BLUESTEEL_AUTH_METHOD}=process.env;
-
 function AuthHandler(options) {
 	options=options||{};
-	this.auth_method = options.auth_method || BLUESTEEL_AUTH_METHOD;
+	this.authMethod = options.authMethod;
 	this.sqlWrapper = options.sqlWrapper;
-	if(!this.auth_method) throw new Error('BLUESTEEL_AUTH_METHOD not set');
+	if(!this.authMethod) throw new Error('BLUESTEEL_authMethod not set');
 	if(!this.sqlWrapper) throw new Error('options.sqlWrapper required');
 }
 
 AuthHandler.prototype.initialize = async function(options) {
 	if(this.handler) throw new Error('already initialized');
 	this.User = this.sqlWrapper.getModel('User');
-	switch(this.auth_method) {
+	switch(this.authMethod) {
 		case 'dev': {
 			this.handler = new (require('./dev'))(options);
 			break;
@@ -20,7 +18,7 @@ AuthHandler.prototype.initialize = async function(options) {
 			this.handler = new (require('./firebase'))(options);
 			break;
 		}
-		default: throw new Error('invalid auth_method configured: '+this.auth_method);
+		default: throw new Error('invalid authMethod configured: '+this.authMethod);
 	}
 	return this.handler.initialize(options);
 };

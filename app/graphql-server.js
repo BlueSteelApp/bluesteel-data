@@ -5,14 +5,15 @@ const cors = require('cors');
 const AuthHandler = require('../auth');
 
 function GraphQlServer(options) {
-	const{configuredModules}=options;
+	const{configuredModules, authMethod}=options;
+	if(!authMethod) throw new Error('authMethod is a required option');
 	this.configuredModules=configuredModules;
+	this.authMethod=authMethod;
 }
 
 GraphQlServer.prototype.start=async function() {
-	const{configuredModules}=this;
+	const{configuredModules,authMethod}=this;
 
-	await configuredModules.initialize();
 	const gqlModules = configuredModules.getGql();
 
 	const app = express();
@@ -21,7 +22,7 @@ GraphQlServer.prototype.start=async function() {
 	app.use(cors());
 
 	const sqlWrapper=configuredModules.sqlWrapper;
-	const auth = new AuthHandler({sqlWrapper});
+	const auth = new AuthHandler({sqlWrapper, authMethod});
 	await auth.initialize();
 
 	const server = new ApolloServer({

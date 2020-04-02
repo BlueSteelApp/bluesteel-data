@@ -18,6 +18,15 @@ services:
     ports:
     - "6379:6379"
 
+  bluesteel-migrate:
+    image: "node:alpine"
+    working_dir: /home/node/app
+    volumes:
+    - "./:/home/node/app"
+    command: "node ./modules/migrate"
+    env_file:
+    - "./.dev.env"
+
   bluesteel-signup-intake:
     image: "node:alpine"
     working_dir: /home/node/app
@@ -28,15 +37,6 @@ services:
     - "./.dev.env"
     ports:
     - "4343:4343"
-
-  bluesteel-migrate:
-    image: "node:alpine"
-    working_dir: /home/node/app
-    volumes:
-    - "./:/home/node/app"
-    command: "node ./modules/migrate"
-    env_file:
-    - "./.dev.env"
 
   bluesteel-upload:
     image: "node:alpine"

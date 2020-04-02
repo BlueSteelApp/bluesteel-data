@@ -5,6 +5,8 @@ const through2=require('through2');
 const es=require('event-stream');
 const ContextAwareWrapper=require('./context-aware-wrapper');
 
+console.log('loading sql-wrapper');
+
 function buildSequelize(options) {
 	options = options || {};
 
