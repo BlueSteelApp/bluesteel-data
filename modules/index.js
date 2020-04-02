@@ -16,8 +16,11 @@ const fullModuleList = [
 	'segments',
 	'person-query',
 	'transactions',
+
 	'messages',
-	'email'
+
+	'email',
+	'email-delivery'
 ];
 
 function ModulesWrapper(options) {

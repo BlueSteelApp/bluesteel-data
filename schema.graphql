@@ -58,6 +58,7 @@ type EmailBlast {
   created_at: Date
   updated_at: Date
   MessageSet: MessageSet
+  EmailDeliveryList: [EmailDelivery]
 }
 
 input EmailBlastFilter {
@@ -86,6 +87,40 @@ input EmailBlastSave {
   from_email: String
   html_body: String
   text_body: String
+}
+
+type EmailDelivery {
+  id: ID!
+  person_id: Int!
+  email_blast_id: Int!
+  person_email: String!
+  status: EmailDeliveryStatus!
+  created_at: Date
+  updated_at: Date
+  Person: Person
+  EmailBlast: EmailBlast
+}
+
+input EmailDeliveryFilter {
+  ids: [ID]
+  person_id: Int
+  email_blast_id: Int
+  person_email: String
+  status: EmailDeliveryStatus
+  created_before: Date
+  created_after: Date
+  updated_before: Date
+  updated_after: Date
+}
+
+enum EmailDeliveryStatus {
+  QUEUED
+  SENT
+  OPENED
+  CLICKED
+  HARD_BOUNCE
+  SOFT_BOUNCE
+  UNSUBSCRIBE
 }
 
 type EmailTemplate {
@@ -261,6 +296,7 @@ type Person {
   PersonPhoneList: [PersonPhone]
   SegmentPersonList: [SegmentPerson]
   TransactionList: [Transaction]
+  EmailDeliveryList: [EmailDelivery]
 }
 
 type PersonEmail {
@@ -405,6 +441,8 @@ type Query {
   EmailBlastList(filter: EmailBlastFilter, pageSize: Int, page: Int): [EmailBlast]
   EmailTemplate(id: ID!): EmailTemplate
   EmailTemplateList(filter: EmailTemplateFilter, pageSize: Int, page: Int): [EmailTemplate]
+  EmailDelivery(id: ID!): EmailDelivery
+  EmailDeliveryList(filter: EmailDeliveryFilter, pageSize: Int, page: Int): [EmailDelivery]
   Me: User!
   PersonListExtra(filter: PersonFilterExtra, pageSize: Int, page: Int): [Person]
 }
