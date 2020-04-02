@@ -4,27 +4,18 @@ const fs=require('fs');
 const through2=require('through2');
 const es=require('event-stream');
 const ContextAwareWrapper=require('./context-aware-wrapper');
-require('dotenv').config();
 
 function buildSequelize(options) {
 	options = options || {};
 
-	const { DATABASE_NAME, DATABASE_USER, DATABASE_PASSWORD } = process.env;
-	const {auth:{name,user,password}={
-		name:DATABASE_NAME,
-		user:DATABASE_USER,
-		password:DATABASE_PASSWORD
-	}}=options;
-	if(!name||!user||!password) {
-		if(!DATABASE_NAME||!DATABASE_USER||!DATABASE_PASSWORD) {
-			throw new Error('process variables DATABASE_NAME, DATABASE_USER, or DATABASE_PASSWORD are not set');
-		}
-		throw new Error('auth overrides (name, user, or password) were not fully set');
+	const {auth:{name,user,password,host,port}}=options;
+	if([name,user,password,host,port].find(x=>!x)) {
+		throw new Error('auth options (name,user,password,host,port) were not fully set');
 	}
 
 	return new Sequelize(name,user,password, {
-		host: process.env.DATABASE_HOST,
-		port: process.env.DATABASE_PORT,
+		host,
+		port,
 		dialect: 'mysql',
 		define: {
 			freezeTableName: true,
@@ -43,6 +34,24 @@ function Wrapper(options) {
 	this.sequelize=options.sequelize||buildSequelize(options);
 }
 Wrapper.buildSequelize = buildSequelize;
+
+let envSequelize;
+Wrapper.buildSequelizeFromEnv = function() {
+	if(envSequelize) return envSequelize;
+	const {
+		DATABASE_NAME:name,
+		DATABASE_USER:user,
+		DATABASE_PASSWORD:password,
+		DATABASE_HOST:host,
+		DATABASE_PORT:port
+	} = process.env;
+	envSequelize = buildSequelize({
+		auth: {
+			name,user,password,host,port
+		}
+	});
+	return envSequelize;
+};
 
 Wrapper.prototype.waitForDatabase=async function(count) {
 	if(count === undefined) count = 1;

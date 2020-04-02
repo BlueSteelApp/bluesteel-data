@@ -23,7 +23,7 @@ services:
     working_dir: /home/node/app
     volumes:
     - "./:/home/node/app"
-    command: "node_modules/nodemon/bin/nodemon ./signups/server"
+    command: "node_modules/nodemon/bin/nodemon ./signups/cli"
     env_file:
     - "./.dev.env"
     ports:

@@ -1,39 +1,22 @@
-const express = require('express');
-const bodyParser = require('body-parser');
-const FileUpload = require('./upload');
-
-const {buildSequelize} = require('../shared/sql-wrapper');
+const UploadServer = require('./upload-server');
+const {buildSequelizeFromEnv} = require('../shared/sql-wrapper');
 const ModulesWrapper=require('../modules');
 
-const BLUESTEEL_UPLOAD_PORT=4000;
+const BLUESTEEL_UPLOAD_PORT=process.env.BLUESTEEL_UPLOAD_PORT || 4000;
 
 async function init() {
-	const sequelize = buildSequelize();
+	const sequelize = buildSequelizeFromEnv();
 	const configuredModules = new ModulesWrapper({sequelize,modules:['jobs','uploads']});
 	configuredModules.initialize();
 
-	const upload = new FileUpload(configuredModules);
-	await upload.initialize();
-
-	const app = express();
-	app.use(bodyParser.json());
-	app.use(bodyParser.urlencoded({ extended: true }));
-
-	app.get('/ok', (req, res) => res.send('OK'));
-	app.post('/upload/:upload_id', async (req,res) => {
-		const {upload_id}=req.params;
-		try {
-			await upload.uploadRequest({req,res},{upload_id});
-			res.status(200).jsonp({upload_id});
-		} catch(e) {
-			console.error(e);
-			res.status(500).jsonp('Failed to upload');
-		}
+	const server = new UploadServer({
+		sqlWrapper:configuredModules.sqlWrapper,
+		uploadFileTempDir:process.env.BLUESTEEL_UPLOAD_FILE_TMP_DIR,
+		port: BLUESTEEL_UPLOAD_PORT
 	});
-
-	app.listen({ port: BLUESTEEL_UPLOAD_PORT }, () =>
-		console.log(`🚀 Server ready at ${BLUESTEEL_UPLOAD_PORT}`)
-	);
+	return await server.start();
 }
 
-init();
+init().catch(e => {
+	throw e;
+});

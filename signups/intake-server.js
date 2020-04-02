@@ -1,21 +1,16 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 
-const {buildSequelize} = require('../shared/sql-wrapper');
-const ModulesWrapper=require('../modules');
 const SignupIntake = require('./intake');
 
-const{BLUESTEEL_SIGNUP_INTAKE_PORT}=process.env;
-const port =BLUESTEEL_SIGNUP_INTAKE_PORT || 4343;
-
-async function init() {
-	const sequelize = buildSequelize();
-	const configuredModules = new ModulesWrapper({sequelize,modules:['signups']});
-	configuredModules.initialize();
-
-	const intake = new SignupIntake({sqlWrapper: configuredModules.sqlWrapper});
+function IntakeServer({sqlWrapper,port}) {
+	this.sqlWrapper=sqlWrapper;
+	this.port = port;
+}
+IntakeServer.prototype.start = async function() {
+	const{sqlWrapper,port}=this;
+	const intake = new SignupIntake({sqlWrapper});
 	await intake.initialize();
-
 	const app = express();
 	app.use(bodyParser.urlencoded({ extended: true }));
 
@@ -41,4 +36,4 @@ async function init() {
 	);
 }
 
-init();
+module.exports = IntakeServer;

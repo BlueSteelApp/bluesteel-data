@@ -2,10 +2,10 @@ const [service]=process.argv.slice(2);
 if(!service) throw new Error('service is a required param');
 
 const ModulesWrapper=require('../modules');
-const {buildSequelize}=require('../shared/sql-wrapper');
+const {buildSequelizeFromEnv}=require('../shared/sql-wrapper');
 
 async function startManager() {
-	const sequelize = buildSequelize();
+	const sequelize = buildSequelizeFromEnv();
 	const configuredModules = new ModulesWrapper({sequelize,modules:['jobs']});
 	await configuredModules.sqlWrapper.waitForDatabase();
 	await configuredModules.initialize();

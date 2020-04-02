@@ -2,19 +2,11 @@ const multer=require('multer');
 const path=require('path');
 const fs=require('fs');
 
-const {
-	// BLUESTEEL_UPLOAD_STORAGE_TYPE='filestorage',
-	BLUESTEEL_UPLOAD_FILE_TMP_DIR='/tmp/bluesteel/files',
-	// BLUESTEEL_UPLOAD_FILE_STORAGE_DIR=BLUESTEEL_UPLOAD_FILE_TMP_DIR
-}=process.env;
-
-function FileUpload({sqlWrapper}) {
+function FileUpload({sqlWrapper, uploadFileTempDir}) {
 	this.sqlWrapper = sqlWrapper;
 	this.Upload = sqlWrapper.getModel('Upload');
-
-	if(!BLUESTEEL_UPLOAD_FILE_TMP_DIR) {
-		throw new Error('BLUESTEEL_UPLOAD_FILE_TMP_DIR are required env variables');
-	}
+	if(!uploadFileTempDir) throw new Error('uploadFileTempDir is a required option');
+	this.uploadFileTempDir = uploadFileTempDir;
 }
 
 FileUpload.prototype.initialize=async function() {
@@ -22,7 +14,7 @@ FileUpload.prototype.initialize=async function() {
 	const storage = this.storage = multer.diskStorage({
 		destination: (req,file,cb) => {
 			const {upload:{filename}}=req;
-			const fullDir = path.join(BLUESTEEL_UPLOAD_FILE_TMP_DIR,filename);
+			const fullDir = path.join(this.uploadFileTempDir,filename);
 			fs.mkdir(fullDir, e => {
 				if(e) return cb(e);
 				cb(null, fullDir);
@@ -36,7 +28,7 @@ FileUpload.prototype.initialize=async function() {
 	this.single=uploadMulter.single('upload_file');
 	let tmpStat;
 	try {
-		tmpStat = await new Promise((res,rej) => fs.stat(BLUESTEEL_UPLOAD_FILE_TMP_DIR, (e,r) => {
+		tmpStat = await new Promise((res,rej) => fs.stat(this.uploadFileTempDir, (e,r) => {
 			if(e) return rej(e);
 			res(r);
 		}));
@@ -44,7 +36,7 @@ FileUpload.prototype.initialize=async function() {
 		console.error(e);
 		throw new Error('failed to load stats for tmp dir - does it exist?');
 	}
-	if(!tmpStat.isDirectory()) throw new Error(BLUESTEEL_UPLOAD_FILE_TMP_DIR+' is not a directory');
+	if(!tmpStat.isDirectory()) throw new Error(this.uploadFileTempDir+' is not a directory');
 };
 
 FileUpload.prototype.uploadRequest=async function({req,res},options) {
@@ -66,7 +58,7 @@ FileUpload.prototype.uploadRequest=async function({req,res},options) {
 		});
 	});
 
-	upload.file_path=path.join(BLUESTEEL_UPLOAD_FILE_TMP_DIR,upload.filename,req.file.filename);
+	upload.file_path=path.join(this.uploadFileTempDir,upload.filename,req.file.filename);
 	upload.status='complete';
 	await upload.save();
 
