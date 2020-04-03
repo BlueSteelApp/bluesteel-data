@@ -48,7 +48,7 @@
     "umzug": "^2.2.0",
     "uuid": "^7.0.2",
     "webpack-cli": "^3.2.3",
-    "yasql": "^0.1.1"
+    "yasql": "^0.1.2"
   },
   "husky": {
     "hooks": {
