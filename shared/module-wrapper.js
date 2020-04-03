@@ -1,5 +1,5 @@
-const SqlWrapper = require('../shared/sql-wrapper');
-const GqlWrapper = require('../shared/gql-wrapper');
+const SqlWrapper = require('./sql-wrapper');
+const GqlWrapper = require('./gql-wrapper');
 const path=require('path');
 
 const fullModuleList = [
@@ -40,7 +40,7 @@ function ModulesWrapper(options) {
 	if(options.all_modules) options.modules = fullModuleList;
 	if(!options.modules||!options.modules.length) throw new Error('modules is a required option');
 
-	this.installed = options.modules.map(x => require('./'+x));
+	this.installed = options.modules.map(x => require('../modules/'+x));
 	this.initialized=false;
 
 	this.jobRunnerDefinitions={};

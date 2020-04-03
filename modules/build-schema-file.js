@@ -3,7 +3,7 @@ const { makeExecutableSchema } = require('apollo-server-express');
 
 const {buildSequelize} = require('../shared/sql-wrapper');
 
-const ModulesWrapper=require('../modules');
+const ModuleWrapper=require('../shared/module-wrapper');
 
 const fs=require('fs');
 const path=require('path');
@@ -14,7 +14,7 @@ async function init() {
 	const sequelize = buildSequelize({
 		auth:{user:'ignore', password:'ignore', name:'ignore'}
 	});
-	const configuredModules = new ModulesWrapper({sequelize,all_modules:true});
+	const configuredModules = new ModuleWrapper({sequelize,all_modules:true});
 	configuredModules.initialize();
 	const gqlModules = configuredModules.getGql();
 

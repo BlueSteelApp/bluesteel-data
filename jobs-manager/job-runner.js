@@ -1,4 +1,4 @@
-const ModuleWrapper = require('../modules');
+const ModuleWrapper=require('../shared/module-wrapper');
 
 function JobRunner(options) {
 	this.options=options=Object.assign({},options,{all_modules:true});

@@ -47,7 +47,8 @@
     "through2-batch": "^1.1.1",
     "umzug": "^2.2.0",
     "uuid": "^7.0.2",
-    "webpack-cli": "^3.2.3"
+    "webpack-cli": "^3.2.3",
+    "yasql": "^0.1.1"
   },
   "husky": {
     "hooks": {

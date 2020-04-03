@@ -1,5 +1,5 @@
 const CsvImporter=require('./csv-import');
-const Modules=require('../modules');
+const ModuleWrapper=require('../shared/module-wrapper');
 const {buildSequelize}=require('../shared/sql-wrapper');
 require('dotenv').config();
 
@@ -12,7 +12,7 @@ if(!filename) throw new Error('expected format: node cli <?type> <filename>');
 
 (async function() {
 	const sequelize=buildSequelize();
-	const modules=new Modules({sequelize});
+	const modules=new ModuleWrapper({sequelize});
 	await modules.initialize();
 
 	const{sqlWrapper}=modules;
