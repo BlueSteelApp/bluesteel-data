@@ -54,7 +54,21 @@ YasqlQueryRunner.prototype.getSqlOutputs = async function() {
 }
 
 YasqlQueryRunner.prototype.getSqlConditions = async function() {
-	return Promise.all(this.query.condition.map(x => this.getSqlDefinition(x)));
+	const parseCond = async (cond) => {
+		const children = cond.$or || cond.$and;
+		if(children) {
+			const subParts = await Promise.all(children.map(x => parseCond(x)));
+			let type;
+			if(cond.$or) type = 'or';
+			else type = 'and';
+			return {
+				type,
+				children: subParts
+			}
+		}
+		return this.getSqlDefinition(cond);
+	}
+	return Promise.all(this.query.condition.map(parseCond));
 }
 
 YasqlQueryRunner.prototype.getFullDefinition = async function() {
@@ -79,6 +93,11 @@ YasqlQueryRunner.prototype.getAssociationWhereSql=async function(def) {
 }
 
 YasqlQueryRunner.prototype.defToSql=async function(def) {
+	if(def.type == 'and' || def.type == 'or') {
+		const children = await Promise.all(def.children.map(x=>this.defToSql(x)));
+		return `(${children.join(' '+def.type+' ')})`;
+	}
+
 	const baseTable=this.type.name;
 
 	const{target,parsed_output,parsed_having,name}=def;

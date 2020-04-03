@@ -40,6 +40,30 @@ describe('yasql-query-runner', function() {
 		}, "select count(*) as `total` from `person` `Person` where (`Person`.`family_name` = 'Zoolander')");
 	});
 
+	describe('multilevel conditions', function() {
+		testToSql({
+			output: [{
+				name: 'total',
+				output: 'count(*)',
+			}],
+			condition: [{
+				$and: [{
+					output: 'family_name = "Zoolander"'
+				}, {
+					$or: [{
+						output: 'given_name="Derek"'
+					},{
+						output: 'given_name="Larry"'
+					}]
+				}]
+			}]
+		}, [
+			"select count(*) as `total` from `person` `Person`",
+			"where ((`Person`.`family_name` = 'Zoolander') and",
+			"((`Person`.`given_name` = 'Derek') or (`Person`.`given_name` = 'Larry')))"
+		].join(' '));
+	});
+
 	describe('automatic joining queries', function() {
 		testToSql({
 			output: [{
