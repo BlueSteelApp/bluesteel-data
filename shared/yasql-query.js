@@ -29,11 +29,13 @@ YasqlQueryRunner.prototype.getSqlDefinition = async function(raw) {
 	// const handlers = this.getHandlers();
 	const baseTable = this.type.name;
 
-	const parsed_output = yasql.parse(raw.output);
+	if(!raw.output && !raw.having) throw new Error('nodes must have output and/or having');
+
+	const parsed_output = raw.output && yasql.parse(raw.output);
 	const parsed_having = raw.having && yasql.parse(raw.having);
 
 	const allRefsByTable = [];
-	allRefsByTable.push(yasql.getRefsByTable(parsed_output));
+	if(parsed_output) allRefsByTable.push(yasql.getRefsByTable(parsed_output));
 	if(parsed_having) allRefsByTable.push(yasql.getRefsByTable(parsed_having));
 
 	const tables = {};
@@ -103,30 +105,37 @@ YasqlQueryRunner.prototype.defToSql=async function(def) {
 	const{target,parsed_output,parsed_having,name}=def;
 	const handlers = this.getHandlers();
 	handlers.baseTable = target;
-	let raw = yasql.toSql(handlers,parsed_output);
 
-	if(target != baseTable || parsed_having) {
-		const type = this.sqlWrapper.getType(target);
-		let havingSql = parsed_having && yasql.toSql(handlers,parsed_having);
+	let sqlOutput = parsed_output && yasql.toSql(handlers,parsed_output);
+	let sqlHaving = parsed_having && yasql.toSql(handlers,parsed_having);
 
+	let finalSql;
+
+	if(sqlOutput && !sqlHaving && (target == baseTable)) finalSql = sqlOutput;
+	else {
 		const where = [
 			await this.getAssociationWhereSql(def)
 		];
-		if(havingSql) where.push(havingSql);
+		if(sqlHaving) where.push(sqlHaving);
 
-		raw = [
-			`select`,
-			raw,
+		const type = this.sqlWrapper.getType(target);
+
+		const tail = [
 			`from ${sqlstring.escapeId(type.tableName)} ${sqlstring.escapeId(target)}`,
 			`where`,
 			where.join(' and ')
 		].filter(x=>x).join(' ');
-		raw = '('+raw+')'
+
+		if(sqlOutput) {
+			finalSql = `(select ${sqlOutput} ${tail})`;
+		} else {
+			finalSql = `(exists (select * ${tail}))`;
+		}
 	}
 
-	if(name) raw = raw + ' as ' + sqlstring.escapeId(name);
+	if(name) finalSql = finalSql + ' as ' + sqlstring.escapeId(name);
 
-	return raw;
+	return finalSql;
 }
 
 YasqlQueryRunner.prototype.getSql=async function() {

@@ -79,6 +79,24 @@ describe('yasql-query-runner', function() {
 			"as `total_transactions` from `person` `Person` where (`Person`.`family_name` = 'Zoolander')"
 		].join(' '));
 
+		// people who have donated more than $10 in the past 6 months
+		testToSql({
+			output: [{
+				name: 'total',
+				output: 'count(*)',
+			}],
+			condition: [{
+				having: 'amount > 10 and ts > date_sub(now(), interval 6 month)',
+				target: 'Transaction'
+			}]
+		}, [
+			"select count(*) as `total` from `person` `Person`",
+			"where (exists (select * from `transaction`",
+			"`Transaction` where `Person`.id = `Transaction`.`person_id` and",
+			"((`Transaction`.`amount` > 10) and",
+			"(`Transaction`.`ts` > date_sub(now(), interval 6 month)))))"
+		].join(' '));
+
 		testToSql({
 			output: [{
 				name: 'sum_transactions_last_year',
