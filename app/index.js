@@ -1,9 +1,12 @@
 const GraphQlServer=require('./graphql-server');
 const {buildSequelizeFromEnv} = require('../shared/sql-wrapper');
 const ModuleWrapper=require('../shared/module-wrapper');
-const {BLUESTEEL_AUTH_METHOD}=process.env;
-
 require('dotenv').config();
+
+const {BLUESTEEL_AUTH_METHOD}=process.env;
+if (!BLUESTEEL_AUTH_METHOD) throw new Error("An environment variable 'BLUESTEEL_AUTH_METHOD' is required");
+
+
 
 const sequelize = buildSequelizeFromEnv();
 

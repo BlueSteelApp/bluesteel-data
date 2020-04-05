@@ -2,7 +2,7 @@ function AuthHandler(options) {
 	options=options||{};
 	this.authMethod = options.authMethod;
 	this.sqlWrapper = options.sqlWrapper;
-	if(!this.authMethod) throw new Error('BLUESTEEL_authMethod not set');
+	if(!this.authMethod) throw new Error('BLUESTEEL_AUTH_METHOD not set');
 	if(!this.sqlWrapper) throw new Error('options.sqlWrapper required');
 }
 
