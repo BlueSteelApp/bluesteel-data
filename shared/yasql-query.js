@@ -2,20 +2,33 @@ const yasql = require('yasql');
 const sqlstring=require('sqlstring');
 
 const typeDefs = `
+
 type BlueSteelQueryComponent {
 	and: [BlueSteelQueryComponent]
 	or: [BlueSteelQueryComponent]
-
-	name: String
-
-	expression: String
-	having: String
 
 	"""
 	The type that this output/having is run against. It will default to the target
 	specified by the parent query
 	"""
 	target: String
+
+	"""
+	Field name in the result. Currently only used for outputs.
+	"""
+	name: String
+
+	"""
+	The yasql expression run against the target specified. Should evaluate to a
+	single value, ie count(*) or concat(x,y)
+	"""
+	expression: String
+
+	"""
+	Narrows the results of this expression - only to be used if the target
+	is different from the base type
+	"""
+	having: String
 }
 
 type BlueSteelQuery {
@@ -33,6 +46,9 @@ type QueriedStats {
 	results: [QueriedStatResult]
 }
 
+"""
+See documentation for BlueSteelQueryComponent
+"""
 input BlueSteelQueryComponentInput {
 	and: [BlueSteelQueryComponentInput]
 	or: [BlueSteelQueryComponentInput]
