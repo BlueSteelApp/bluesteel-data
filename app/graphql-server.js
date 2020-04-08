@@ -30,9 +30,7 @@ GraphQlServer.prototype.start=async function() {
 			user,
 			wrapper:sqlWrapper.getContextAwareWrapper({user})
 		}),
-		modules: [
-			require('./common'),
-		].concat(gqlModules),
+		modules: gqlModules,
 	});
 
 	app.get('/config', (req,res) => {

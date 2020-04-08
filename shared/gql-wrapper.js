@@ -300,6 +300,8 @@ Wrapper.prototype.getModelDefsAndResolvers=function(type) {
 	extend type Query {
 		${name}(id:ID!): ${name}
 		${name}List(filter:${name}Filter,pageSize:Int,page:Int): [${name}]
+
+		${name}Stats(query:BlueSteelQueryInput!): QueriedStats
 	}
 	${associationDefs}`;
 
@@ -319,6 +321,21 @@ Wrapper.prototype.getModelDefsAndResolvers=function(type) {
 	const resolvers={
 		Query: {
 			[name]: (root,{id},context) => getDataLoader(context).load(id),
+			[name+'Stats']: async (root,{query},context) => {
+				const typeWrapper = context.wrapper.forType(name);
+				const invalidTargetStats = query.outputs.filter(x => x.target && x.target != name);
+				if(invalidTargetStats.length) throw new Error('invalid stats - must be against '+name);
+				query.conditions = query.conditions || [];
+				const runner = typeWrapper.getYasqlQueryRunner(query);
+				const results = await runner.run();
+				if(results.length != 1) throw new Error('Must return a single row');
+				const stats = results[0];
+				return {
+					query,
+					results: Object.entries(stats)
+						.map(([key,value]) => ({key,value}))
+				};
+			},
 			[name+"List"]: async (root,{filter,pageSize,page}) => {
 				filter=filter||{};
 				pageSize = pageSize || 50;
@@ -335,10 +352,6 @@ Wrapper.prototype.getModelDefsAndResolvers=function(type) {
 			}},
 		[name]: fieldResolvers
 	};
-
-	// console.log(associationDefs);
-	// console.log(topLevelResolvers);
-	// console.log(resolvers[name]);
 
 	return {
 		typeDefs, resolvers:Object.assign({},topLevelResolvers,resolvers),

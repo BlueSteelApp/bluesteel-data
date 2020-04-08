@@ -1,6 +1,9 @@
 const SqlWrapper = require('./sql-wrapper');
 const GqlWrapper = require('./gql-wrapper');
 const path=require('path');
+const gql=require('graphql-tag');
+
+const YasqlQueryRunner = require('./yasql-query');
 
 const fullModuleList = [
 	'users',
@@ -40,8 +43,18 @@ function ModulesWrapper(options) {
 	if(options.all_modules) options.modules = fullModuleList;
 	if(!options.modules||!options.modules.length) throw new Error('modules is a required option');
 
-	this.installed = options.modules.map(x => require('../modules/'+x));
+	const selected = options.modules.map(x => require('../modules/'+x));
 	this.initialized=false;
+
+	this.installed = [{
+		name: "Common",
+		gql: () => require('./common'),
+		shared: true,
+	}, {
+		name: 'QueryRunner',
+		shared: true,
+		gql: () => ({typeDefs: gql(YasqlQueryRunner.typeDefs)})
+	}].concat(selected);
 
 	this.jobRunnerDefinitions={};
 	this.installed.filter(x=>x.jobs).forEach(m => {
@@ -54,6 +67,11 @@ function ModulesWrapper(options) {
 		});
 	});
 }
+
+ModulesWrapper.gqlModules = [
+	require('./common'),
+
+];
 
 ModulesWrapper.fullModuleList=fullModuleList;
 
@@ -79,7 +97,7 @@ ModulesWrapper.prototype.runMigrations=async function() {
 ModulesWrapper.prototype.initialize=function() {
 	if(this.initialized) throw new Error('already initialized');
 	const{sqlWrapper}=this;
-	this.installed.forEach(i => {
+	this.installed.filter(x=>!x.shared).forEach(i => {
 		const{name,models}=i;
 		console.log('Assembling models for',name);
 		sqlWrapper.assembleModels(models);

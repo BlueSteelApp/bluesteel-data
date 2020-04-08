@@ -1,3 +1,41 @@
+type BlueSteelQuery {
+  outputs: [BlueSteelQueryComponent]
+  conditions: [BlueSteelQueryComponent]
+}
+
+type BlueSteelQueryComponent {
+  and: [BlueSteelQueryComponent]
+  or: [BlueSteelQueryComponent]
+  name: String
+  expression: String
+  having: String
+
+  """
+  The type that this output/having is run against. It will default to the target
+  specified by the parent query
+  """
+  target: String
+}
+
+input BlueSteelQueryComponentInput {
+  and: [BlueSteelQueryComponentInput]
+  or: [BlueSteelQueryComponentInput]
+  name: String
+  expression: String
+  having: String
+
+  """
+  The type that this output/having is run against. It will default to the target
+  specified by the parent query
+  """
+  target: String
+}
+
+input BlueSteelQueryInput {
+  outputs: [BlueSteelQueryComponentInput]
+  conditions: [BlueSteelQueryComponentInput]
+}
+
 type Campaign {
   id: ID!
   label: String
@@ -404,45 +442,74 @@ input PersonSave {
 
 scalar Phone
 
+type QueriedStatResult {
+  key: String
+  value: String
+}
+
+type QueriedStats {
+  query: BlueSteelQuery
+  results: [QueriedStatResult]
+}
+
 type Query {
   User(id: ID!): User
   UserList(filter: UserFilter, pageSize: Int, page: Int): [User]
+  UserStats(query: BlueSteelQueryInput!): QueriedStats
   ClientModuleConfig(id: ID!): ClientModuleConfig
   ClientModuleConfigList(filter: ClientModuleConfigFilter, pageSize: Int, page: Int): [ClientModuleConfig]
+  ClientModuleConfigStats(query: BlueSteelQueryInput!): QueriedStats
   Job(id: ID!): Job
   JobList(filter: JobFilter, pageSize: Int, page: Int): [Job]
+  JobStats(query: BlueSteelQueryInput!): QueriedStats
   JobData(id: ID!): JobData
   JobDataList(filter: JobDataFilter, pageSize: Int, page: Int): [JobData]
+  JobDataStats(query: BlueSteelQueryInput!): QueriedStats
   Upload(id: ID!): Upload
   UploadList(filter: UploadFilter, pageSize: Int, page: Int): [Upload]
+  UploadStats(query: BlueSteelQueryInput!): QueriedStats
   UploadImport(id: ID!): UploadImport
   UploadImportList(filter: UploadImportFilter, pageSize: Int, page: Int): [UploadImport]
+  UploadImportStats(query: BlueSteelQueryInput!): QueriedStats
   SignupRaw(id: ID!): SignupRaw
   SignupRawList(filter: SignupRawFilter, pageSize: Int, page: Int): [SignupRaw]
+  SignupRawStats(query: BlueSteelQueryInput!): QueriedStats
   Person(id: ID!): Person
   PersonList(filter: PersonFilter, pageSize: Int, page: Int): [Person]
+  PersonStats(query: BlueSteelQueryInput!): QueriedStats
   PersonEmail(id: ID!): PersonEmail
   PersonEmailList(filter: PersonEmailFilter, pageSize: Int, page: Int): [PersonEmail]
+  PersonEmailStats(query: BlueSteelQueryInput!): QueriedStats
   PersonPhone(id: ID!): PersonPhone
   PersonPhoneList(filter: PersonPhoneFilter, pageSize: Int, page: Int): [PersonPhone]
+  PersonPhoneStats(query: BlueSteelQueryInput!): QueriedStats
   Segment(id: ID!): Segment
   SegmentList(filter: SegmentFilter, pageSize: Int, page: Int): [Segment]
+  SegmentStats(query: BlueSteelQueryInput!): QueriedStats
   SegmentPerson(id: ID!): SegmentPerson
   SegmentPersonList(filter: SegmentPersonFilter, pageSize: Int, page: Int): [SegmentPerson]
+  SegmentPersonStats(query: BlueSteelQueryInput!): QueriedStats
   PersonQuery(id: ID!): PersonQuery
   PersonQueryList(filter: PersonQueryFilter, pageSize: Int, page: Int): [PersonQuery]
+  PersonQueryStats(query: BlueSteelQueryInput!): QueriedStats
   Transaction(id: ID!): Transaction
   TransactionList(filter: TransactionFilter, pageSize: Int, page: Int): [Transaction]
+  TransactionStats(query: BlueSteelQueryInput!): QueriedStats
   Campaign(id: ID!): Campaign
   CampaignList(filter: CampaignFilter, pageSize: Int, page: Int): [Campaign]
+  CampaignStats(query: BlueSteelQueryInput!): QueriedStats
   MessageSet(id: ID!): MessageSet
   MessageSetList(filter: MessageSetFilter, pageSize: Int, page: Int): [MessageSet]
+  MessageSetStats(query: BlueSteelQueryInput!): QueriedStats
   EmailBlast(id: ID!): EmailBlast
   EmailBlastList(filter: EmailBlastFilter, pageSize: Int, page: Int): [EmailBlast]
+  EmailBlastStats(query: BlueSteelQueryInput!): QueriedStats
   EmailTemplate(id: ID!): EmailTemplate
   EmailTemplateList(filter: EmailTemplateFilter, pageSize: Int, page: Int): [EmailTemplate]
+  EmailTemplateStats(query: BlueSteelQueryInput!): QueriedStats
   EmailDelivery(id: ID!): EmailDelivery
   EmailDeliveryList(filter: EmailDeliveryFilter, pageSize: Int, page: Int): [EmailDelivery]
+  EmailDeliveryStats(query: BlueSteelQueryInput!): QueriedStats
   Me: User!
   PersonListExtra(filter: PersonFilterExtra, pageSize: Int, page: Int): [Person]
 }

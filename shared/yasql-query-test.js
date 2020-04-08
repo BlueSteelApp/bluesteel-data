@@ -47,10 +47,10 @@ describe('yasql-query-runner', function() {
 				output: 'count(*)',
 			}],
 			condition: [{
-				$and: [{
+				and: [{
 					output: 'family_name = "Zoolander"'
 				}, {
-					$or: [{
+					or: [{
 						output: 'given_name="Derek"'
 					},{
 						output: 'given_name="Larry"'

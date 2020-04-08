@@ -19,7 +19,7 @@ async function init() {
 	const gqlModules = configuredModules.getGql();
 
 	const schema = makeExecutableSchema({
-		typeDefs: [require('../app/common').typeDefs].concat(gqlModules.map(x=>x.typeDefs).filter(x=>x))
+		typeDefs: gqlModules.map(x=>x.typeDefs).filter(x=>x)
 	});
 	fs.writeFileSync(path.join(__dirname,'../schema.graphql'),printSchema(schema));
 }

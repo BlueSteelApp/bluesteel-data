@@ -1,11 +1,64 @@
 const yasql = require('yasql');
 const sqlstring=require('sqlstring');
 
+const typeDefs = `
+type BlueSteelQueryComponent {
+	and: [BlueSteelQueryComponent]
+	or: [BlueSteelQueryComponent]
+
+	name: String
+
+	expression: String
+	having: String
+
+	"""
+	The type that this output/having is run against. It will default to the target
+	specified by the parent query
+	"""
+	target: String
+}
+
+type BlueSteelQuery {
+	outputs: [BlueSteelQueryComponent]
+	conditions: [BlueSteelQueryComponent]
+}
+
+type QueriedStatResult {
+	key: String
+	value: String
+}
+
+type QueriedStats {
+	query: BlueSteelQuery
+	results: [QueriedStatResult]
+}
+
+input BlueSteelQueryComponentInput {
+	and: [BlueSteelQueryComponentInput]
+	or: [BlueSteelQueryComponentInput]
+
+	name: String
+
+	expression: String
+	having: String
+
+	"""
+	The type that this output/having is run against. It will default to the target
+	specified by the parent query
+	"""
+	target: String
+}
+input BlueSteelQueryInput {
+	outputs: [BlueSteelQueryComponentInput]
+	conditions: [BlueSteelQueryComponentInput]
+}
+`;
+
 function YasqlQueryRunner(options) {
 	const{sqlWrapper, query, target}=options;
 	if(!sqlWrapper || !query) throw new Error('sqlWrapper and query are required');
-	const {output,condition}=query;
-	if(!output || !condition) throw new Error('query.output and query.condition and required');
+	const {outputs,conditions}=query;
+	if(!outputs || !conditions) throw new Error('query.outputs and query.conditions and required');
 	if(!target) throw new Error('target is required');
 	const type = sqlWrapper.getType(target);
 
@@ -13,6 +66,7 @@ function YasqlQueryRunner(options) {
 	this.query = query;
 	this.type = type;
 }
+YasqlQueryRunner.typeDefs = typeDefs;
 
 YasqlQueryRunner.prototype.getHandlers = function() {
 	const baseTable = this.type.name;
@@ -29,9 +83,9 @@ YasqlQueryRunner.prototype.getSqlDefinition = async function(raw) {
 	// const handlers = this.getHandlers();
 	const baseTable = this.type.name;
 
-	if(!raw.output && !raw.having) throw new Error('nodes must have output and/or having');
+	if(!raw.expression && !raw.having) throw new Error('nodes must have expression and/or having');
 
-	const parsed_output = raw.output && yasql.parse(raw.output);
+	const parsed_output = raw.expression && yasql.parse(raw.expression);
 	const parsed_having = raw.having && yasql.parse(raw.having);
 
 	const allRefsByTable = [];
@@ -52,16 +106,16 @@ YasqlQueryRunner.prototype.getSqlDefinition = async function(raw) {
 }
 
 YasqlQueryRunner.prototype.getSqlOutputs = async function() {
-	return Promise.all(this.query.output.map(x => this.getSqlDefinition(x)));
+	return Promise.all(this.query.outputs.map(x => this.getSqlDefinition(x)));
 }
 
 YasqlQueryRunner.prototype.getSqlConditions = async function() {
 	const parseCond = async (cond) => {
-		const children = cond.$or || cond.$and;
+		const children = cond.or || cond.and;
 		if(children) {
 			const subParts = await Promise.all(children.map(x => parseCond(x)));
 			let type;
-			if(cond.$or) type = 'or';
+			if(cond.or) type = 'or';
 			else type = 'and';
 			return {
 				type,
@@ -70,7 +124,7 @@ YasqlQueryRunner.prototype.getSqlConditions = async function() {
 		}
 		return this.getSqlDefinition(cond);
 	}
-	return Promise.all(this.query.condition.map(parseCond));
+	return Promise.all(this.query.conditions.map(parseCond));
 }
 
 YasqlQueryRunner.prototype.getFullDefinition = async function() {

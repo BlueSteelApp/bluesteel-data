@@ -1,11 +1,13 @@
 const DataLoader = require('dataloader');
+const YasqlQueryRunner = require('./yasql-query');
 
-function ContextAwareType({type,model,user}) {
+function ContextAwareType({type,model,user, sqlWrapper}) {
 	this.user=user;
 	this.type=type;
 	this.model=model;
 	if(!user) throw new Error('user is a required option');
 	this.user_id = user.id;
+	this.sqlWrapper=sqlWrapper;
 }
 ContextAwareType.prototype.getPkDataLoader=function() {
 	if(this.pkDataloader) return this.pkDataloader;
@@ -53,6 +55,18 @@ ContextAwareType.prototype.save=async function(record,options) {
 	}
 	return result;
 }
+ContextAwareType.prototype.getYasqlQueryRunner=function(query) {
+	return new YasqlQueryRunner({
+		sqlWrapper: this.sqlWrapper,
+		target: this.type.name,
+		query
+	});
+}
+ContextAwareType.prototype.runYasqlQuery=async function(query) {
+	const runner = this.getYasqlQuery(query);
+	const [rows,metadata] = await runner.run();
+	return {rows,metadata};
+}
 ContextAwareType.prototype.transaction=async function(cb) {
 	return this.sqlWrapper.sequelize.transaction(async transaction => {
 		const result = await cb(transaction);
@@ -77,7 +91,7 @@ ContextAwareWrapper.prototype.forType=function(t) {
 	const type=this.sqlWrapper.getType(t);
 	const model=this.sqlWrapper.getModel(t);
 
-	this.typeCache[t]=new ContextAwareType({user:this.user,type,model});
+	this.typeCache[t]=new ContextAwareType({user:this.user,type,model, sqlWrapper: this.sqlWrapper});
 	return this.typeCache[t];
 };
 
