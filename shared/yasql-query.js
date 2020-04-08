@@ -163,6 +163,8 @@ YasqlQueryRunner.prototype.getSql=async function() {
 }
 
 YasqlQueryRunner.prototype.run = async function() {
+	const sql = await this.getSql();
+	return this.sqlWrapper.runRawQuery({sql});
 }
 
 module.exports=YasqlQueryRunner;

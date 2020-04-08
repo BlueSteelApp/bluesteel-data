@@ -113,6 +113,11 @@ Wrapper.prototype.assembleModels=function(models) {
 	});
 }
 
+Wrapper.prototype.runRawQuery=async function(options) {
+	const sql = options.sql || options;
+	const [rows] = await this.sequelize.query(sql);
+	return rows;
+}
 
 Wrapper.prototype.exportWithStream=function(model,options) {
 	options=options||{};
