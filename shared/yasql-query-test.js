@@ -30,30 +30,30 @@ describe('yasql-query-runner', function() {
 
 	describe('single table queries', function() {
 		testToSql({
-			output: [{
+			outputs: [{
 				name: 'total',
-				output: 'count(*)',
+				expression: 'count(*)',
 			}],
-			condition: [{
-				output: 'family_name = "Zoolander"'
+			conditions: [{
+				expression: 'family_name = "Zoolander"'
 			}]
 		}, "select count(*) as `total` from `person` `Person` where (`Person`.`family_name` = 'Zoolander')");
 	});
 
 	describe('multilevel conditions', function() {
 		testToSql({
-			output: [{
+			outputs: [{
 				name: 'total',
-				output: 'count(*)',
+				expression: 'count(*)',
 			}],
-			condition: [{
+			conditions: [{
 				and: [{
-					output: 'family_name = "Zoolander"'
+					expression: 'family_name = "Zoolander"'
 				}, {
 					or: [{
-						output: 'given_name="Derek"'
+						expression: 'given_name="Derek"'
 					},{
-						output: 'given_name="Larry"'
+						expression: 'given_name="Larry"'
 					}]
 				}]
 			}]
@@ -66,13 +66,13 @@ describe('yasql-query-runner', function() {
 
 	describe('automatic joining queries', function() {
 		testToSql({
-			output: [{
+			outputs: [{
 				name: 'total_transactions',
 				target: 'Transaction',
-				output: 'count(*)',
+				expression: 'count(*)',
 			}],
-			condition: [{
-				output: 'family_name = "Zoolander"'
+			conditions: [{
+				expression: 'family_name = "Zoolander"'
 			}]
 		}, [
 			"select (select count(*) from `transaction` `Transaction` where `Person`.id = `Transaction`.`person_id`)",
@@ -81,11 +81,11 @@ describe('yasql-query-runner', function() {
 
 		// people who have donated more than $10 in the past 6 months
 		testToSql({
-			output: [{
+			outputs: [{
 				name: 'total',
-				output: 'count(*)',
+				expression: 'count(*)',
 			}],
-			condition: [{
+			conditions: [{
 				having: 'amount > 10 and ts > date_sub(now(), interval 6 month)',
 				target: 'Transaction'
 			}]
@@ -98,19 +98,19 @@ describe('yasql-query-runner', function() {
 		].join(' '));
 
 		testToSql({
-			output: [{
+			outputs: [{
 				name: 'sum_transactions_last_year',
 				target: 'Transaction',
-				output: 'sum(amount)',
+				expression: 'sum(amount)',
 				having: 'ts > date_sub(now(), interval 1 year)'
 			},{
 				name: 'total_transactions_last_year',
 				target: 'Transaction',
-				output: 'count(*)',
+				expression: 'count(*)',
 				having: 'ts > date_sub(now(), interval 1 year)'
 			}],
-			condition: [{
-				output: 'family_name = "Zoolander"'
+			conditions: [{
+				expression: 'family_name = "Zoolander"'
 			}]
 		}, [
 			"select",
