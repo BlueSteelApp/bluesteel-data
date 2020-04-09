@@ -46,7 +46,8 @@ const models = {
 					isValid: value => {
 						if(value < 0 || value > STATUS.length) throw new Error('invalid value - must be between 0 and '+STATUS.length);
 					}
-				}
+				},
+				gqlSet: false
 			}
 		},
 		// these should only be modified by the background processes and the
@@ -98,5 +99,20 @@ module.exports={
 				EmailDeliveryStatus: INVERSE_STATUS
 			}
 		}
-	}
+	},
+	jobs: [{
+		type: 'email_build_list',
+		run: (job, {sqlWrapper}) => {
+			const email_blast_id = job.job_definition_id;
+			const EmailDeliveryListBuilder=require('./list-builder');
+			const builder = new EmailDeliveryListBuilder({
+				sqlWrapper,
+				email_blast_id
+			});
+			return builder.run();
+		}
+	// }, {
+	// 	type: 'email_send',
+	// 	run: (job, {sqlWrapper}) => {}
+	}]
 };

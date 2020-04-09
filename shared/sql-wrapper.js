@@ -4,6 +4,7 @@ const fs=require('fs');
 const through2=require('through2');
 const es=require('event-stream');
 const ContextAwareWrapper=require('./context-aware-wrapper');
+const YasqlQueryRunner=require('./yasql-query');
 
 console.log('loading sql-wrapper');
 
@@ -95,6 +96,7 @@ Wrapper.prototype.assembleModels=function(models) {
 		const model=sequelize.define(name,fields,{
 			tableName: tableName||name,
 			hooks: x.hooks||{},
+			validate: x.validate || {},
 			timestamps: true,
 			createdAt: 'created_at',
 			updatedAt: 'updated_at'
@@ -272,6 +274,12 @@ Wrapper.prototype.validate=async function() {
 
 Wrapper.prototype.close=async function() {
 	return await this.sequelize.close();
+}
+
+Wrapper.prototype.getQueryRunner=function({query,target}) {
+	return new YasqlQueryRunner({
+		sqlWrapper:this,query,target
+	});
 }
 
 module.exports=Wrapper;

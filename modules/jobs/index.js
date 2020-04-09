@@ -12,8 +12,7 @@ const models = {
 			},
 
 			type: {
-				type: sequelize.ENUM,
-				values: ['import'],
+				type: sequelize.STRING(64),
 				allowNull: false,
 			},
 			job_definition_id: {

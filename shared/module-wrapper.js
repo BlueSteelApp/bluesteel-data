@@ -94,8 +94,7 @@ ModulesWrapper.prototype.initialize=function() {
 	if(this.initialized) throw new Error('already initialized');
 	const{sqlWrapper}=this;
 	this.installed.filter(x=>!x.shared).forEach(i => {
-		const{name,models}=i;
-		console.log('Assembling models for',name);
+		const{models}=i;
 		sqlWrapper.assembleModels(models);
 	});
 	this.initialized = true;
@@ -128,3 +127,13 @@ ModulesWrapper.prototype.close=function() {
 }
 
 module.exports=ModulesWrapper;
+ModulesWrapper.buildFromEnv = async function() {
+	require('dotenv').config();
+	const sequelize = SqlWrapper.buildSequelizeFromEnv();
+	const wrapper = new ModulesWrapper({
+		sequelize,
+		all_modules: true
+	});
+	await wrapper.initialize();
+	return wrapper;
+}

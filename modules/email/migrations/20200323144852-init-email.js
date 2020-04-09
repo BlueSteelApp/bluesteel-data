@@ -13,13 +13,17 @@ module.exports = {
 				type: Sequelize.STRING(255),
 				allowNull: true
 			},
+			status: {
+				type: Sequelize.STRING(64),
+				allowNull: false
+			},
 			message_set_id: {
 				type: Sequelize.INTEGER(11),
 				allowNull: false
 			},
 			query_id:{
 				type: Sequelize.INTEGER(11),
-				allowNull: false
+				allowNull: true
 			},
 			subject:{
 				type: Sequelize.TEXT(),

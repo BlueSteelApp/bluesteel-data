@@ -2,6 +2,7 @@ const sequelize=require('sequelize');
 
 const STATUS=[
 	'DRAFT',
+	'READY_TO_BUILD',
 	'BUILDING_LIST',
 	'LIST_BUILT',
 	'SENDING',
@@ -21,11 +22,17 @@ const models = {
 			},
 			message_set_id: {
 				type: sequelize.INTEGER(11),
-				allowNull: false
+				allowNull: false,
+				validate: {
+					messageSetExists: async function(instance) {
+						const m = await instance.getMessageSet();
+						if(!m) throw new Error('message set does not exist');
+					}
+				}
 			},
 			query_id:{
 				type: sequelize.INTEGER(11),
-				allowNull: false
+				allowNull: true
 			},
 			subject:{
 				type: sequelize.TEXT(),
@@ -58,13 +65,21 @@ const models = {
 				gqlSet: false
 			}
 		},
-		hooks: {
-			beforeCreate: async (instance) => {
-				const m = await instance.getMessageSet();
-				if(!m) throw new Error('campaign does not exist');
-			}
-		},
 		associations: [{
+			name: 'PersonQuery',
+			build: (EmailBlast,PersonQuery) => {
+				EmailBlast.belongsTo(PersonQuery, {
+					validate: false,
+					through: 'query_id',
+					as: 'Query'
+				});
+				PersonQuery.hasMany(EmailBlast, {
+					validate: false,
+					foreignKey: 'query_id',
+					as: 'EmailBlast'
+				})
+			}
+		},{
 			name: 'MessageSet',
 			build: (EmailBlast,MessageSet) => {
 				EmailBlast.belongsTo(MessageSet,{
