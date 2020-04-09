@@ -3,8 +3,6 @@ const sqlstring=require('sqlstring');
 const through2=require('through2');
 const async=require('async');
 
-const debug=console.log; // require('debug')('yasql-query-runner');
-
 const typeDefs = `
 
 type BlueSteelQueryComponent {
