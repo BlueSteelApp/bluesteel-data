@@ -100,7 +100,7 @@ type EmailBlast {
   id: ID!
   label: String
   message_set_id: Int!
-  query_id: Int!
+  query_id: Int
   subject: String!
   from_name: String!
   from_email: String!
@@ -109,6 +109,7 @@ type EmailBlast {
   status: String!
   created_at: Date
   updated_at: Date
+  Query: PersonQuery
   MessageSet: MessageSet
   EmailDeliveryList: [EmailDelivery]
 }
@@ -428,6 +429,7 @@ type PersonQuery {
   query: JSON
   created_at: Date
   updated_at: Date
+  EmailBlastList: [EmailBlast]
 }
 
 input PersonQueryFilter {

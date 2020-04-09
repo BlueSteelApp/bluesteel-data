@@ -78,7 +78,8 @@ const models = {
 					foreignKey: 'query_id',
 					as: 'EmailBlast'
 				})
-			}
+			},
+			aliases: ['EmailBlast', 'Query']
 		},{
 			name: 'MessageSet',
 			build: (EmailBlast,MessageSet) => {
