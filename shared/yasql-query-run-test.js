@@ -3,6 +3,7 @@ const assert=require('assert');
 const YasqlQueryRunner = require('./yasql-query');
 const {buildSequelizeFromEnv} = require('./sql-wrapper');
 const ModuleWrapper = require('./module-wrapper');
+const es = require('event-stream');
 
 require('dotenv').config();
 
@@ -39,7 +40,7 @@ describe('yasql-query-runner', function() {
 	});
 
 	async function testRun(query, expectedRows, target) {
-		it('should ', async function () {
+		it('should work with Run', async function () {
 			const result = await (new YasqlQueryRunner({
 				sqlWrapper: moduleWrapper.sqlWrapper,
 				target: target || 'Person',
@@ -47,6 +48,18 @@ describe('yasql-query-runner', function() {
 			})).run();
 
 			assert.deepEqual(expectedRows, result);
+		});
+		it('should work with streaming', function(done) {
+			new YasqlQueryRunner({
+				sqlWrapper: moduleWrapper.sqlWrapper,
+				target: target || 'Person',
+				query
+			}).getStream({pageSize:2}).then(stream =>
+				stream.pipe(es.writeArray((e,result) => {
+					if(e) return done(e);
+					assert.deepEqual(expectedRows, result);
+					done();
+				})));
 		});
 	}
 

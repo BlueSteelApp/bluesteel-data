@@ -68,11 +68,6 @@ function ModulesWrapper(options) {
 	});
 }
 
-ModulesWrapper.gqlModules = [
-	require('./common'),
-
-];
-
 ModulesWrapper.fullModuleList=fullModuleList;
 
 ModulesWrapper.prototype.getJobRunnerDefinition=function({job_type}) {
@@ -84,11 +79,12 @@ ModulesWrapper.prototype.getJobRunnerDefinition=function({job_type}) {
 
 ModulesWrapper.prototype.runMigrations=async function() {
 	await this.sqlWrapper.waitForDatabase();
-	for(let x in this.installed) {
-		const m = this.installed[x];
+	const nonShared = this.installed.filter(x=>!x.shared);
+	for(let x in nonShared) {
+		const m = nonShared[x];
 		let migrationsPath; // =m.migrationsPath||path.join(m.dir,'./migrations');
 		if(m.migrations) migrationsPath=m.migrations;
-		else if(!m.dir) throw new Error('no migrations specific, nor dir');
+		else if(!m.dir) throw new Error('no migrations specific, nor dir for: '+x);
 		else migrationsPath=path.join(m.dir,'./migrations');
 		await this.sqlWrapper.runMigrations(migrationsPath);
 	}

@@ -1,5 +1,9 @@
 const yasql = require('yasql');
 const sqlstring=require('sqlstring');
+const through2=require('through2');
+const async=require('async');
+
+const debug=console.log; // require('debug')('yasql-query-runner');
 
 const typeDefs = `
 
@@ -230,6 +234,31 @@ YasqlQueryRunner.prototype.getSql=async function() {
 		`from ${sqlstring.escapeId(rawTable)} ${sqlstring.escapeId(baseTable)}`,
 		conditionSql
 	].filter(x=>x).join(' ');
+}
+
+const STREAM_PAGE_SIZE = 1000;
+YasqlQueryRunner.prototype.getStream = async function(options) {
+	options = options || {};
+	const pageSize = options.pageSize || STREAM_PAGE_SIZE;
+	const sql = await this.getSql();
+	const stream = through2.obj();
+	const page = async (offset) => {
+		offset = offset || 0;
+		const pagedSql = sql+` limit ${offset},${pageSize}`;
+		const rows = await this.sqlWrapper.runRawQuery({sql: pagedSql});
+
+		await async.eachSeries(rows, (row,cb) => {
+			if(!stream.write(row)) return stream.once('drain', cb);
+			else cb();
+		});
+		if(rows.length < pageSize) {
+			stream.end();
+			return;
+		}
+		return page(offset+pageSize);
+	};
+	page(0);
+	return stream;
 }
 
 YasqlQueryRunner.prototype.run = async function() {
