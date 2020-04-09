@@ -106,6 +106,7 @@ type EmailBlast {
   from_email: String!
   html_body: String!
   text_body: String!
+  status: String!
   created_at: Date
   updated_at: Date
   MessageSet: MessageSet
@@ -122,6 +123,7 @@ input EmailBlastFilter {
   from_email: String
   html_body: String
   text_body: String
+  status: String
   created_before: Date
   created_after: Date
   updated_before: Date

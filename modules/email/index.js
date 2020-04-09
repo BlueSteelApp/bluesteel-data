@@ -1,5 +1,15 @@
 const sequelize=require('sequelize');
 
+const STATUS=[
+	'DRAFT',
+	'BUILDING_LIST',
+	'LIST_BUILT',
+	'SENDING',
+	'SENT'
+];
+const statusMap = {};
+STATUS.forEach(x=>statusMap[x]=1);
+
 const models = {
 	email_blast: {
 		name: 'EmailBlast',
@@ -36,6 +46,16 @@ const models = {
 			text_body:{
 				type: sequelize.TEXT(),
 				allowNull: false
+			},
+			status: {
+				type: sequelize.STRING(32),
+				defaultValue: 'DRAFT',
+				allowNull: false,
+				validate: {
+					isIn: [STATUS]
+				},
+
+				gqlSet: false
 			}
 		},
 		hooks: {

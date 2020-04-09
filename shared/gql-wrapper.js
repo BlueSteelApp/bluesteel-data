@@ -61,8 +61,10 @@ Wrapper.prototype.getSaveDefAndResolvers=function(type) {
 	const typeDefs=gql`
 	input ${name}Save {
 		id:ID
-		${Object.entries(fields).filter(x => {
-			return !['id','created_by','updated_by'].find(y=>y==x);
+		${Object.entries(fields).filter(([x,def]) => {
+			let {gqlSet=true}=def;
+			if(def.gqlSet != null) console.log(name,x);
+			return gqlSet && !['id','created_by','updated_by'].find(y=>y==x);
 		}).map(([x,def])=>{
 			const type = getGqlType(def);
 			return `${x}:${type}`
