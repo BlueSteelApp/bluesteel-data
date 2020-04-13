@@ -85,6 +85,9 @@ const models = {
 };
 
 module.exports={
+	STATUS,
+	INVERSE_STATUS,
+
 	name: 'EmailDelivery',
 	models,
 	dir: __dirname,
@@ -111,8 +114,17 @@ module.exports={
 			});
 			return builder.run();
 		}
-	// }, {
-	// 	type: 'email_send',
-	// 	run: (job, {sqlWrapper}) => {}
+	}, {
+		type: 'email_send',
+		run: (job, {sqlWrapper}) => {
+			const email_blast_id = job.job_definition_id;
+			const EmailDeliveryEngineWrapper=require('./engine');
+			const builder = new EmailDeliveryEngineWrapper({
+				sqlWrapper,
+				email_blast_id,
+				engine_type: process.env.DELIVERY_ENGINE_TYPE
+			});
+			return builder.run();
+		}
 	}]
 };

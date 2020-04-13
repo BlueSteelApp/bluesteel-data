@@ -442,6 +442,16 @@ input PersonQueryFilter {
   updated_after: Date
 }
 
+type PersonQueryResult {
+  count: Int
+
+  """
+  Max limit on returning results from this endpoint is 1000.
+  Defaults to 100.
+  """
+  person_list(limit: Int): [Person]
+}
+
 input PersonQuerySave {
   id: ID
   label: String
@@ -529,6 +539,7 @@ type Query {
   EmailDeliveryStats(query: BlueSteelQueryInput!): QueriedStats
   Me: User!
   PersonListExtra(filter: PersonFilterExtra, pageSize: Int, page: Int): [Person]
+  ExecutePersonQuery(conditions: [BlueSteelQueryComponentInput]): PersonQueryResult
 }
 
 type Segment {

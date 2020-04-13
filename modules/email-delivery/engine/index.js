@@ -1,5 +1,5 @@
 const through2 = require('through2');
-const debug = require('debug')('email-delivery-engine-wrapper');
+const {STATUS,INVERSE_STATUS}=require('../');
 
 function EmailDeliveryEngineWrapper(options) {
 	this.options = options;
@@ -23,9 +23,9 @@ EmailDeliveryEngineWrapper.prototype.getEngine=async function() {
 	if(!email_blast) throw new Error('invalid EmailBlast id: '+this.email_blast_id);
 
 	switch(this.engine_type) {
-		case 'dev': {
-			const DevNodeMailerEngine=require('./dev');
-			let engine = new DevNodeMailerEngine({
+		case 'ethereal-test': {
+			const EtherealTestEngine=require('./ethereal-test-engine');
+			let engine = new EtherealTestEngine({
 				email_blast
 			});
 			await engine.initialize();
@@ -53,9 +53,17 @@ EmailDeliveryEngineWrapper.prototype.run=async function() {
 	const deliveryStream = queryStream
 		.pipe(engine.getEmailDeliveryStream())
 		.pipe(through2.obj(async (o,enc,cb) => {
-			const{status}=o;
-			if(!status) debug('missing status for',o);
-			await o.save();
+			const{person_id}=o;
+			if(!person_id) return cb('missing person_id in result');
+
+			let {status}=o;
+			if(status == null) return cb('status not set on return');
+
+			const saveStatus = INVERSE_STATUS[status] || status;
+			if(!STATUS[saveStatus]) return cb('invalid status provided: '+status);
+
+			await this.EmailDelivery.update({status:saveStatus},{where:{person_id}});
+
 			return cb();
 		}));
 

@@ -2,7 +2,7 @@
 
 module.exports = {
   up: async (queryInterface, Sequelize) => {
-		return queryInterface.createTable('email_delivery', {
+		await queryInterface.createTable('email_delivery', {
 			id: {
 				type: Sequelize.INTEGER(11),
 				allowNull: false,
@@ -12,12 +12,10 @@ module.exports = {
 			person_id: {
 				type: Sequelize.INTEGER(11),
 				allowNull: false,
-				unique: 'person-email-blast-id'
 			},
 			email_blast_id: {
 				type: Sequelize.INTEGER(11),
 				allowNull: false,
-				unique: 'person-email-blast-id'
 			},
 			person_email: {
 				type: Sequelize.STRING(255),
@@ -39,6 +37,8 @@ module.exports = {
 				defaultValue: Sequelize.literal('CURRENT_TIMESTAMP')
 			}
 		});
+		await queryInterface.addConstraint('email_delivery', ['person_id','email_blast_id'], {type:'unique'});
+		return;
   },
 
   down: async (queryInterface) => {

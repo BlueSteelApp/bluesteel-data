@@ -1,14 +1,17 @@
 const nodemailer = require('nodemailer');
 const through2 = require('through2');
 
-function NodeMailerEngine(options) {
+function EtherealTestEngine(options) {
 	this.options = options;
 	this.email_blast = options.email_blast;
+	if(!this.email_blast) throw new Error('email_blast is required');
 }
 
 // https://nodemailer.com/about/#example
-NodeMailerEngine.prototype.initialize = async function() {
+EtherealTestEngine.prototype.initialize = async function() {
 	const testAccount = this.testAccount = await nodemailer.createTestAccount();
+
+	console.log('ethereal test account:', testAccount);
 
 	this.transporter = nodemailer.createTransport({
 		host: "smtp.ethereal.email",
@@ -21,7 +24,8 @@ NodeMailerEngine.prototype.initialize = async function() {
 	});
 }
 
-NodeMailerEngine.prototype.getEmailDeliveryStream = function() {
+// https://community.nodemailer.com/delivering-bulk-mail/
+EtherealTestEngine.prototype.getEmailDeliveryStream = function() {
 	const{email_blast, transporter}=this;
 	const {html_body,text_body}=email_blast;
 	return through2.obj(async (delivery,enc,cb) => {
@@ -38,8 +42,13 @@ NodeMailerEngine.prototype.getEmailDeliveryStream = function() {
 			return cb(e);
 		}
 		console.log(info);
-		return cb(null, {status: 'SENT'});
+
+		if(info.accepted.length == 1 && !info.rejected.length) {
+			return cb(null, {status: 'SENT', person_id:delivery.person_id, devEngineInfo: info});
+		} else {
+			return cb(null, {status: 'ERROR'});
+		}
 	});
 }
 
-module.exports=NodeMailerEngine;
+module.exports=EtherealTestEngine;
