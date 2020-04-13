@@ -99,7 +99,7 @@ JobManager.prototype.start=async function() {
 }
 JobManager.prototype.run=async function() {
 	await this.manage();
-	setTimeout(()=>this.run(), 5000);
+	setTimeout(()=>this.run(), 10000);
 }
 JobManager.prototype.manage=async function() {
 	const active = await this.jobQueue.getActiveJobs();

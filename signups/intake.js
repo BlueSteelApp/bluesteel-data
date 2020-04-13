@@ -25,7 +25,7 @@ SignupIntake.prototype.initialize=async function() {
 	});
 	this.log=setInterval(() => {
 		console.log(this.cargoHandler.length(),'waiting in queue');
-	},1000);
+	},10000);
 };
 
 // this will not be immediately saved to the database
