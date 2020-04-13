@@ -1,3 +1,4 @@
+const {gql} = require('apollo-server-express');
 const sequelize=require('sequelize');
 
 const models = {
@@ -23,5 +24,41 @@ const models = {
 module.exports={
 	name: 'PersonQuery',
 	models,
-	dir: __dirname
+	dir: __dirname,
+	gql: () => ({
+		typeDefs: gql`
+			type PersonQueryResult {
+				count: Int
+				"""
+				Max limit on returning results from this endpoint is 1000.
+				Defaults to 100.
+				"""
+				person_list(limit:Int): [Person]
+			}
+
+			extend type Query {
+				ExecutePersonQuery(conditions:[BlueSteelQueryComponentInput]): PersonQueryResult
+			}
+		`,
+		resolvers: {
+			Query: {
+				ExecutePersonQuery: async (root,{conditions},context) => {
+					const Person = context.wrapper.forType('Person');
+					const runner = Person.getYasqlQueryRunner({conditions, outputs: [{
+						name: 'id',
+						expression: 'id'
+					}]});
+					return {runner};
+				}
+			},
+			PersonQueryResult: {
+				count: ({runner}) => runner.getCount(),
+				person_list: ({runner}, {limit}) => {
+					if(!limit) limit = 100;
+					if(limit > 1000) throw new Error('limit must be <= 1000');
+					return runner.run({limit});
+				}
+			}
+		}
+	})
 };
