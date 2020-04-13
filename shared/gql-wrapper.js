@@ -314,7 +314,7 @@ Wrapper.prototype.getModelDefsAndResolvers=function(type) {
 				console.error('missing id from:',root);
 				throw new Error('invalid - no id in obj');
 			}
-			const element = getDataLoader(context).load(root.id);
+			const element = await getDataLoader(context).load(root.id);
 			if(!element) return null;
 			return element[x];
 		};

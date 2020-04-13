@@ -210,7 +210,30 @@ YasqlQueryRunner.prototype.defToSql=async function(def) {
 	return finalSql;
 }
 
-YasqlQueryRunner.prototype.getSql=async function() {
+YasqlQueryRunner.prototype.getCount=async function() {
+	const def = await this.getFullDefinition();
+	const baseTable = this.type.name;
+	const rawTable = this.type.tableName;
+
+	const conditions = (await Promise.all(def.conditions.map(async x => {
+		return this.defToSql(x);
+	})));
+
+	let conditionSql = '';
+	if(conditions.length) conditionSql = 'where '+conditions.join(' or ');
+
+	const sql = [
+		`select`,
+		`count(*) as query_count`,
+		`from ${sqlstring.escapeId(rawTable)} ${sqlstring.escapeId(baseTable)}`,
+		conditionSql
+	].filter(x=>x).join(' ');
+
+	const result = await this.sqlWrapper.runRawQuery({sql});
+	return result[0].query_count;
+}
+
+YasqlQueryRunner.prototype.getSql=async function({limit}) {
 	const def = await this.getFullDefinition();
 	const baseTable = this.type.name;
 	const rawTable = this.type.tableName;
@@ -226,11 +249,18 @@ YasqlQueryRunner.prototype.getSql=async function() {
 	let conditionSql = '';
 	if(conditions.length) conditionSql = 'where '+conditions.join(' or ');
 
+	let limitSql = '';
+	if(limit != null && !isNaN(limit)) {
+		limitSql=`limit ${parseInt(limit)}`;
+		console.log('Using limit:',limit,limitSql,parseInt(limit));
+	}
+
 	return [
 		`select`,
 		outputSql,
 		`from ${sqlstring.escapeId(rawTable)} ${sqlstring.escapeId(baseTable)}`,
-		conditionSql
+		conditionSql,
+		limitSql
 	].filter(x=>x).join(' ');
 }
 
@@ -259,8 +289,8 @@ YasqlQueryRunner.prototype.getStream = async function(options) {
 	return stream;
 }
 
-YasqlQueryRunner.prototype.run = async function() {
-	const sql = await this.getSql();
+YasqlQueryRunner.prototype.run = async function({limit}) {
+	const sql = await this.getSql({limit});
 	return this.sqlWrapper.runRawQuery({sql});
 }
 
