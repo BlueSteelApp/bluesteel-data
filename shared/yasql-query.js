@@ -233,7 +233,9 @@ YasqlQueryRunner.prototype.getCount=async function() {
 	return result[0].query_count;
 }
 
-YasqlQueryRunner.prototype.getSql=async function({limit}) {
+YasqlQueryRunner.prototype.getSql=async function(options) {
+	options = options || {};
+	const{limit}=options;
 	const def = await this.getFullDefinition();
 	const baseTable = this.type.name;
 	const rawTable = this.type.tableName;
@@ -287,6 +289,13 @@ YasqlQueryRunner.prototype.getStream = async function(options) {
 	};
 	page(0);
 	return stream;
+}
+
+YasqlQueryRunner.prototype.loadToTable=async function({table}) {
+	const sql = await this.getSql();
+	return this.sqlWrapper.runRawQuery({
+		sql: `insert into ${sqlstring.escapeId(table)} ${sql}`
+	});
 }
 
 YasqlQueryRunner.prototype.run = async function({limit}) {

@@ -17,6 +17,18 @@ module.exports = {
 				type: Sequelize.INTEGER(11),
 				allowNull: false
 			},
+			status: {
+				type: Sequelize.INTEGER(2),
+				allowNull: false
+			},
+			added_at: {
+				type: Sequelize.DATE(),
+				allowNull: true
+			},
+			removed_at: {
+				type: Sequelize.DATE(),
+				allowNull: true
+			},
 			created_at: {
 				type: Sequelize.DATE,
 				allowNull: false,
@@ -41,7 +53,10 @@ module.exports = {
 			},
 			description: {
 				type: Sequelize.TEXT(),
-				allowNull: false
+				allowNull: true
+			},
+			person_query_id: {
+				type: Sequelize.INTEGER(11),
 			},
 			created_at: {
 				type: Sequelize.DATE,

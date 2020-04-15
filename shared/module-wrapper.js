@@ -12,12 +12,12 @@ const fullModuleList = [
 	'jobs',
 	'uploads',
 	'imports',
+	'person-query',
 
 	'signups',
 
 	'people',
 	'segments',
-	'person-query',
 	'transactions',
 
 	'messages',

@@ -283,6 +283,8 @@ input MessageSetSave {
 }
 
 type Mutation {
+  PersonQuerySave(record: PersonQuerySave!): PersonQuery
+  PersonQueryDelete(id: ID!): PersonQuery
   SignupRawSave(record: SignupRawSave!): SignupRaw
   SignupRawDelete(id: ID!): SignupRaw
   PersonSave(record: PersonSave!): Person
@@ -295,8 +297,6 @@ type Mutation {
   SegmentDelete(id: ID!): Segment
   SegmentPersonSave(record: SegmentPersonSave!): SegmentPerson
   SegmentPersonDelete(id: ID!): SegmentPerson
-  PersonQuerySave(record: PersonQuerySave!): PersonQuery
-  PersonQueryDelete(id: ID!): PersonQuery
   TransactionSave(record: TransactionSave!): Transaction
   TransactionDelete(id: ID!): Transaction
   CampaignSave(record: CampaignSave!): Campaign
@@ -429,6 +429,7 @@ type PersonQuery {
   query: JSON
   created_at: Date
   updated_at: Date
+  SegmentList: [Segment]
   EmailBlastList: [EmailBlast]
 }
 
@@ -498,6 +499,9 @@ type Query {
   UploadImport(id: ID!): UploadImport
   UploadImportList(filter: UploadImportFilter, pageSize: Int, page: Int): [UploadImport]
   UploadImportStats(query: BlueSteelQueryInput!): QueriedStats
+  PersonQuery(id: ID!): PersonQuery
+  PersonQueryList(filter: PersonQueryFilter, pageSize: Int, page: Int): [PersonQuery]
+  PersonQueryStats(query: BlueSteelQueryInput!): QueriedStats
   SignupRaw(id: ID!): SignupRaw
   SignupRawList(filter: SignupRawFilter, pageSize: Int, page: Int): [SignupRaw]
   SignupRawStats(query: BlueSteelQueryInput!): QueriedStats
@@ -516,9 +520,6 @@ type Query {
   SegmentPerson(id: ID!): SegmentPerson
   SegmentPersonList(filter: SegmentPersonFilter, pageSize: Int, page: Int): [SegmentPerson]
   SegmentPersonStats(query: BlueSteelQueryInput!): QueriedStats
-  PersonQuery(id: ID!): PersonQuery
-  PersonQueryList(filter: PersonQueryFilter, pageSize: Int, page: Int): [PersonQuery]
-  PersonQueryStats(query: BlueSteelQueryInput!): QueriedStats
   Transaction(id: ID!): Transaction
   TransactionList(filter: TransactionFilter, pageSize: Int, page: Int): [Transaction]
   TransactionStats(query: BlueSteelQueryInput!): QueriedStats
@@ -538,16 +539,18 @@ type Query {
   EmailDeliveryList(filter: EmailDeliveryFilter, pageSize: Int, page: Int): [EmailDelivery]
   EmailDeliveryStats(query: BlueSteelQueryInput!): QueriedStats
   Me: User!
-  PersonListExtra(filter: PersonFilterExtra, pageSize: Int, page: Int): [Person]
   ExecutePersonQuery(conditions: [BlueSteelQueryComponentInput]): PersonQueryResult
+  PersonListExtra(filter: PersonFilterExtra, pageSize: Int, page: Int): [Person]
 }
 
 type Segment {
   id: ID!
   label: String!
   description: String
+  person_query_id: Int
   created_at: Date
   updated_at: Date
+  PersonQuery: PersonQuery
   SegmentPersonList: [SegmentPerson]
 }
 
@@ -555,6 +558,7 @@ input SegmentFilter {
   ids: [ID]
   label: String
   description: String
+  person_query_id: Int
   created_before: Date
   created_after: Date
   updated_before: Date
@@ -565,6 +569,9 @@ type SegmentPerson {
   id: ID!
   segment_id: Int!
   person_id: Int!
+  status: Int!
+  added_at: Date
+  removed_at: Date
   created_at: Date
   updated_at: Date
   Person: Person
@@ -575,6 +582,9 @@ input SegmentPersonFilter {
   ids: [ID]
   segment_id: Int
   person_id: Int
+  status: Int
+  added_at: Date
+  removed_at: Date
   created_before: Date
   created_after: Date
   updated_before: Date
@@ -585,12 +595,16 @@ input SegmentPersonSave {
   id: ID
   segment_id: Int
   person_id: Int
+  status: Int
+  added_at: Date
+  removed_at: Date
 }
 
 input SegmentSave {
   id: ID
   label: String
   description: String
+  person_query_id: Int
 }
 
 type SignupRaw {

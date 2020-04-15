@@ -13,10 +13,28 @@ const models = {
 			description: {
 				type: sequelize.TEXT(),
 				allowNull: true
+			},
+			person_query_id: {
+				type: sequelize.INTEGER(11),
+				allowNull: true
 			}
-		}
+		},
+		associations: [{
+			name: 'PersonQuery',
+			build: (Segment,PersonQuery) => {
+				Segment.belongsTo(PersonQuery,{
+					validate: false,
+					as: 'PersonQuery',
+					through: 'person_query_id'
+				});
+				PersonQuery.hasMany(Segment,{
+					validate:false,
+					as: 'Segment',
+				});
+			}
+		}]
 	},
-	segment_person_membership: {
+	segment_person: {
 		name: 'SegmentPerson',
 		tableName: 'segment_person',
 		fields: {
@@ -27,6 +45,18 @@ const models = {
 			person_id: {
 				type: sequelize.INTEGER(11),
 				allowNull: false
+			},
+			status: {
+				type: sequelize.INTEGER(2),
+				allowNull: false
+			},
+			added_at: {
+				type: sequelize.DATE(),
+				allowNull: true
+			},
+			removed_at: {
+				type: sequelize.DATE(),
+				allowNull: true
 			}
 		},
 		associations: [{
