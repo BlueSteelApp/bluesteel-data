@@ -23,7 +23,7 @@ SegmentPersonBuilder.prototype.getTempModel = function() {
 	if(this.tempModel) return this.tempModel;
 
 	const {sqlWrapper,SegmentPerson} = this;
-	const tableName = this.tableName = `segment_person_${this.segment_id}_`+(new Date().getTime());
+	const tableName = this.tableName = `segment_person_${this.segment_build_id}_`+(new Date().getTime());
 	const fields = this.tempModelFields;
 
 	const tempModel = this.tempModel = sqlWrapper.sequelize.define(tableName,fields,{
@@ -93,10 +93,15 @@ SegmentPersonBuilder.prototype.run=async function() {
 			return;
 		}
 		console.log('adding',values.length,'records');
-		await SegmentPerson.bulkCreate(values,{
-			fields: Object.keys(values[0]),
-			validate:false
-		});
+		try {
+			await SegmentPerson.bulkCreate(values,{
+				fields: Object.keys(values[0]),
+				validate:false
+			});
+		} catch(e) {
+			console.error(e);
+			throw e;
+		}
 	});
 
 	// update the records that are no longer present in the segment
@@ -133,7 +138,11 @@ SegmentPersonBuilder.prototype.run=async function() {
 		}
 	});
 
-	// once this is done, use
+	// once this is done, use the "deletedAt" feature of sequelize to make
+	// sure these records do not show up by default
+	await SegmentPerson.destroy({where:{segment_id,status:0}});
+	// bring back any records that were previously destroyed
+	await SegmentPerson.restore({where:{segment_id,status:1}});
 }
 
 module.exports=SegmentPersonBuilder;

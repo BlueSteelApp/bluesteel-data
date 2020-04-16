@@ -93,15 +93,22 @@ Wrapper.prototype.assembleModels=function(models) {
 		if(defined[name]) throw new Error('model with name '+name+' already exists');
 
 		if(!name||!fields) throw new Error('name and fields are required for each model');
-		const model=sequelize.define(name,fields,{
+
+		const options = {
 			tableName: tableName||name,
 			hooks: x.hooks||{},
 			validate: x.validate || {},
 			timestamps: true,
 			createdAt: 'created_at',
-			updatedAt: 'updated_at'
-		});
-		if(x.hooks) console.log(name+' has hooks '+Object.keys(x.hooks),model.hooks);
+			updatedAt: 'updated_at',
+		};
+
+		if(x.paranoid) {
+			options.paranoid = true;
+			options.deletedAt = 'deleted_at';
+		}
+
+		const model=sequelize.define(name,fields,options);
 		defined[name]=Object.assign({},x,{model});
 	});
 	models.forEach(x => {

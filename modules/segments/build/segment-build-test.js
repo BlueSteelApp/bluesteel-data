@@ -44,17 +44,17 @@ describe('segment-builder-test', function() {
 	}
 
 	describe('updating an existing segment', function() {
-		let segment_build_id, segment_id, segmentPersons;
+		let segment_build_id, segment_id, segmentPersons,paranoid;
 		const initial = new Date(parseInt(new Date().getTime()/1000)*1000);
 		before('create pre-eexisting and then build the segment', async function() {
 			// given
-			await SegmentPerson.destroy({truncate:true});
+			await SegmentPerson.destroy({truncate:true,force:true});
 			await SegmentBuild.destroy({truncate:true});
+
 			[segment_build_id,segment_id] = await createSegmentBuild({conditions: [{
 				expression: 'family_name="Zoolander"'
 			}]});
 
-			console.log('populating');
 			await SegmentPerson.bulkCreate([1,2,3,4,5].map(person_id => ({
 				person_id,
 				segment_id,
@@ -63,30 +63,53 @@ describe('segment-builder-test', function() {
 			})), {validate:false});
 
 			// when
-			console.log('building');
 			const builder = new SegmentPersonBuilder({sqlWrapper, segment_build_id});
 			await builder.run();
 
 			segmentPersons = (await SegmentPerson.findAll({
 				where: {segment_id}
 			}));
+			paranoid = (await SegmentPerson.findAll({
+				where: {segment_id},
+				paranoid: false
+			}))
 		});
 
-		it('should have the same added_at for all of them', function() {
-			assert.deepEqual(segmentPersons.map(x=>x.added_at), [initial,initial,initial,initial,initial]);
+		// check only the results
+		it('should have the same added_at for all of them (paranoid)', function() {
+			const first = segmentPersons[0].added_at;
+			if(beforeStart > first) throw new Error(first.getTime()+' < '+beforeStart);
+			assert.deepEqual(segmentPersons.map(x=>x.added_at), [first,first,first]);
 		});
 
-		it('should have a null removed_at', function() {
-			const {removed_at}=segmentPersons[4];
-			assert.deepEqual(segmentPersons.map(x=>x.removed_at),[null,null,null,removed_at,removed_at]);
+		it('should have a null removed_at (paranoid)', function() {
+			assert.deepEqual(segmentPersons.map(x=>x.removed_at),[null,null,null]);
 		});
 
-		it('should have status=1', function() {
-			assert.deepEqual(segmentPersons.map(x=>x.status), [1,1,1,0,0]);
+		it('should have status=1 (paranoid)', function() {
+			assert.deepEqual(segmentPersons.map(x=>x.status), [1,1,1]);
 		});
 
-		it('should match the people from the query', function() {
-			assert.deepEqual(segmentPersons.map(x=>x.person_id),[1,2,3,4,5]);
+		it('should match the people from the query (paranoid)', function() {
+			assert.deepEqual(segmentPersons.map(x=>x.person_id),[1,2,3]);
+		});
+
+		// test the full list (including those marked "deleted")
+		it('should have the same added_at for all of them [paranoid]', function() {
+			assert.deepEqual(paranoid.map(x=>x.added_at), [initial,initial,initial,initial,initial]);
+		});
+
+		it('should have a null removed_at [paranoid]', function() {
+			const {removed_at}=paranoid[4];
+			assert.deepEqual(paranoid.map(x=>x.removed_at),[null,null,null,removed_at,removed_at]);
+		});
+
+		it('should have status=1 [paranoid]', function() {
+			assert.deepEqual(paranoid.map(x=>x.status), [1,1,1,0,0]);
+		});
+
+		it('should match the people from the query [paranoid]', function() {
+			assert.deepEqual(paranoid.map(x=>x.person_id),[1,2,3,4,5]);
 		});
 	});
 
@@ -95,7 +118,7 @@ describe('segment-builder-test', function() {
 			let segment_id, segment_build_id, segmentPersons;
 			before('create and build the segment', async function() {
 				// given
-				await SegmentPerson.destroy({truncate:true});
+				await SegmentPerson.destroy({truncate:true,force:true});
 				await SegmentBuild.destroy({truncate:true});
 				[segment_build_id,segment_id] = await createSegmentBuild({conditions: [{
 					expression: 'family_name="Zoolander"'
@@ -111,21 +134,21 @@ describe('segment-builder-test', function() {
 			});
 
 			// then
-			it('should have the same added_at for all of them', function() {
+			it('should have the same added_at for all of them (paranoid)', function() {
 				const first = segmentPersons[0].added_at;
 				if(beforeStart > first) throw new Error(first.getTime()+' < '+beforeStart);
 				assert.deepEqual(segmentPersons.map(x=>x.added_at), [first,first,first]);
 			});
 
-			it('should have a null removed_at', function() {
+			it('should have a null removed_at (paranoid)', function() {
 				assert.deepEqual(segmentPersons.map(x=>x.removed_at),[null,null,null]);
 			});
 
-			it('should have status=1', function() {
+			it('should have status=1 (paranoid)', function() {
 				assert.deepEqual(segmentPersons.map(x=>x.status), [1,1,1]);
 			});
 
-			it('should match the people from the query', function() {
+			it('should match the people from the query (paranoid)', function() {
 				assert.deepEqual(segmentPersons.map(x=>x.person_id),[1,2,3]);
 			});
 		});

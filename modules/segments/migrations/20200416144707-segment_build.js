@@ -29,7 +29,7 @@ module.exports = {
 			}
 		});
 
-		await queryInterface.addColumn('segment_person', 'deleted_at',Sequelize.DATE);
+		await queryInterface.addColumn('segment_person','deleted_at',Sequelize.DATE);
   },
   down: async (queryInterface) => {
 		await queryInterface.removeColumn('segment_person','deleted_at');

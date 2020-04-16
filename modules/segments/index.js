@@ -87,6 +87,7 @@ const models = {
 				allowNull: true
 			}
 		},
+		paranoid: true,
 		associations: [{
 			name: 'Person',
 			build: (SegmentPerson,Person) => {
