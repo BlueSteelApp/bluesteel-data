@@ -6,8 +6,7 @@ const beforeStart = new Date() - 10000; // sql/sequelize has second precision
 
 describe('segment-builder-test', function() {
 	let moduleWrapper,sqlWrapper;
-	let PersonQuery;
-	let Segment;
+	let SegmentBuild;
 	let SegmentPerson;
 	let Person;
 
@@ -19,15 +18,11 @@ describe('segment-builder-test', function() {
 		moduleWrapper = await buildFromEnv();
 		sqlWrapper = moduleWrapper.sqlWrapper;
 
-		PersonQuery = sqlWrapper.getModel('PersonQuery');
 		Person = sqlWrapper.getModel('Person');
 		SegmentPerson = sqlWrapper.getModel('SegmentPerson');
-		Segment = sqlWrapper.getModel('Segment');
+		SegmentBuild = sqlWrapper.getModel('SegmentBuild');
 
-		await PersonQuery.destroy({truncate:true});
 		await Person.destroy({truncate:true});
-		await SegmentPerson.destroy({truncate:true});
-		await Segment.destroy({truncate:true});
 
 		await Person.bulkCreate([
 			{id:1, given_name: 'Derek', family_name: 'Zoolander'},
@@ -38,25 +33,24 @@ describe('segment-builder-test', function() {
 		]);
 	});
 
-	async function createSegment(def) {
-		const query = await PersonQuery.create({
+	async function createSegmentBuild(def) {
+		const segment_id = 1;
+		const segmentBuild = await SegmentBuild.create({
 			query: def,
-			label: 'Test Query'
-		});
-		const {id:segment_id} = await Segment.create({
-			label: 'segment_'+query.id,
-			person_query_id: query.id,
-		}, {validate:false});
+			segment_id
+		},{validate:false});
 
-		return segment_id;
+		return [segmentBuild.id,segment_id];
 	}
 
 	describe('updating an existing segment', function() {
-		let segment_id, segmentPersons;
+		let segment_build_id, segment_id, segmentPersons;
 		const initial = new Date(parseInt(new Date().getTime()/1000)*1000);
 		before('create pre-eexisting and then build the segment', async function() {
 			// given
-			segment_id = await createSegment({conditions: [{
+			await SegmentPerson.destroy({truncate:true});
+			await SegmentBuild.destroy({truncate:true});
+			[segment_build_id,segment_id] = await createSegmentBuild({conditions: [{
 				expression: 'family_name="Zoolander"'
 			}]});
 
@@ -70,7 +64,7 @@ describe('segment-builder-test', function() {
 
 			// when
 			console.log('building');
-			const builder = new SegmentPersonBuilder({sqlWrapper, segment_id});
+			const builder = new SegmentPersonBuilder({sqlWrapper, segment_build_id});
 			await builder.run();
 
 			segmentPersons = (await SegmentPerson.findAll({
@@ -98,15 +92,17 @@ describe('segment-builder-test', function() {
 
 	describe('building for a new segment', function() {
 		describe('when adding people based on query', function() {
-			let segment_id, segmentPersons;
+			let segment_id, segment_build_id, segmentPersons;
 			before('create and build the segment', async function() {
 				// given
-				segment_id = await createSegment({conditions: [{
+				await SegmentPerson.destroy({truncate:true});
+				await SegmentBuild.destroy({truncate:true});
+				[segment_build_id,segment_id] = await createSegmentBuild({conditions: [{
 					expression: 'family_name="Zoolander"'
 				}]});
 
 				// when
-				const builder = new SegmentPersonBuilder({sqlWrapper, segment_id});
+				const builder = new SegmentPersonBuilder({sqlWrapper, segment_build_id});
 				await builder.run();
 
 				segmentPersons = (await SegmentPerson.findAll({

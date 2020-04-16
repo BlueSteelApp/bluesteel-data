@@ -1,13 +1,13 @@
 const DataTypes=require('sequelize');
 
 function SegmentPersonBuilder(options) {
-	const {sqlWrapper,segment_id} = options;
+	const {sqlWrapper,segment_build_id} = options;
 	if(!sqlWrapper) throw new Error('sqlWrapper is required');
-	if(!segment_id) throw new Error('segment_id is required');
-	this.segment_id=segment_id;
+	if(!segment_build_id) throw new Error('segment_build_id is required');
+	this.segment_build_id=segment_build_id;
 	this.sqlWrapper=sqlWrapper;
 
-	this.Segment=sqlWrapper.getModel('Segment');
+	this.SegmentBuild=sqlWrapper.getModel('SegmentBuild');
 	this.SegmentPerson=sqlWrapper.getModel('SegmentPerson');
 	this.Person=sqlWrapper.getModel('Person');
 
@@ -48,17 +48,16 @@ SegmentPersonBuilder.prototype.getTempModel = function() {
 };
 
 SegmentPersonBuilder.prototype.run=async function() {
-	const {segment_id,sqlWrapper,sqlWrapper:{sequelize}}=this;
-	const {Segment,SegmentPerson}=this;
+	const {segment_build_id,sqlWrapper,sqlWrapper:{sequelize}}=this;
+	const {SegmentBuild,SegmentPerson}=this;
 
-	const segment = await Segment.findByPk(segment_id);
-	if(!segment) throw new Error('invalid segment_id: '+segment_id);
+	const segmentBuild = await SegmentBuild.findByPk(segment_build_id);
+	if(!segmentBuild) throw new Error('invalid segment_build_id: '+segment_build_id);
 
-	const personQuery = await segment.getPersonQuery();
-	if(!personQuery) throw new Error('no person_query for this segment - aborting build');
+	const {segment_id,query:{conditions}} = segmentBuild;
+	if(!conditions) throw new Error('no conditions defined for SegmentBuild.query - aborting');
 
-	const {query:{conditions}} = personQuery;
-	if(!conditions) throw new Error('no conditions defined for PersonQuery - aborting');
+	if(!await segmentBuild.getSegment) throw new Error('Invalid segment_id: '+segment_id);
 
 	const query = {conditions,  outputs: [{
 		name: 'person_id',
@@ -133,6 +132,8 @@ SegmentPersonBuilder.prototype.run=async function() {
 			throw e;
 		}
 	});
+
+	// once this is done, use
 }
 
 module.exports=SegmentPersonBuilder;

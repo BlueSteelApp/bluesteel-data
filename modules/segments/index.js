@@ -34,6 +34,34 @@ const models = {
 			}
 		}]
 	},
+	segment_build: {
+		name: 'SegmentBuild',
+		tableName: 'segment_build',
+		fields: {
+			segment_id: {
+				type: sequelize.INTEGER(11),
+				allowNull: false
+			},
+			query: {
+				type: sequelize.JSON,
+				allowNull: false
+			}
+		},
+		associations: [{
+			name: 'Segment',
+			build: (SegmentBuild,Segment) => {
+				SegmentBuild.belongsTo(Segment, {
+					validate: false,
+					as: 'Segment',
+					through: 'segment_id'
+				});
+				Segment.hasMany(SegmentBuild,{
+					validate: false,
+					as: 'SegmentBuild'
+				})
+			}
+		}]
+	},
 	segment_person: {
 		name: 'SegmentPerson',
 		tableName: 'segment_person',
@@ -93,4 +121,16 @@ module.exports={
 	name: 'Segments',
 	dir: __dirname,
 	models,
+	jobs: [{
+		type: 'segment_build',
+		run: (job, {sqlWrapper}) => {
+			const segment_id = job.job_definition_id;
+			const SegmentPersonBuilder=require('./build');
+			const builder = new SegmentPersonBuilder({
+				sqlWrapper,
+				segment_id
+			});
+			return builder.run();
+		}
+	}]
 };

@@ -58,6 +58,7 @@ function ModulesWrapper(options) {
 
 	this.jobRunnerDefinitions={};
 	this.installed.filter(x=>x.jobs).forEach(m => {
+		if(m.jobs && !Array.isArray(m.jobs)) throw new Error(`invalid config for ${m.name} - jobs must be an array`);
 		m.jobs.forEach(j => {
 			const {type:job_type,run}=j;
 			if(!job_type) throw new Error('job_type is required for job runner definitions');

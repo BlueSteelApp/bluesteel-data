@@ -295,6 +295,8 @@ type Mutation {
   PersonPhoneDelete(id: ID!): PersonPhone
   SegmentSave(record: SegmentSave!): Segment
   SegmentDelete(id: ID!): Segment
+  SegmentBuildSave(record: SegmentBuildSave!): SegmentBuild
+  SegmentBuildDelete(id: ID!): SegmentBuild
   SegmentPersonSave(record: SegmentPersonSave!): SegmentPerson
   SegmentPersonDelete(id: ID!): SegmentPerson
   TransactionSave(record: TransactionSave!): Transaction
@@ -517,6 +519,9 @@ type Query {
   Segment(id: ID!): Segment
   SegmentList(filter: SegmentFilter, pageSize: Int, page: Int): [Segment]
   SegmentStats(query: BlueSteelQueryInput!): QueriedStats
+  SegmentBuild(id: ID!): SegmentBuild
+  SegmentBuildList(filter: SegmentBuildFilter, pageSize: Int, page: Int): [SegmentBuild]
+  SegmentBuildStats(query: BlueSteelQueryInput!): QueriedStats
   SegmentPerson(id: ID!): SegmentPerson
   SegmentPersonList(filter: SegmentPersonFilter, pageSize: Int, page: Int): [SegmentPerson]
   SegmentPersonStats(query: BlueSteelQueryInput!): QueriedStats
@@ -551,7 +556,33 @@ type Segment {
   created_at: Date
   updated_at: Date
   PersonQuery: PersonQuery
+  SegmentBuildList: [SegmentBuild]
   SegmentPersonList: [SegmentPerson]
+}
+
+type SegmentBuild {
+  id: ID!
+  segment_id: Int!
+  query: JSON!
+  created_at: Date
+  updated_at: Date
+  Segment: Segment
+}
+
+input SegmentBuildFilter {
+  ids: [ID]
+  segment_id: Int
+  query: JSON
+  created_before: Date
+  created_after: Date
+  updated_before: Date
+  updated_after: Date
+}
+
+input SegmentBuildSave {
+  id: ID
+  segment_id: Int
+  query: JSON
 }
 
 input SegmentFilter {
