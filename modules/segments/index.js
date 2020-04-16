@@ -124,11 +124,11 @@ module.exports={
 	jobs: [{
 		type: 'segment_build',
 		run: (job, {sqlWrapper}) => {
-			const segment_id = job.job_definition_id;
+			const segment_build_id = job.job_definition_id;
 			const SegmentPersonBuilder=require('./build');
 			const builder = new SegmentPersonBuilder({
 				sqlWrapper,
-				segment_id
+				segment_build_id
 			});
 			return builder.run();
 		}
