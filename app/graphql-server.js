@@ -31,6 +31,12 @@ GraphQlServer.prototype.start=async function() {
 			wrapper:sqlWrapper.getContextAwareWrapper({user})
 		}),
 		modules: gqlModules,
+		formatError: (err) => {
+			console.error(err);
+			if(!err.originalError) return err;
+			console.error(err.originalError.stack);
+			return err;
+		},
 	});
 
 	app.get('/config', (req,res) => {
