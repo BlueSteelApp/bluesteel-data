@@ -197,7 +197,7 @@ Wrapper.prototype.getModelDefsAndResolvers=function(type) {
 		if(!targetModel) throw new Error('model with name '+targetName+' does not exist');
 
 		const reverseAssociation = targetModel.associations[aliasedSource||name];
-		if(!reverseAssociation) {
+		if(!reverseAssociation && !a.gql_one_way) {
 			console.log(targetModel.associations);
 			throw new Error('invalid - no reverse association defined from '+targetName+' to '+name);
 		}
@@ -236,7 +236,8 @@ Wrapper.prototype.getModelDefsAndResolvers=function(type) {
 			}
 		}
 
-		if(reverseAssociation.isMultiAssociation) {
+		if(a.gql_one_way) ; // do nothing
+		else if(reverseAssociation.isMultiAssociation) {
 			defs.push(`
 				extend type ${targetName} {
 					${aliasedSource}List: [${name}]

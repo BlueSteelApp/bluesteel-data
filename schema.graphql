@@ -211,7 +211,6 @@ type Job {
   updated_at: Date
   JobData: JobData
   TriggeringUpload: Upload
-  UploadImport: UploadImport
 }
 
 type JobData {
@@ -295,8 +294,6 @@ type Mutation {
   PersonPhoneDelete(id: ID!): PersonPhone
   SegmentSave(record: SegmentSave!): Segment
   SegmentDelete(id: ID!): Segment
-  SegmentBuildSave(record: SegmentBuildSave!): SegmentBuild
-  SegmentBuildDelete(id: ID!): SegmentBuild
   SegmentPersonSave(record: SegmentPersonSave!): SegmentPerson
   SegmentPersonDelete(id: ID!): SegmentPerson
   TransactionSave(record: TransactionSave!): Transaction
@@ -339,6 +336,18 @@ type Mutation {
   start until you explicitly call 'Mutation.JobStart'
   """
   UploadImportCreate(label: String, import_type: String!, upload_id: ID!): UploadImport
+
+  """
+  Creates the following objects:
+  - SegmentBuild: Holding the SegmentID and the information of this discrete build
+  - Job: The job object managing this SegmentBuild, pointing to the SegmentBuild
+  
+  By default, create_paused = true. Set to false to create this job and immediately
+  set it to "queued".
+  
+  To get the Job created for this, access the Job edge on SegmentBuild
+  """
+  SegmentBuildJobCreate(segment_id: ID!, create_paused: Boolean): SegmentBuild
 }
 
 type Person {
@@ -567,6 +576,7 @@ type SegmentBuild {
   created_at: Date
   updated_at: Date
   Segment: Segment
+  Job: Job
 }
 
 input SegmentBuildFilter {
@@ -577,12 +587,6 @@ input SegmentBuildFilter {
   created_after: Date
   updated_before: Date
   updated_after: Date
-}
-
-input SegmentBuildSave {
-  id: ID
-  segment_id: Int
-  query: JSON
 }
 
 input SegmentFilter {

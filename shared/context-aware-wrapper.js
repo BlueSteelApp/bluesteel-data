@@ -11,7 +11,7 @@ function ContextAwareType({type,model,user, sqlWrapper}) {
 }
 ContextAwareType.prototype.getPkDataLoader=function() {
 	if(this.pkDataloader) return this.pkDataloader;
-	const{model}=this.model;
+	const model=this.model;
 	return this.pkDataloader = new DataLoader(async (ids) => {
 		const bulk = await model.findAll({
 			where: {id: ids}
