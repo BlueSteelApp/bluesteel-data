@@ -313,6 +313,8 @@ input MessageSetSave {
 }
 
 type Mutation {
+  UserRoleSave(record: UserRoleSave!): UserRole
+  UserRoleDelete(id: ID!): UserRole
   PersonQuerySave(record: PersonQuerySave!): PersonQuery
   PersonQueryDelete(id: ID!): PersonQuery
   SignupRawSave(record: SignupRawSave!): SignupRaw
@@ -531,6 +533,9 @@ type Query {
   User(id: ID!): User
   UserList(filter: UserFilter, pageSize: Int, page: Int): [User]
   UserStats(query: BlueSteelQueryInput!): QueriedStats
+  UserRole(id: ID!): UserRole
+  UserRoleList(filter: UserRoleFilter, pageSize: Int, page: Int): [UserRole]
+  UserRoleStats(query: BlueSteelQueryInput!): QueriedStats
   ClientModuleConfig(id: ID!): ClientModuleConfig
   ClientModuleConfigList(filter: ClientModuleConfigFilter, pageSize: Int, page: Int): [ClientModuleConfig]
   ClientModuleConfigStats(query: BlueSteelQueryInput!): QueriedStats
@@ -851,4 +856,28 @@ input UserFilter {
   created_after: Date
   updated_before: Date
   updated_after: Date
+}
+
+type UserRole {
+  id: ID!
+  user_id: Int!
+  role: String!
+  created_at: Date
+  updated_at: Date
+}
+
+input UserRoleFilter {
+  ids: [ID]
+  user_id: Int
+  role: String
+  created_before: Date
+  created_after: Date
+  updated_before: Date
+  updated_after: Date
+}
+
+input UserRoleSave {
+  id: ID
+  user_id: Int
+  role: String
 }

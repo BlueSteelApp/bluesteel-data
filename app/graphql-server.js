@@ -39,8 +39,10 @@ GraphQlServer.prototype.start=async function() {
 		},
 	});
 
+	const auth_config = typeof auth.config == 'function' ? auth.config() : (auth.config || {});
+
 	app.get('/config', (req,res) => {
-		res.json({auth_method:auth.auth_method});
+		res.json({auth_method:auth.auth_method, auth_config});
 	});
 
 	app.use('/graphql', (req,res,next) => auth.middleware(req,res,next));
