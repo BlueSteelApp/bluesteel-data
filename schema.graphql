@@ -177,6 +177,37 @@ enum EmailDeliveryStatus {
   UNSUBSCRIBE
 }
 
+type EmailSubscriptionStatus {
+  id: ID!
+  subscription_id: Int!
+  channel: Int!
+  person_email_id: Int!
+  status: Int!
+  created_at: Date
+  updated_at: Date
+  PersonEmail: PersonEmail
+}
+
+input EmailSubscriptionStatusFilter {
+  ids: [ID]
+  subscription_id: Int
+  channel: Int
+  person_email_id: Int
+  status: Int
+  created_before: Date
+  created_after: Date
+  updated_before: Date
+  updated_after: Date
+}
+
+input EmailSubscriptionStatusSave {
+  id: ID
+  subscription_id: Int
+  channel: Int
+  person_email_id: Int
+  status: Int
+}
+
 type EmailTemplate {
   id: ID!
   label: String
@@ -298,6 +329,10 @@ type Mutation {
   SegmentPersonDelete(id: ID!): SegmentPerson
   TransactionSave(record: TransactionSave!): Transaction
   TransactionDelete(id: ID!): Transaction
+  SubscriptionSave(record: SubscriptionSave!): Subscription
+  SubscriptionDelete(id: ID!): Subscription
+  EmailSubscriptionStatusSave(record: EmailSubscriptionStatusSave!): EmailSubscriptionStatus
+  EmailSubscriptionStatusDelete(id: ID!): EmailSubscriptionStatus
   CampaignSave(record: CampaignSave!): Campaign
   CampaignDelete(id: ID!): Campaign
   MessageSetSave(record: MessageSetSave!): MessageSet
@@ -371,6 +406,7 @@ type PersonEmail {
   created_at: Date
   updated_at: Date
   Person: Person
+  EmailSubscriptionStatusList: [EmailSubscriptionStatus]
 }
 
 input PersonEmailFilter {
@@ -537,6 +573,12 @@ type Query {
   Transaction(id: ID!): Transaction
   TransactionList(filter: TransactionFilter, pageSize: Int, page: Int): [Transaction]
   TransactionStats(query: BlueSteelQueryInput!): QueriedStats
+  Subscription(id: ID!): Subscription
+  SubscriptionList(filter: SubscriptionFilter, pageSize: Int, page: Int): [Subscription]
+  SubscriptionStats(query: BlueSteelQueryInput!): QueriedStats
+  EmailSubscriptionStatus(id: ID!): EmailSubscriptionStatus
+  EmailSubscriptionStatusList(filter: EmailSubscriptionStatusFilter, pageSize: Int, page: Int): [EmailSubscriptionStatus]
+  EmailSubscriptionStatusStats(query: BlueSteelQueryInput!): QueriedStats
   Campaign(id: ID!): Campaign
   CampaignList(filter: CampaignFilter, pageSize: Int, page: Int): [Campaign]
   CampaignStats(query: BlueSteelQueryInput!): QueriedStats
@@ -673,6 +715,30 @@ input SignupRawSave {
   email: String
   phone: String
   source_code: String
+}
+
+type Subscription {
+  id: ID!
+  label: String!
+  description: String!
+  created_at: Date
+  updated_at: Date
+}
+
+input SubscriptionFilter {
+  ids: [ID]
+  label: String
+  description: String
+  created_before: Date
+  created_after: Date
+  updated_before: Date
+  updated_after: Date
+}
+
+input SubscriptionSave {
+  id: ID
+  label: String
+  description: String
 }
 
 type Transaction {

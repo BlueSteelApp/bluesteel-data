@@ -88,7 +88,7 @@ Wrapper.prototype.assembleModels=function(models) {
 
 	const {sequelize}=this;
 	models.forEach(x => {
-		const{name,fields,tableName}=x;
+		const{name,fields,tableName, defaultScope}=x;
 
 		if(defined[name]) throw new Error('model with name '+name+' already exists');
 
@@ -102,6 +102,8 @@ Wrapper.prototype.assembleModels=function(models) {
 			createdAt: 'created_at',
 			updatedAt: 'updated_at',
 		};
+
+		if(defaultScope) options.defaultScope = defaultScope;
 
 		if(x.paranoid) {
 			options.paranoid = true;

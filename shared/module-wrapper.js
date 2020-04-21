@@ -20,6 +20,8 @@ const fullModuleList = [
 	'segments',
 	'transactions',
 
+	'subscriptions',
+
 	'messages',
 
 	'email',
