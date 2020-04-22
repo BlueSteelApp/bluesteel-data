@@ -313,8 +313,12 @@ input MessageSetSave {
 }
 
 type Mutation {
-  UserRoleSave(record: UserRoleSave!): UserRole
-  UserRoleDelete(id: ID!): UserRole
+  PermissionSetSave(record: PermissionSetSave!): PermissionSet
+  PermissionSetDelete(id: ID!): PermissionSet
+  PermissionSetPermissionSave(record: PermissionSetPermissionSave!): PermissionSetPermission
+  PermissionSetPermissionDelete(id: ID!): PermissionSetPermission
+  UserPermissionSetSave(record: UserPermissionSetSave!): UserPermissionSet
+  UserPermissionSetDelete(id: ID!): UserPermissionSet
   PersonQuerySave(record: PersonQuerySave!): PersonQuery
   PersonQueryDelete(id: ID!): PersonQuery
   SignupRawSave(record: SignupRawSave!): SignupRaw
@@ -385,6 +389,60 @@ type Mutation {
   To get the Job created for this, access the Job edge on SegmentBuild
   """
   SegmentBuildJobCreate(segment_id: ID!, create_paused: Boolean): SegmentBuild
+}
+
+type PermissionSet {
+  id: ID!
+  label: String!
+  description: String!
+  created_at: Date
+  updated_at: Date
+  PermissionSetPermissionList: [PermissionSetPermission]
+  UserPermissionSet: UserPermissionSet
+}
+
+input PermissionSetFilter {
+  ids: [ID]
+  label: String
+  description: String
+  created_before: Date
+  created_after: Date
+  updated_before: Date
+  updated_after: Date
+}
+
+type PermissionSetPermission {
+  id: ID!
+  permission_set_id: Int!
+  module: String!
+  value: String
+  created_at: Date
+  updated_at: Date
+  PermissionSet: PermissionSet
+}
+
+input PermissionSetPermissionFilter {
+  ids: [ID]
+  permission_set_id: Int
+  module: String
+  value: String
+  created_before: Date
+  created_after: Date
+  updated_before: Date
+  updated_after: Date
+}
+
+input PermissionSetPermissionSave {
+  id: ID
+  permission_set_id: Int
+  module: String
+  value: String
+}
+
+input PermissionSetSave {
+  id: ID
+  label: String
+  description: String
 }
 
 type Person {
@@ -533,9 +591,15 @@ type Query {
   User(id: ID!): User
   UserList(filter: UserFilter, pageSize: Int, page: Int): [User]
   UserStats(query: BlueSteelQueryInput!): QueriedStats
-  UserRole(id: ID!): UserRole
-  UserRoleList(filter: UserRoleFilter, pageSize: Int, page: Int): [UserRole]
-  UserRoleStats(query: BlueSteelQueryInput!): QueriedStats
+  PermissionSet(id: ID!): PermissionSet
+  PermissionSetList(filter: PermissionSetFilter, pageSize: Int, page: Int): [PermissionSet]
+  PermissionSetStats(query: BlueSteelQueryInput!): QueriedStats
+  PermissionSetPermission(id: ID!): PermissionSetPermission
+  PermissionSetPermissionList(filter: PermissionSetPermissionFilter, pageSize: Int, page: Int): [PermissionSetPermission]
+  PermissionSetPermissionStats(query: BlueSteelQueryInput!): QueriedStats
+  UserPermissionSet(id: ID!): UserPermissionSet
+  UserPermissionSetList(filter: UserPermissionSetFilter, pageSize: Int, page: Int): [UserPermissionSet]
+  UserPermissionSetStats(query: BlueSteelQueryInput!): QueriedStats
   ClientModuleConfig(id: ID!): ClientModuleConfig
   ClientModuleConfigList(filter: ClientModuleConfigFilter, pageSize: Int, page: Int): [ClientModuleConfig]
   ClientModuleConfigStats(query: BlueSteelQueryInput!): QueriedStats
@@ -842,6 +906,7 @@ type User {
   profile_picture: String!
   created_at: Date
   updated_at: Date
+  UserPermissionSet: UserPermissionSet
 }
 
 input UserFilter {
@@ -858,26 +923,28 @@ input UserFilter {
   updated_after: Date
 }
 
-type UserRole {
+type UserPermissionSet {
   id: ID!
   user_id: Int!
-  role: String!
+  permission_set_id: Int!
   created_at: Date
   updated_at: Date
+  User: User
+  PermissionSet: PermissionSet
 }
 
-input UserRoleFilter {
+input UserPermissionSetFilter {
   ids: [ID]
   user_id: Int
-  role: String
+  permission_set_id: Int
   created_before: Date
   created_after: Date
   updated_before: Date
   updated_after: Date
 }
 
-input UserRoleSave {
+input UserPermissionSetSave {
   id: ID
   user_id: Int
-  role: String
+  permission_set_id: Int
 }

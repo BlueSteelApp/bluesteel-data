@@ -31,20 +31,72 @@ const models = {
 		allow_create: false,
 		allow_update: false
 	},
-	user_role: {
-		name: 'UserRole',
-		tableName: 'user_role',
-		paranoid: true,
+
+	permission_set: {
+		name: 'PermissionSet',
+		tableName: 'permission_set',
+		fields: {
+			label: {
+				type: Sequelize.STRING(255),
+				allowNull: false
+			},
+			description: {
+				type: Sequelize.STRING(255),
+				allowNull: false
+			}
+		}
+	},
+	permission_set_permission: {
+		name: 'PermissionSetPermission',
+		tableName: 'permission_set_permission',
+		fields: {
+			permission_set_id: {
+				type: Sequelize.INTEGER(11),
+				allowNull: false
+			},
+			module: {
+				type: Sequelize.STRING(64),
+				allowNull: false
+			},
+			value: {
+				type: Sequelize.STRING(64),
+				allowNull: true
+			}
+		},
+		associations: [{
+			name: 'PermissionSet',
+			options: {
+				type: 'ManyToOne',
+				source_field: 'permission_set_id'
+			}
+		}]
+	},
+	user_permission_set: {
+		name: 'UserPermissionSet',
+		tableName: 'user_permission_set',
 		fields: {
 			user_id: {
 				type: Sequelize.INTEGER(11),
 				allowNull: false
 			},
-			role: {
-				type: Sequelize.STRING(32),
+			permission_set_id: {
+				type: Sequelize.INTEGER(11),
 				allowNull: false
 			}
-		}
+		},
+		associations: [{
+			name: 'User',
+			options: {
+				type: 'OneToOne',
+				source_field: 'user_id'
+			}
+		}, {
+			name: 'PermissionSet',
+			options: {
+				type: 'OneToOne',
+				source_field: 'permission_set_id'
+			}
+		}]
 	}
 };
 

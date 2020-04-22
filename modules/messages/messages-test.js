@@ -12,7 +12,7 @@ describe('messages-test', function() {
 		MessageSet=sqlWrapper.getModel('MessageSet');
 	});
 
-	beforeEach('get models', async function() {
+	beforeEach('delete old data', async function() {
 		await Campaign.destroy({truncate:true});
 		await MessageSet.destroy({truncate:true});
 	});

@@ -123,13 +123,99 @@ Wrapper.prototype.assembleModels=function(models) {
 		defined[name]=Object.assign({},x,{model});
 	});
 
-	models.forEach(x => {
-		if(x.associations) x.associations.forEach(a => {
-			const {name,build}=a;
+	models.filter(x=>x.associations).forEach(x => {
+		x.associations.forEach(a => {
+			const {name,build,options}=a;
 			if(!name) throw new Error('invalid association - name is required');
-			const target = sequelize.model(name);
+
+			let target = sequelize.model(name);
 			if(!target) throw new Error('model does not exist');
-			build(defined[x.name].model,target);
+
+			if(options && build) throw new Error('options _or_ build must be specified');
+
+			if(build) {
+				build(defined[x.name].model,target);
+				return;
+			}
+
+			let{source_field,target_field}=options;
+			if(!source_field && !target_field) throw new Error('source_field or target_field required');
+
+			source_field = source_field || 'id';
+			target_field = target_field || 'id';
+
+			let source = defined[x.name].model;
+
+			const {type}=options;
+			switch(type.toLowerCase()) {
+			case 'onetoone': {
+				if(source_field == 'id') {
+					let temp = source;
+					source = target;
+					target = temp;
+
+					temp = source_field;
+					source_field = target_field;
+					target_field = temp;
+				}
+
+				source.hasOne(target, {
+					as: target.name,
+					sourceKey: source_field,
+					foreignKey: target_field
+				});
+				target.belongsTo(source, {
+					as: source.name,
+					targetKey: source_field,
+					foreignKey: target_field
+				});
+
+				source.addValidate(target.name, async function() {
+					const value = this[source_field];
+					if(!value) return;
+					const other = await target.findByPk(value);
+					if(!other) throw new Error(target.name+' with id '+value+' does not exist');
+				});
+
+				break;
+			}
+
+			case 'manytoone': {
+				let temp = source;
+				source = target;
+				target = temp;
+
+				temp = source_field;
+				source_field = target_field;
+				target_field = temp;
+			}// eslint-disable-next-line no-fallthrough
+			case 'onetomany': {
+				source.hasMany(target, {
+					as: target.name,
+					sourceKey: source_field,
+					foreignKey: target_field
+				});
+				target.belongsTo(source, {
+					as: source.name,
+					targetKey: source_field,
+					foreignKey: target_field
+				});
+
+				console.log('source:',source,'target:',target);
+				target.addValidate(source.name, async function() {
+					const value = this[target_field];
+					console.log('checking',target_field,value);
+					if(!value) return;
+					const other = await source.findByPk(value);
+					if(!other) throw new Error(source.name+' with id '+value+' does not exist');
+				});
+
+				break;
+			}
+
+			default: {
+				throw new Error('Invalid type:' +type);
+			}}
 		});
 	});
 }
