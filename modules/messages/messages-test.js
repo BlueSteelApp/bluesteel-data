@@ -36,7 +36,7 @@ describe('messages-test', function() {
 						campaign_id: -1
 					});
 				}, {
-					message: "Validation error: campaign does not exist"
+					message: "Validation error: Campaign with id -1 does not exist"
 				});
 			});
 		})

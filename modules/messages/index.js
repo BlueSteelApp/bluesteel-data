@@ -27,21 +27,9 @@ const models = {
 		associations: [{
 			name: 'Campaign',
 
-			build: (MessageSet,Campaign) => {
-				MessageSet.belongsTo(Campaign,{
-					validate:false,
-					through:'campaign_id',
-					as: 'Campaign'
-				});
-				MessageSet.addValidate('campaignExists', async function() {
-					const{campaign_id}=this;
-					if(!await Campaign.findByPk(campaign_id)) throw new Error('campaign does not exist');
-				});
-				Campaign.hasMany(MessageSet,{
-					validate:false,
-					foreignKey: 'campaign_id',
-					as: 'MessageSet'
-				});
+			options: {
+				type: 'ManyToOne',
+				source_field: 'campaign_id'
 			}
 		}]
 	}
