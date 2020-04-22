@@ -24,27 +24,22 @@ const models = {
 				allowNull: true
 			},
 		},
-		hooks: {
-			beforeCreate: async (instance,opts) => {
-				//const c = await instance.getCampaign(); //This fails in beforeCreate -- perhaps because the instance doesn't have the campaign_id set?
-				let Campaign=opts.transaction.sequelize.model("Campaign");
-				const c = await Campaign.findByPk(instance.dataValues.campaign_id);
-				if(!c){
-					console.error(instance.dataValues);
-					throw new Error('campaign does not exist');
-				}
-			}
-		},
 		associations: [{
 			name: 'Campaign',
+
 			build: (MessageSet,Campaign) => {
 				MessageSet.belongsTo(Campaign,{
 					validate:false,
 					through:'campaign_id',
 					as: 'Campaign'
 				});
+				MessageSet.addValidate('campaignExists', async function() {
+					const{campaign_id}=this;
+					if(!await Campaign.findByPk(campaign_id)) throw new Error('campaign does not exist');
+				});
 				Campaign.hasMany(MessageSet,{
 					validate:false,
+					foreignKey: 'campaign_id',
 					as: 'MessageSet'
 				});
 			}

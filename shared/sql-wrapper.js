@@ -94,10 +94,12 @@ Wrapper.prototype.assembleModels=function(models) {
 
 		if(!name||!fields) throw new Error('name and fields are required for each model');
 
+		let validate = x.validate || {};
+
 		const options = {
 			tableName: tableName||name,
 			hooks: x.hooks||{},
-			validate: x.validate || {},
+			validate,
 			timestamps: true,
 			createdAt: 'created_at',
 			updatedAt: 'updated_at',
@@ -111,8 +113,16 @@ Wrapper.prototype.assembleModels=function(models) {
 		}
 
 		const model=sequelize.define(name,fields,options);
+
+		if(model.addValidate) throw new Error('addValidate already exists');
+		model.addValidate = function(name, func) {
+			if(model.options.validate[name]) throw new Error(name+' validate already exists');
+			model.options.validate[name] = func;
+		};
+
 		defined[name]=Object.assign({},x,{model});
 	});
+
 	models.forEach(x => {
 		if(x.associations) x.associations.forEach(a => {
 			const {name,build}=a;
