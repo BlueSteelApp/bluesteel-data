@@ -177,6 +177,37 @@ enum EmailDeliveryStatus {
   UNSUBSCRIBE
 }
 
+type EmailSubscriptionStatus {
+  id: ID!
+  subscription_id: Int!
+  channel: Int!
+  person_email_id: Int!
+  status: Int!
+  created_at: Date
+  updated_at: Date
+  PersonEmail: PersonEmail
+}
+
+input EmailSubscriptionStatusFilter {
+  ids: [ID]
+  subscription_id: Int
+  channel: Int
+  person_email_id: Int
+  status: Int
+  created_before: Date
+  created_after: Date
+  updated_before: Date
+  updated_after: Date
+}
+
+input EmailSubscriptionStatusSave {
+  id: ID
+  subscription_id: Int
+  channel: Int
+  person_email_id: Int
+  status: Int
+}
+
 type EmailTemplate {
   id: ID!
   label: String
@@ -211,7 +242,6 @@ type Job {
   updated_at: Date
   JobData: JobData
   TriggeringUpload: Upload
-  UploadImport: UploadImport
 }
 
 type JobData {
@@ -295,12 +325,14 @@ type Mutation {
   PersonPhoneDelete(id: ID!): PersonPhone
   SegmentSave(record: SegmentSave!): Segment
   SegmentDelete(id: ID!): Segment
-  SegmentBuildSave(record: SegmentBuildSave!): SegmentBuild
-  SegmentBuildDelete(id: ID!): SegmentBuild
   SegmentPersonSave(record: SegmentPersonSave!): SegmentPerson
   SegmentPersonDelete(id: ID!): SegmentPerson
   TransactionSave(record: TransactionSave!): Transaction
   TransactionDelete(id: ID!): Transaction
+  SubscriptionSave(record: SubscriptionSave!): Subscription
+  SubscriptionDelete(id: ID!): Subscription
+  EmailSubscriptionStatusSave(record: EmailSubscriptionStatusSave!): EmailSubscriptionStatus
+  EmailSubscriptionStatusDelete(id: ID!): EmailSubscriptionStatus
   CampaignSave(record: CampaignSave!): Campaign
   CampaignDelete(id: ID!): Campaign
   MessageSetSave(record: MessageSetSave!): MessageSet
@@ -339,6 +371,18 @@ type Mutation {
   start until you explicitly call 'Mutation.JobStart'
   """
   UploadImportCreate(label: String, import_type: String!, upload_id: ID!): UploadImport
+
+  """
+  Creates the following objects:
+  - SegmentBuild: Holding the SegmentID and the information of this discrete build
+  - Job: The job object managing this SegmentBuild, pointing to the SegmentBuild
+  
+  By default, create_paused = true. Set to false to create this job and immediately
+  set it to "queued".
+  
+  To get the Job created for this, access the Job edge on SegmentBuild
+  """
+  SegmentBuildJobCreate(segment_id: ID!, create_paused: Boolean): SegmentBuild
 }
 
 type Person {
@@ -362,6 +406,7 @@ type PersonEmail {
   created_at: Date
   updated_at: Date
   Person: Person
+  EmailSubscriptionStatusList: [EmailSubscriptionStatus]
 }
 
 input PersonEmailFilter {
@@ -528,6 +573,12 @@ type Query {
   Transaction(id: ID!): Transaction
   TransactionList(filter: TransactionFilter, pageSize: Int, page: Int): [Transaction]
   TransactionStats(query: BlueSteelQueryInput!): QueriedStats
+  Subscription(id: ID!): Subscription
+  SubscriptionList(filter: SubscriptionFilter, pageSize: Int, page: Int): [Subscription]
+  SubscriptionStats(query: BlueSteelQueryInput!): QueriedStats
+  EmailSubscriptionStatus(id: ID!): EmailSubscriptionStatus
+  EmailSubscriptionStatusList(filter: EmailSubscriptionStatusFilter, pageSize: Int, page: Int): [EmailSubscriptionStatus]
+  EmailSubscriptionStatusStats(query: BlueSteelQueryInput!): QueriedStats
   Campaign(id: ID!): Campaign
   CampaignList(filter: CampaignFilter, pageSize: Int, page: Int): [Campaign]
   CampaignStats(query: BlueSteelQueryInput!): QueriedStats
@@ -567,6 +618,7 @@ type SegmentBuild {
   created_at: Date
   updated_at: Date
   Segment: Segment
+  Job: Job
 }
 
 input SegmentBuildFilter {
@@ -577,12 +629,6 @@ input SegmentBuildFilter {
   created_after: Date
   updated_before: Date
   updated_after: Date
-}
-
-input SegmentBuildSave {
-  id: ID
-  segment_id: Int
-  query: JSON
 }
 
 input SegmentFilter {
@@ -669,6 +715,30 @@ input SignupRawSave {
   email: String
   phone: String
   source_code: String
+}
+
+type Subscription {
+  id: ID!
+  label: String!
+  description: String!
+  created_at: Date
+  updated_at: Date
+}
+
+input SubscriptionFilter {
+  ids: [ID]
+  label: String
+  description: String
+  created_before: Date
+  created_after: Date
+  updated_before: Date
+  updated_after: Date
+}
+
+input SubscriptionSave {
+  id: ID
+  label: String
+  description: String
 }
 
 type Transaction {

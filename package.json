@@ -55,7 +55,7 @@
   },
   "husky": {
     "hooks": {
-      "pre-commit": "lint-staged && npm run build-schema-file && git add ./schema.graphql"
+      "pre-commit": "./prevent-migration-edits.sh && lint-staged && npm run build-schema-file && git add ./schema.graphql"
     }
   },
   "lint-staged": {
@@ -64,7 +64,7 @@
   "devDependencies": {
     "babel-eslint": "^10.0.3",
     "eslint": "^6.8.0",
-    "husky": "^4.2.3",
+    "husky": "^4.2.5",
     "lint-staged": "^10.0.7",
     "webpack": "^4.29.4",
     "webpack-node-externals": "^1.7.2"

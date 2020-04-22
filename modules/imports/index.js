@@ -41,17 +41,12 @@ const models = {
 			}
 		},{
 			name: 'Job',
+			gql_one_way: true,
 			build: (UploadImport,Job) => {
 				UploadImport.hasOne(Job, {
 					validate: false,
 					foreignKey: 'job_definition_id',
 					as: 'Job'
-				});
-				Job.belongsTo(UploadImport, {
-					validate: false,
-					targetKey: 'id',
-					foreignKey: 'job_definition_id',
-					as: 'UploadImport'
 				});
 			}
 		}]

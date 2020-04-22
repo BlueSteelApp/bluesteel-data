@@ -32,22 +32,17 @@ GraphQlServer.prototype.start=async function() {
 		}),
 		modules: gqlModules,
 		formatError: (err) => {
-			//Be sure to log the error
 			console.error(err);
-			if (err && err.extensions && err.extensions.exception){
-				console.error(err.extensions.exception.stacktrace);
-			}
-    // Filter out any specific error
-    //if (err.message.startsWith("Database Error: ")) {return new Error('Internal server error');}
-
-    // Otherwise return the original error.  The error can also
-    // be manipulated in other ways, so long as it's returned.
-    return err;
-  },
+			if(!err.originalError) return err;
+			console.error(err.originalError.stack);
+			return err;
+		},
 	});
 
+	const auth_config = typeof auth.config == 'function' ? auth.config() : (auth.config || {});
+
 	app.get('/config', (req,res) => {
-		res.json({auth_method:auth.auth_method});
+		res.json({auth_method:auth.auth_method, auth_config});
 	});
 
 	app.use('/graphql', (req,res,next) => auth.middleware(req,res,next));
