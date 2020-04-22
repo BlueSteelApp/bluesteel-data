@@ -147,7 +147,6 @@ Wrapper.prototype.processPagedQuery=async function(model,options,handle) {
 		handle=options;
 		options = null;
 	}
-	throw "foo";
 	options=options||{};
 	const {offset}=options;
 	const findOptions = Object.assign({},options);
