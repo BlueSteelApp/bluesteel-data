@@ -298,7 +298,8 @@ YasqlQueryRunner.prototype.loadToTable=async function({table}) {
 	});
 }
 
-YasqlQueryRunner.prototype.run = async function({limit}) {
+YasqlQueryRunner.prototype.run = async function(opts) {
+	let {limit}=(opts || {})
 	const sql = await this.getSql({limit});
 	return this.sqlWrapper.runRawQuery({sql});
 }

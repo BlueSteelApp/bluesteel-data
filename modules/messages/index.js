@@ -25,9 +25,14 @@ const models = {
 			},
 		},
 		hooks: {
-			beforeCreate: async (instance) => {
-				const c = await instance.getCampaign();
-				if(!c) throw new Error('campaign does not exist');
+			beforeCreate: async (instance,opts) => {
+				//const c = await instance.getCampaign(); //This fails in beforeCreate -- perhaps because the instance doesn't have the campaign_id set?
+				let Campaign=opts.transaction.sequelize.model("Campaign");
+				const c = await Campaign.findByPk(instance.dataValues.campaign_id);
+				if(!c){
+					console.error(instance.dataValues);
+					throw new Error('campaign does not exist');
+				}
 			}
 		},
 		associations: [{

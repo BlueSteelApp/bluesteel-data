@@ -31,6 +31,19 @@ GraphQlServer.prototype.start=async function() {
 			wrapper:sqlWrapper.getContextAwareWrapper({user})
 		}),
 		modules: gqlModules,
+		formatError: (err) => {
+			//Be sure to log the error
+			console.error(err);
+			if (err && err.extensions && err.extensions.exception){
+				console.error(err.extensions.exception.stacktrace);
+			}
+    // Filter out any specific error
+    //if (err.message.startsWith("Database Error: ")) {return new Error('Internal server error');}
+
+    // Otherwise return the original error.  The error can also
+    // be manipulated in other ways, so long as it's returned.
+    return err;
+  },
 	});
 
 	app.get('/config', (req,res) => {

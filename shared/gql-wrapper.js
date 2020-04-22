@@ -328,8 +328,11 @@ Wrapper.prototype.getModelDefsAndResolvers=function(type) {
 				const invalidTargetStats = query.outputs.filter(x => x.target && x.target != name);
 				if(invalidTargetStats.length) throw new Error('invalid stats - must be against '+name);
 				query.conditions = query.conditions || [];
+				console.log("Getting runner");
 				const runner = typeWrapper.getYasqlQueryRunner(query);
+				console.log("Got runner,running");
 				const results = await runner.run();
+				console.log("Finished");
 				if(results.length != 1) throw new Error('Must return a single row');
 				const stats = results[0];
 				return {
