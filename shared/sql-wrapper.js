@@ -74,7 +74,10 @@ Wrapper.prototype.waitForDatabase=async function(count) {
 	}
 };
 
-Wrapper.prototype.assembleModels=function(models) {
+Wrapper.prototype.assembleModels=function(models, options) {
+	options = options || {};
+	const {skip_associations} = options;
+
 	const defined = this.defined = this.defined || {};
 
 	if(!models) throw new Error('models is a required parameter');
@@ -122,6 +125,9 @@ Wrapper.prototype.assembleModels=function(models) {
 
 		defined[name]=Object.assign({},x,{model});
 	});
+
+	// sometimes (ie, during migration) we don't want associations defined
+	if(skip_associations) return;
 
 	models.filter(x=>x.associations).forEach(x => {
 		x.associations.forEach(a => {

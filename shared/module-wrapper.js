@@ -82,23 +82,30 @@ ModulesWrapper.prototype.getJobRunnerDefinition=function({job_type}) {
 
 ModulesWrapper.prototype.runMigrations=async function() {
 	await this.sqlWrapper.waitForDatabase();
-	const nonShared = this.installed.filter(x=>!x.shared);
-	for(let x in nonShared) {
-		const m = nonShared[x];
-		let migrationsPath; // =m.migrationsPath||path.join(m.dir,'./migrations');
-		if(m.migrations) migrationsPath=m.migrations;
-		else if(!m.dir) throw new Error('no migrations specific, nor dir for: '+x);
-		else migrationsPath=path.join(m.dir,'./migrations');
-		await this.sqlWrapper.runMigrations(migrationsPath);
-	}
+	await this.initialize({skip_associations:true});
+	const {sequelize}=this.sqlWrapper;
+	await sequelize.sync({
+		alter: {
+			drop: false
+		}
+	});
+	// const nonShared = this.installed.filter(x=>!x.shared);
+	// for(let x in nonShared) {
+	// 	const m = nonShared[x];
+	// 	let migrationsPath; // =m.migrationsPath||path.join(m.dir,'./migrations');
+	// 	if(m.migrations) migrationsPath=m.migrations;
+	// 	else if(!m.dir) throw new Error('no migrations specific, nor dir for: '+x);
+	// 	else migrationsPath=path.join(m.dir,'./migrations');
+	// 	await this.sqlWrapper.runMigrations(migrationsPath);
+	// }
 };
 
-ModulesWrapper.prototype.initialize=function() {
+ModulesWrapper.prototype.initialize=function(opts) {
 	if(this.initialized) throw new Error('already initialized');
 	const{sqlWrapper}=this;
 	this.installed.filter(x=>!x.shared).forEach(i => {
 		const{models}=i;
-		sqlWrapper.assembleModels(models);
+		sqlWrapper.assembleModels(models, opts);
 	});
 	this.initialized = true;
 };
