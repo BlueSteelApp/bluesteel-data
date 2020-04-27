@@ -235,12 +235,37 @@ type File {
   file_path: String
   created_at: Date
   updated_at: Date
+  FileImport: FileImport
 }
 
 input FileFilter {
   ids: [ID]
   label: String
   file_path: String
+  created_before: Date
+  created_after: Date
+  updated_before: Date
+  updated_after: Date
+}
+
+type FileImport {
+  id: ID!
+  import_type: String!
+  import_raw_table: String!
+  file_id: Int!
+  status: String
+  created_at: Date
+  updated_at: Date
+  File: File
+  Job: Job
+}
+
+input FileImportFilter {
+  ids: [ID]
+  import_type: String
+  import_raw_table: String
+  file_id: Int
+  status: String
   created_before: Date
   created_after: Date
   updated_before: Date
@@ -371,6 +396,12 @@ type Mutation {
   currently have status = 'waiting'.
   """
   JobStart(id: ID!): Job
+
+  """
+  Creates the FileImport and Job based on an uploaded file. The Job will be
+  set to "waiting" - it will not start until you explicitly call 'Mutation.JobStart'
+  """
+  FileImportCreate(label: String, import_type: String!, file_id: ID!): FileImport
 
   """
   Creates the following objects:
@@ -606,6 +637,9 @@ type Query {
   File(id: ID!): File
   FileList(filter: FileFilter, pageSize: Int, page: Int): [File]
   FileStats(query: BlueSteelQueryInput!): QueriedStats
+  FileImport(id: ID!): FileImport
+  FileImportList(filter: FileImportFilter, pageSize: Int, page: Int): [FileImport]
+  FileImportStats(query: BlueSteelQueryInput!): QueriedStats
   PersonQuery(id: ID!): PersonQuery
   PersonQueryList(filter: PersonQueryFilter, pageSize: Int, page: Int): [PersonQuery]
   PersonQueryStats(query: BlueSteelQueryInput!): QueriedStats
