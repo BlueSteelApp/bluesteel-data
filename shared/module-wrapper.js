@@ -1,6 +1,6 @@
 const SqlWrapper = require('./sql-wrapper');
 const GqlWrapper = require('./gql-wrapper');
-const path=require('path');
+// const path=require('path');
 const gql=require('graphql-tag');
 
 const YasqlQueryRunner = require('./yasql-query');
@@ -10,8 +10,8 @@ const fullModuleList = [
 	'client-module-config',
 
 	'jobs',
-	'uploads',
-	'imports',
+	'files',
+	// 'imports',
 	'person-query',
 
 	'signups',

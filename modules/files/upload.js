@@ -4,7 +4,7 @@ const fs=require('fs');
 
 function FileUpload({sqlWrapper, uploadFileTempDir}) {
 	this.sqlWrapper = sqlWrapper;
-	this.Upload = sqlWrapper.getModel('Upload');
+	this.Upload = sqlWrapper.getModel('File');
 	if(!uploadFileTempDir) throw new Error('uploadFileTempDir is a required option');
 	this.uploadFileTempDir = uploadFileTempDir;
 }

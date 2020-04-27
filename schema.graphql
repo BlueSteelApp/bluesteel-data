@@ -229,6 +229,24 @@ input EmailTemplateSave {
   label: String
 }
 
+type File {
+  id: ID!
+  label: String!
+  file_path: String
+  created_at: Date
+  updated_at: Date
+}
+
+input FileFilter {
+  ids: [ID]
+  label: String
+  file_path: String
+  created_before: Date
+  created_after: Date
+  updated_before: Date
+  updated_after: Date
+}
+
 type Job {
   id: ID!
   label: String!
@@ -241,7 +259,6 @@ type Job {
   created_at: Date
   updated_at: Date
   JobData: JobData
-  TriggeringUpload: Upload
 }
 
 type JobData {
@@ -354,29 +371,6 @@ type Mutation {
   currently have status = 'waiting'.
   """
   JobStart(id: ID!): Job
-
-  """
-  Represents a file that a user has uploaded, or plans to upload. To upload the
-  file, make a multi-form POST request to the location specified by Upload.post_uri.
-  
-  The file form should be 'upload_file'.
-  """
-  UploadCreate(label: String!): Upload
-
-  """
-  Creates the following objects:
-  - Upload: allowing a user to upload a file to be import once complete
-  - UploadImport: the configuration for importing the uploaded file
-  - Job: status set to 'waiting'. will be set to 'queued' upon completion of the upload
-  """
-  UploadImportJobCreate(label: String, import_type: String!): UploadImport
-
-  """
-  Similar to UploadImportJobCreate, except it creates the UploadImport and Job
-  based on a previously existing Upload. The Job will be set to "waiting" - it will not
-  start until you explicitly call 'Mutation.JobStart'
-  """
-  UploadImportCreate(label: String, import_type: String!, upload_id: ID!): UploadImport
 
   """
   Creates the following objects:
@@ -609,12 +603,9 @@ type Query {
   JobData(id: ID!): JobData
   JobDataList(filter: JobDataFilter, pageSize: Int, page: Int): [JobData]
   JobDataStats(query: BlueSteelQueryInput!): QueriedStats
-  Upload(id: ID!): Upload
-  UploadList(filter: UploadFilter, pageSize: Int, page: Int): [Upload]
-  UploadStats(query: BlueSteelQueryInput!): QueriedStats
-  UploadImport(id: ID!): UploadImport
-  UploadImportList(filter: UploadImportFilter, pageSize: Int, page: Int): [UploadImport]
-  UploadImportStats(query: BlueSteelQueryInput!): QueriedStats
+  File(id: ID!): File
+  FileList(filter: FileFilter, pageSize: Int, page: Int): [File]
+  FileStats(query: BlueSteelQueryInput!): QueriedStats
   PersonQuery(id: ID!): PersonQuery
   PersonQueryList(filter: PersonQueryFilter, pageSize: Int, page: Int): [PersonQuery]
   PersonQueryStats(query: BlueSteelQueryInput!): QueriedStats
@@ -664,6 +655,7 @@ type Query {
   EmailDeliveryList(filter: EmailDeliveryFilter, pageSize: Int, page: Int): [EmailDelivery]
   EmailDeliveryStats(query: BlueSteelQueryInput!): QueriedStats
   Me: User!
+  upload_uri: String!
   ExecutePersonQuery(conditions: [BlueSteelQueryComponentInput]): PersonQueryResult
   PersonListExtra(filter: PersonFilterExtra, pageSize: Int, page: Int): [Person]
 }
@@ -839,61 +831,6 @@ input TransactionSave {
   amount: String
   ts: Date
   source_code: String
-}
-
-type Upload {
-  id: ID!
-  label: String!
-  filename: String!
-  file_path: String
-  status: String!
-  on_completed_job_id: Int
-  started_at: Date
-  completed_at: Date
-  created_at: Date
-  updated_at: Date
-  OnCompletedJob: Job
-  UploadImport: UploadImport
-  post_uri: String!
-}
-
-input UploadFilter {
-  ids: [ID]
-  label: String
-  filename: String
-  file_path: String
-  status: String
-  on_completed_job_id: Int
-  started_at: Date
-  completed_at: Date
-  created_before: Date
-  created_after: Date
-  updated_before: Date
-  updated_after: Date
-}
-
-type UploadImport {
-  id: ID!
-  import_type: String!
-  import_raw_table: String!
-  upload_id: Int!
-  status: String
-  created_at: Date
-  updated_at: Date
-  Upload: Upload
-  Job: Job
-}
-
-input UploadImportFilter {
-  ids: [ID]
-  import_type: String
-  import_raw_table: String
-  upload_id: Int
-  status: String
-  created_before: Date
-  created_after: Date
-  updated_before: Date
-  updated_after: Date
 }
 
 type User {

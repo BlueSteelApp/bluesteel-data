@@ -1,0 +1,70 @@
+const sequelize=require('sequelize');
+const {gql}=require('apollo-server-express');
+
+const {BLUESTEEL_UPLOAD_URI}=process.env;
+
+const models = {
+	upload: {
+		name: 'File',
+		tableName: 'file',
+		fields: {
+			label: {
+				type: sequelize.STRING(255),
+				allowNull: false,
+			},
+			file_path: {
+				type: sequelize.TEXT(),
+				allowNull :true
+			},
+
+		},
+		allow_update: false,
+		allow_create: false
+	},
+};
+
+function getEndpoints({sqlWrapper}) {
+	const FileUpload = require('./upload');
+	const fileUpload = new FileUpload({
+		sqlWrapper: sqlWrapper,
+		uploadFileTempDir: process.env.BLUESTEEL_UPLOAD_FILE_TMP_DIR
+	});
+
+	return [{
+		method: 'post',
+		path: '/upload',
+		handle: async (req,res) => {
+			try {
+				const upload = await fileUpload.uploadRequest({req,res});
+				const {id}=upload;
+				res.status(200).jsonp({id});
+			} catch(e) {
+				console.error(e);
+				res.status(500).jsonp('Failed to upload');
+			}
+		}
+	}]
+}
+
+module.exports={
+	name: 'Uploads',
+	models,
+	dir: __dirname,
+	getEndpoints,
+	gql: () => {
+		const typeDefs=gql`
+extend type Query {
+	upload_uri: String!
+}
+`;
+		const resolvers = {
+			Query: {
+				upload_uri: () => {
+					if(!BLUESTEEL_UPLOAD_URI) throw new Error('BLUESTEEL_UPLOAD_URI is not set');
+					return BLUESTEEL_UPLOAD_URI;
+				}
+			}
+		};
+		return {typeDefs,resolvers};
+	}
+};
