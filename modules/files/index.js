@@ -50,7 +50,7 @@ async function getEndpoints({sqlWrapper}) {
 }
 
 module.exports={
-	name: 'Uploads',
+	name: 'Files',
 	models,
 	dir: __dirname,
 	getEndpoints,
