@@ -48,6 +48,16 @@ GraphQlServer.prototype.start=async function() {
 	app.use('/graphql', (req,res,next) => auth.middleware(req,res,next));
 	server.applyMiddleware({ app });
 
+	// include other modules
+
+	const endpoints = await configuredModules.getEndpoints();
+	endpoints.forEach(x => {
+		const {path,method='get',handle}=x;
+		console.log('Registering:',method,path);
+		app[method](path, handle);
+	});
+
+
 	app.get('/', (req, res) => res.send('Hello BlueSteel'));
 
 	app.listen({ port: 5000 }, () =>

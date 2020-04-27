@@ -5,7 +5,7 @@
   "main": "app.js",
   "scripts": {
     "start": "npm-run-all migrate:full run:watch",
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "mocha ./modules/**/*test.js",
     "lint": "eslint ./app",
     "build": "webpack",
     "build:watch": "webpack --watch",
