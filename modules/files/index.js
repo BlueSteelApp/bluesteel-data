@@ -23,12 +23,14 @@ const models = {
 	},
 };
 
-function getEndpoints({sqlWrapper}) {
+async function getEndpoints({sqlWrapper}) {
 	const FileUpload = require('./upload');
 	const fileUpload = new FileUpload({
 		sqlWrapper: sqlWrapper,
 		uploadFileTempDir: process.env.BLUESTEEL_UPLOAD_FILE_TMP_DIR
 	});
+
+	await fileUpload.initialize();
 
 	return [{
 		method: 'post',
@@ -36,7 +38,8 @@ function getEndpoints({sqlWrapper}) {
 		handle: async (req,res) => {
 			try {
 				const upload = await fileUpload.uploadRequest({req,res});
-				const {id}=upload;
+				console.log('upload:',upload);
+				const id=upload;
 				res.status(200).jsonp({id});
 			} catch(e) {
 				console.error(e);
