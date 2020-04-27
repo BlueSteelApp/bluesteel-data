@@ -36,7 +36,7 @@ const models = {
 			},
 			subject:{
 				type: sequelize.TEXT(),
-				allowNull: false
+				allowNull: true
 			},
 			from_name:{
 				type: sequelize.STRING(255),

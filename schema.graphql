@@ -101,7 +101,7 @@ type EmailBlast {
   label: String
   message_set_id: Int!
   query_id: Int
-  subject: String!
+  subject: String
   from_name: String!
   from_email: String!
   html_body: String!
