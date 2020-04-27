@@ -18,5 +18,6 @@ const server = new GraphQlServer({
 	authMethod: BLUESTEEL_AUTH_METHOD
 });
 server.start().catch(e => {
+	console.error(e);
 	throw new Error(e);
 });

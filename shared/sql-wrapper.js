@@ -39,8 +39,8 @@ function Wrapper(options) {
 Wrapper.buildSequelize = buildSequelize;
 
 let envSequelize;
-Wrapper.buildSequelizeFromEnv = function() {
-	if(envSequelize) return envSequelize;
+Wrapper.buildSequelizeFromEnv = function(force) {
+	if(envSequelize && !force) return envSequelize;
 	const {
 		DATABASE_NAME:name,
 		DATABASE_USER:user,

@@ -125,6 +125,19 @@ ModulesWrapper.prototype.getGql=function() {
 	return gqlParts.filter(x=>x);
 };
 
+ModulesWrapper.prototype.getEndpoints=async function() {
+	const{installed,sqlWrapper}=this;
+	const endpoints = [];
+	await Promise.all(installed
+		.filter(x=>x.getEndpoints)
+		.map(async x=>{
+			const arr = await x.getEndpoints({sqlWrapper});
+			if(!arr) throw new Error('failed to get endpoints for: '+x.name);
+			arr.forEach(y => endpoints.push(y));
+		}));
+	return endpoints;
+}
+
 ModulesWrapper.prototype.close=function() {
 	this.sqlWrapper.close();
 }
@@ -132,7 +145,7 @@ ModulesWrapper.prototype.close=function() {
 module.exports=ModulesWrapper;
 ModulesWrapper.buildFromEnv = async function() {
 	require('dotenv').config();
-	const sequelize = SqlWrapper.buildSequelizeFromEnv();
+	const sequelize = SqlWrapper.buildSequelizeFromEnv(true);
 	const wrapper = new ModulesWrapper({
 		sequelize,
 		all_modules: true
