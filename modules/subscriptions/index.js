@@ -10,12 +10,12 @@ subscriptionChannel.forEach((type,index) => {
 });
 const {EMAIL,/*PHONE*/}=subscriptionChannelInverse;
 
-const status = [
+const statusList = [
 	'SUBSCRIBED',
 	'UNSUBSCRIBED'
 ];
 const statusInverse={};
-status.forEach((x,index) => {
+statusList.forEach((x,index) => {
 	statusInverse[x]=index;
 });
 // const {SUBSCRIBED,UNSUBSCRIBED}=statusInverse;
@@ -36,6 +36,7 @@ const models = {
 			}
 		}
 	},
+
 	// this is a scoped model built ontop of channel_subscription_status
 	email_subscription_status: {
 		name: "EmailSubscriptionStatus",
@@ -63,7 +64,7 @@ const models = {
 				type: sequelize.INTEGER(4),
 				allowNull: false,
 				validate: value => {
-					if(value < 0 || value > status.length) throw new Error('invalid status: '+value);
+					if(value < 0 || value > statusList.length) throw new Error('invalid status: '+value);
 				}
 			}
 		},
@@ -74,24 +75,48 @@ const models = {
 		},
 		associations: [{
 			name: 'PersonEmail',
-			build: (EmailSubscriptionStatus,PersonEmail) => {
-				PersonEmail.hasMany(EmailSubscriptionStatus, {
-					foreignKey: 'person_channel_id',
-					validate: false,
-					as: 'EmailSubscriptionStatus'
-				});
-				EmailSubscriptionStatus.belongsTo(PersonEmail, {
-					through: 'person_channel_id',
-					validate: false,
-					as: "PersonEmail"
-				});
+			options: {
+				type: "ManyToOne",
+				source_field: 'person_channel_id'
 			}
 		}]
 	},
 };
 
+function getEndpoints({sqlWrapper}) {
+	const SubscriptionManager = require('./manager');
+	const manager = new SubscriptionManager({sqlWrapper});
+
+	const {getTokenForPersonEmail} = require('./tokens');
+
+	return [{
+		path: '/subscriptions/:token/update',
+		method: 'post',
+		handle: async (req,res) => {
+			const {token}=req.params;
+			const parsed = await getTokenForPersonEmail(token);
+			const updates = req.body.updates;
+
+			if(updates && updates.length) await manager.updateSubscriptions(parsed, {updates});
+
+			return res.jsonp(await manager.getSubscriptionInformation(parsed));
+		}
+	},{
+		path: '/subscriptions/:token/list',
+		handle: async (req,res) => {
+			const {token}=req.params;
+			const parsed = await getTokenForPersonEmail(token);
+			const list = await manager.getSubscriptionInformation(parsed);
+			res.jsonp(list);
+		}
+	}]
+}
+
 module.exports={
+	tokens: require('./tokens'),
+
 	name: 'Subscriptions',
 	models,
-	dir: __dirname
+	dir: __dirname,
+	getEndpoints
 };

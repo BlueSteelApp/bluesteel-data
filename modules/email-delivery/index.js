@@ -56,16 +56,9 @@ const models = {
 		allow_create: false,
 		associations: [{
 			name: 'Person',
-			build: (EmailDelivery,Person) => {
-				EmailDelivery.belongsTo(Person,{
-					validate:false,
-					through:'person_id',
-					as: 'Person'
-				});
-				Person.hasMany(EmailDelivery,{
-					validate:false,
-					as: 'EmailDelivery'
-				});
+			options: {
+				type: 'ManyToOne',
+				source_field: 'person_id'
 			}
 		},{
 			name: 'EmailBlast',
