@@ -179,6 +179,7 @@ Wrapper.prototype.assembleModels=function(models, options) {
 				source.addValidate(target.name, async function() {
 					const value = this[source_field];
 					if(!value) return;
+					if(this.previous && value == this.previous(source_field)) return;
 					const other = await target.findByPk(value);
 					if(!other) throw new Error(target.name+' with id '+value+' does not exist');
 				});
@@ -212,6 +213,7 @@ Wrapper.prototype.assembleModels=function(models, options) {
 					const value = this[target_field];
 					console.log('checking',target_field,value);
 					if(!value) return;
+					if(this.previous && value == this.previous(target_field)) return;
 					const other = await source.findByPk(value);
 					if(!other) throw new Error(source.name+' with id '+value+' does not exist');
 				});
