@@ -18,7 +18,7 @@ const statusInverse={};
 statusList.forEach((x,index) => {
 	statusInverse[x]=index;
 });
-// const {SUBSCRIBED,UNSUBSCRIBED}=statusInverse;
+const {SUBSCRIBED,UNSUBSCRIBED}=statusInverse;
 
 const models = {
 	subscription: {
@@ -44,7 +44,8 @@ const models = {
 		fields: {
 			subscription_id: {
 				type: sequelize.INTEGER(11),
-				allowNull: false
+				allowNull: false,
+				unique: 'subscription-channel-person'
 			},
 			channel: {
 				type: sequelize.INTEGER(4),
@@ -52,13 +53,15 @@ const models = {
 				validate: value => {
 					if(value != EMAIL) throw new Error('channel must be '+EMAIL);
 				},
-				defaultValue: EMAIL
+				defaultValue: EMAIL,
+				unique: 'subscription-channel-person'
 			},
 			// person_email_id, person_phone_id, etc
 			person_email_id: {
 				field: 'person_channel_id',
 				type: sequelize.INTEGER(11),
-				allowNull: false
+				allowNull: false,
+				unique: 'subscription-channel-person'
 			},
 			status: {
 				type: sequelize.INTEGER(4),
@@ -83,8 +86,53 @@ const models = {
 	},
 };
 
+function SubscriptionManager(options) {
+	const {sqlWrapper}=options;
+	if(!sqlWrapper) throw new Error('sqlWrapper is a required option');
+
+	this.Subscription = sqlWrapper.getModel('Subscription');
+	this.EmailSubscriptionStatus = sqlWrapper.getModel('EmailSubscriptionStatus');
+}
+
+SubscriptionManager.prototype.getSubscriptionInformation=async function({id}) {
+	const{EmailSubscriptionStatus,Subscription}=this;
+	const subscriptionList = await EmailSubscriptionStatus.findAll({
+		where:{
+			person_email_id:id
+		},
+		include: Subscription
+	});
+
+	return subscriptionList;
+};
+
+SubscriptionManager.prototype.updateSubscriptions=async function({id:person_email_id}, options) {
+	const{updates}=options;
+
+	if(!updates || !Array.isArray(updates)) {
+		console.error('invalid updates:',JSON.stringify(updates));
+		return;
+	}
+
+	const values = updates.filter(x => {
+		if(x.status == null) return false;
+		if(typeof x.status == 'string') x.status = statusInverse[x.status.toUpperCase()];
+		return x.subscription_id != null && (x.status == SUBSCRIBED || x.status == UNSUBSCRIBED);
+	}).map(x => {
+		return {
+			person_email_id,
+			channel: EMAIL,
+			subscription_id: x.subscription_id,
+			status: x.status
+		}
+	});
+
+	await this.EmailSubscriptionStatus.bulkCreate(values, {
+		updateOnDuplicate: ['status']
+	});
+}
+
 function getEndpoints({sqlWrapper}) {
-	const SubscriptionManager = require('./manager');
 	const manager = new SubscriptionManager({sqlWrapper});
 
 	const {getTokenForPersonEmail} = require('./tokens');
