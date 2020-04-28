@@ -14,6 +14,8 @@ const fullModuleList = [
 	'imports',
 	'person-query',
 
+	'links',
+
 	'signups',
 
 	'people',

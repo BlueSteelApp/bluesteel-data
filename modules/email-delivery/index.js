@@ -1,5 +1,6 @@
 const Sequelize=require('Sequelize');
 const {gql}=require('apollo-server-express');
+const async=require('async');
 
 // VALUES PLACED HERE CANNOT CHANGE ORDER.
 // ONLY NEW VALUES CAN BE ADDED.
@@ -17,6 +18,7 @@ STATUS.forEach((k, i) => {
 	INVERSE_STATUS[k]=i;
 	INVERSE_STATUS[k.toLowerCase()]=i;
 });
+const {OPENED,CLICKED}=INVERSE_STATUS;
 
 const models = {
 	email_delivery: {
@@ -62,24 +64,93 @@ const models = {
 			}
 		},{
 			name: 'EmailBlast',
-			build: (EmailDelivery,EmailBlast) => {
-				EmailDelivery.belongsTo(EmailBlast,{
-					validate:false,
-					through:'person_id',
-					as: 'EmailBlast'
-				});
-				EmailBlast.hasMany(EmailDelivery,{
-					validate:false,
-					as: 'EmailDelivery'
-				});
+			options: {
+				type: 'ManyToOne',
+				source_field: 'email_blast_id'
 			}
 		}]
 	},
 };
 
+// click/open tokens = the email_delivery table .id field
+// expand to use an actual persistent queue later
+function getEndpoints({sqlWrapper}) {
+	const EmailDelivery=sqlWrapper.getModel('EmailDelivery');
+
+	async function updateDeliveryStatus(token,status) {
+		const email_delivery_id = token;
+		if(email_delivery_id == null) {
+			console.error('invalid empty email_delivery_id:');
+			return;
+		}
+		const delivery = await EmailDelivery.findByPk(email_delivery_id);
+		if(!delivery) {
+			console.error('invalid email_delivery_id:',email_delivery_id);
+			return;
+		}
+		if(delivery.status >= status) {
+			console.log('status',delivery.status,'already >',status);
+			return;
+		}
+
+		delivery.status = status;
+		await delivery.save();
+		return;
+	}
+
+	const openQueue = async.queue(async (token,cb) => {
+		try {
+			await updateDeliveryStatus(token,OPENED);
+		} catch(e) {
+			console.error(e);
+		}
+		cb();
+	},2);
+
+	const clickQueue = async.queue(async (token,cb) => {
+		try {
+			await updateDeliveryStatus(token,CLICKED);
+		} catch(e) {
+			console.error(e);
+		}
+		cb();
+	},2);
+
+	const clickCache={};
+	const Link = sqlWrapper.getModel('Link');
+	async function getClickTarget(id) {
+		if(clickCache[id]) return clickCache[id];
+		const link = await Link.findByPk(id);
+		// eslint-disable-next-line require-atomic-updates
+		clickCache[id] = link;
+		return link;
+	}
+
+	return [{
+		path: '/delivery/open/:token',
+		handle: (req,res) => {
+			const {token}=req.params;
+			openQueue.push(token);
+			return res.jsonp('opened');
+		}
+	}, {
+		path: '/delivery/click/:click_id/:token',
+		handle: async (req,res) => {
+			const {click_id,token}=req.params;
+			clickQueue.push(token);
+			const link = await getClickTarget(click_id);
+			if(!link) return res.jsonp({invalid:true});
+			const {uri} = link;
+			return res.redirect(uri);
+		}
+	}];
+}
+
 module.exports={
 	STATUS,
 	INVERSE_STATUS,
+
+	getEndpoints,
 
 	name: 'EmailDelivery',
 	models,

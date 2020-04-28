@@ -324,6 +324,30 @@ input JobFilter {
 
 scalar JSON
 
+type Link {
+  id: ID!
+  label: String!
+  uri: String!
+  created_at: Date
+  updated_at: Date
+}
+
+input LinkFilter {
+  ids: [ID]
+  label: String
+  uri: String
+  created_before: Date
+  created_after: Date
+  updated_before: Date
+  updated_after: Date
+}
+
+input LinkSave {
+  id: ID
+  label: String
+  uri: String
+}
+
 type ListMetadata {
   count: Int!
 }
@@ -363,6 +387,8 @@ type Mutation {
   UserPermissionSetDelete(id: ID!): UserPermissionSet
   PersonQuerySave(record: PersonQuerySave!): PersonQuery
   PersonQueryDelete(id: ID!): PersonQuery
+  LinkSave(record: LinkSave!): Link
+  LinkDelete(id: ID!): Link
   SignupRawSave(record: SignupRawSave!): SignupRaw
   SignupRawDelete(id: ID!): SignupRaw
   PersonSave(record: PersonSave!): Person
@@ -643,6 +669,9 @@ type Query {
   PersonQuery(id: ID!): PersonQuery
   PersonQueryList(filter: PersonQueryFilter, pageSize: Int, page: Int): [PersonQuery]
   PersonQueryStats(query: BlueSteelQueryInput!): QueriedStats
+  Link(id: ID!): Link
+  LinkList(filter: LinkFilter, pageSize: Int, page: Int): [Link]
+  LinkStats(query: BlueSteelQueryInput!): QueriedStats
   SignupRaw(id: ID!): SignupRaw
   SignupRawList(filter: SignupRawFilter, pageSize: Int, page: Int): [SignupRaw]
   SignupRawStats(query: BlueSteelQueryInput!): QueriedStats
