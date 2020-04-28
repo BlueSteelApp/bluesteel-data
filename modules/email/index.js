@@ -23,12 +23,6 @@ const models = {
 			message_set_id: {
 				type: sequelize.INTEGER(11),
 				allowNull: false,
-				validate: {
-					messageSetExists: async function(instance) {
-						const m = await instance.getMessageSet();
-						if(!m) throw new Error('message set does not exist');
-					}
-				}
 			},
 			query_id:{
 				type: sequelize.INTEGER(11),
@@ -40,19 +34,19 @@ const models = {
 			},
 			from_name:{
 				type: sequelize.STRING(255),
-				allowNull: false
+				allowNull: true
 			},
 			from_email:{
 				type: sequelize.STRING(255),
-				allowNull: false
+				allowNull: true
 			},
 			html_body:{
 				type: sequelize.TEXT(),
-				allowNull: false
+				allowNull: true
 			},
 			text_body:{
 				type: sequelize.TEXT(),
-				allowNull: false
+				allowNull: true
 			},
 			status: {
 				type: sequelize.STRING(32),
@@ -80,19 +74,13 @@ const models = {
 				})
 			},
 			aliases: ['EmailBlast', 'Query']
-		},{
+		},
+		{
 			name: 'MessageSet',
-			build: (EmailBlast,MessageSet) => {
-				EmailBlast.belongsTo(MessageSet,{
-					validate:false,
-					through:'message_set_id',
-					as: 'MessageSet'
-				});
-				MessageSet.hasMany(EmailBlast,{
-					validate:false,
-					as: 'EmailBlast'
-				});
-			}
+				options: {
+					type: 'ManyToOne',
+					source_field: 'message_set_id'
+				}
 		}]
 	},
 	email_template: {

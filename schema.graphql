@@ -102,10 +102,10 @@ type EmailBlast {
   message_set_id: Int!
   query_id: Int
   subject: String
-  from_name: String!
-  from_email: String!
-  html_body: String!
-  text_body: String!
+  from_name: String
+  from_email: String
+  html_body: String
+  text_body: String
   status: String!
   created_at: Date
   updated_at: Date
