@@ -55,6 +55,8 @@ describe('users-test', function() {
 			it('should succeed if the user and permission set exist', async function() {
 				// given
 				await User.create({id:1, label:'Zoolander Marketing',external_source:'test',external_id:1});
+				await PermissionSet.create({id:1,label:'test set',description:'for testing permissions'});
+
 				// then should work
 				await UserPermissionSet.create({id: 1, user_id: 1, permission_set_id:1});
 
@@ -63,6 +65,7 @@ describe('users-test', function() {
 			});
 
 			it('should fail if the user does not exist', async function() {
+				await PermissionSet.create({id:1,label:'test set',description:'for testing permissions'});
 				await assert.rejects(async () => {
 					await UserPermissionSet.create({id: 1, user_id: 1, permission_set_id:1});
 				}, {

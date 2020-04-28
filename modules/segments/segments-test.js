@@ -33,7 +33,7 @@ describe('segments-test', function() {
 	describe('gql resolvers - Mutation.SegmentBuildJobCreate', function() {
 		beforeEach('build sample data', async function() {
 			await PersonQuery.bulkCreate([
-				{id:1, query: 'person-query-def-1'}
+				{id:1, query: 'person-query-def-1', label:'Segment query'}
 			], {validate:false});
 			await Segment.bulkCreate([
 				{id:1,person_query_id:1,label:"My New Segment!"},
