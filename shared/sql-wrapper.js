@@ -95,7 +95,8 @@ Wrapper.prototype.assembleModels=function(models, options) {
 
 	const {sequelize}=this;
 	models.forEach(x => {
-		const{name,fields,tableName, defaultScope}=x;
+		const{name,tableName, defaultScope}=x;
+		let {fields} = x;
 
 		if(defined[name]) throw new Error('model with name '+name+' already exists');
 
@@ -118,6 +119,12 @@ Wrapper.prototype.assembleModels=function(models, options) {
 			options.paranoid = true;
 			options.deletedAt = 'deleted_at';
 		}
+
+		fields = Object.assign(fields);
+		Object.keys(fields).forEach(f => {
+			fields[f] = Object.assign(fields[f]);
+			if(fields[f] && fields[f].unique === true) fields[f].unique = f;
+		});
 
 		const model=sequelize.define(name,fields,options);
 
