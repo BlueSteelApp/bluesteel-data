@@ -22,17 +22,9 @@ const models = {
 		},
 		associations: [{
 			name: 'PersonQuery',
-			build: (Segment,PersonQuery) => {
-				PersonQuery.hasMany(Segment,{
-					validate:false,
-					as: 'Segment',
-					foreignKey: 'person_query_id'
-				});
-				Segment.belongsTo(PersonQuery,{
-					validate: false,
-					as: 'PersonQuery',
-					foreignKey: 'person_query_id'
-				});
+			options: {
+				type: 'ManyToOne',
+				source_field: 'person_query_id'
 			}
 		}]
 	},

@@ -22,24 +22,11 @@ const models = {
 				allowNull: true
 			},
 		},
-		hooks: {
-			beforeCreate: async (instance) => {
-				const person = await instance.getPerson();
-				if(!person) throw new Error('person does not exist');
-			}
-		},
 		associations: [{
 			name: 'Person',
-			build: (Transaction,Person) => {
-				Transaction.belongsTo(Person,{
-					validate:false,
-					through:'person_id',
-					as: 'Person'
-				});
-				Person.hasMany(Transaction,{
-					validate:false,
-					as: 'Transaction'
-				});
+			options: {
+				type: 'ManyToOne',
+				source_field: 'person_id'
 			}
 		}]
 	}

@@ -40,10 +40,6 @@ const models = {
 			},
 			validate: {
 				beforeCreate: async(instance,options) => {
-					const Person=sqlWrapper.getModel('Person');
-					const person = await Person.findByPk(instance.person_id,options);
-					if(!person) throw new Error('person does not exist');
-
 					const PersonEmail=sqlWrapper.getModel('PersonEmail');
 					const emailList = await PersonEmail.findAll({
 						where:{email:instance.email}
@@ -61,16 +57,9 @@ const models = {
 					filterFields: ['email'],
 					include: ({email}) => email && {email}
 				},
-				build: (PersonEmail,Person) => {
-					PersonEmail.belongsTo(Person,{
-						validate:false,
-						through:'person_id',
-						as: 'Person'
-					});
-					Person.hasMany(PersonEmail,{
-						validate: false,
-						as: 'PersonEmail'
-					});
+				options: {
+					type: 'ManyToOne',
+					source_field: 'person_id'
 				}
 			}],
 			indexes: [
@@ -118,16 +107,9 @@ const models = {
 					filterFields: ['phone'],
 					include: ({phone}) => phone && {phone}
 				},
-				build: (PersonPhone,Person) => {
-					PersonPhone.belongsTo(Person,{
-						validate:false,
-						through:'person_id',
-						as: 'Person'
-					});
-					Person.hasMany(PersonPhone,{
-						validate:false,
-						as: 'PersonPhone'
-					});
+				options: {
+					type: 'ManyToOne',
+					source_field: 'person_id'
 				}
 			}],
 			indexes: [{

@@ -62,17 +62,9 @@ const models = {
 		},
 		associations: [{
 			name:'Job',
-			build: (JobData,Job) => {
-				JobData.belongsTo(Job,{
-					validate:false,
-					through:'job_id',
-					as: 'Job'
-				});
-				Job.hasOne(JobData,{
-					validate:false,
-					foreignKey: 'job_id',
-					as: 'JobData'
-				})
+			options: {
+				type: 'OneToOne',
+				source_field: 'job_id'
 			}
 		}],
 		allow_update: false,
