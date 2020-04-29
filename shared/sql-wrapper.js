@@ -15,8 +15,7 @@ function buildSequelize(options) {
 	if([name,user,password,host,port].find(x=>!x)) {
 		throw new Error('auth options (name,user,password,host,port) were not fully set');
 	}
-
-	return new Sequelize(name,user,password, {
+	const opts = {
 		host,
 		port,
 		dialect: 'mysql',
@@ -30,7 +29,12 @@ function buildSequelize(options) {
 			acquire: 30000,
 			idle: 10000,
 		}
-	});
+	};
+	if(process.env.SQL_WRAPPER_NO_LOG) {
+		console.log('SQL_WRAPPER_NO_LOG');
+		opts.logging = () => {};
+	}
+	return new Sequelize(name,user,password, opts);
 }
 
 function Wrapper(options) {

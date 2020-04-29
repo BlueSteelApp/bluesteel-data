@@ -177,6 +177,33 @@ enum EmailDeliveryStatus {
   UNSUBSCRIBE
 }
 
+type EmailGlobalSubscriptionStatus {
+  id: ID!
+  channel: Int!
+  person_email_id: Int!
+  status: Int!
+  created_at: Date
+  updated_at: Date
+}
+
+input EmailGlobalSubscriptionStatusFilter {
+  ids: [ID]
+  channel: Int
+  person_email_id: Int
+  status: Int
+  created_before: Date
+  created_after: Date
+  updated_before: Date
+  updated_after: Date
+}
+
+input EmailGlobalSubscriptionStatusSave {
+  id: ID
+  channel: Int
+  person_email_id: Int
+  status: Int
+}
+
 type EmailSubscriptionStatus {
   id: ID!
   subscription_id: Int!
@@ -185,6 +212,7 @@ type EmailSubscriptionStatus {
   status: Int!
   created_at: Date
   updated_at: Date
+  Subscription: Subscription
   PersonEmail: PersonEmail
 }
 
@@ -407,6 +435,8 @@ type Mutation {
   SubscriptionDelete(id: ID!): Subscription
   EmailSubscriptionStatusSave(record: EmailSubscriptionStatusSave!): EmailSubscriptionStatus
   EmailSubscriptionStatusDelete(id: ID!): EmailSubscriptionStatus
+  EmailGlobalSubscriptionStatusSave(record: EmailGlobalSubscriptionStatusSave!): EmailGlobalSubscriptionStatus
+  EmailGlobalSubscriptionStatusDelete(id: ID!): EmailGlobalSubscriptionStatus
   CampaignSave(record: CampaignSave!): Campaign
   CampaignDelete(id: ID!): Campaign
   MessageSetSave(record: MessageSetSave!): MessageSet
@@ -702,6 +732,9 @@ type Query {
   EmailSubscriptionStatus(id: ID!): EmailSubscriptionStatus
   EmailSubscriptionStatusList(filter: EmailSubscriptionStatusFilter, pageSize: Int, page: Int): [EmailSubscriptionStatus]
   EmailSubscriptionStatusStats(query: BlueSteelQueryInput!): QueriedStats
+  EmailGlobalSubscriptionStatus(id: ID!): EmailGlobalSubscriptionStatus
+  EmailGlobalSubscriptionStatusList(filter: EmailGlobalSubscriptionStatusFilter, pageSize: Int, page: Int): [EmailGlobalSubscriptionStatus]
+  EmailGlobalSubscriptionStatusStats(query: BlueSteelQueryInput!): QueriedStats
   Campaign(id: ID!): Campaign
   CampaignList(filter: CampaignFilter, pageSize: Int, page: Int): [Campaign]
   CampaignStats(query: BlueSteelQueryInput!): QueriedStats
@@ -847,6 +880,7 @@ type Subscription {
   description: String!
   created_at: Date
   updated_at: Date
+  EmailSubscriptionStatusList: [EmailSubscriptionStatus]
 }
 
 input SubscriptionFilter {
