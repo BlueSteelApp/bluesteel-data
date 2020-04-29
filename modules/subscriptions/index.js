@@ -18,6 +18,7 @@ const statusInverse={};
 statusList.forEach((x,index) => {
 	statusInverse[x]=index;
 });
+console.log(statusInverse);
 const {SUBSCRIBED,UNSUBSCRIBED}=statusInverse;
 
 const models = {
@@ -77,6 +78,12 @@ const models = {
 			}
 		},
 		associations: [{
+			name: 'Subscription',
+			options: {
+				type: 'ManyToOne',
+				source_field: 'subscription_id'
+			}
+		},{
 			name: 'PersonEmail',
 			options: {
 				type: "ManyToOne",
@@ -84,6 +91,36 @@ const models = {
 			}
 		}]
 	},
+
+	email_global_subscription_status: {
+		name: "EmailGlobalSubscriptionStatus",
+		tableName: 'channel_global_subscription_status',
+		fields: {
+			channel: {
+				type: sequelize.INTEGER(4),
+				allowNull: false,
+				validate: value => {
+					if(value != EMAIL) throw new Error('channel must be '+EMAIL);
+				},
+				defaultValue: EMAIL,
+				unique: 'channel-person-channel-id'
+			},
+			// person_email_id, person_phone_id, etc
+			person_email_id: {
+				field: 'person_channel_id',
+				type: sequelize.INTEGER(11),
+				allowNull: false,
+				unique: 'channel-person-channel-id'
+			},
+			status: {
+				type: sequelize.INTEGER(4),
+				allowNull: false,
+				validate: value => {
+					if(value < 0 || value > statusList.length) throw new Error('invalid status: '+value);
+				}
+			}
+		},
+	}
 };
 
 function SubscriptionManager(options) {
@@ -92,6 +129,7 @@ function SubscriptionManager(options) {
 
 	this.Subscription = sqlWrapper.getModel('Subscription');
 	this.EmailSubscriptionStatus = sqlWrapper.getModel('EmailSubscriptionStatus');
+	this.EmailGlobalSubscriptionStatus = sqlWrapper.getModel('EmailGlobalSubscriptionStatus');
 }
 
 SubscriptionManager.prototype.getSubscriptionInformation=async function({id}) {
@@ -132,6 +170,15 @@ SubscriptionManager.prototype.updateSubscriptions=async function({id:person_emai
 	});
 }
 
+SubscriptionManager.prototype.unsubscribeAll=async function({id:person_email_id}) {
+	if(!person_email_id) throw new Error('person_email_id must be non-null');
+	const {EmailGlobalSubscriptionStatus} = this;
+	await EmailGlobalSubscriptionStatus.upsert({
+		person_email_id,
+		status: UNSUBSCRIBED
+	})
+};
+
 function getEndpoints({sqlWrapper}) {
 	const manager = new SubscriptionManager({sqlWrapper});
 
@@ -143,6 +190,7 @@ function getEndpoints({sqlWrapper}) {
 		handle: async (req,res) => {
 			const {token}=req.params;
 			const parsed = await getTokenForPersonEmail(token);
+			console.log('parsed:',parsed);
 			const updates = req.body.updates;
 
 			if(updates && updates.length) await manager.updateSubscriptions(parsed, {updates});
@@ -157,6 +205,14 @@ function getEndpoints({sqlWrapper}) {
 			const list = await manager.getSubscriptionInformation(parsed);
 			res.jsonp(list);
 		}
+	},{
+		path: '/subscriptions/:token/unsubscribeAll',
+		handle: async (req,res) => {
+			const {token}=req.params;
+			const parsed = await getTokenForPersonEmail(token);
+			await manager.unsubscribeAll(parsed);
+			res.send('You have been unsubscribed');
+		}
 	}]
 }
 
@@ -166,5 +222,10 @@ module.exports={
 	name: 'Subscriptions',
 	models,
 	dir: __dirname,
-	getEndpoints
+	getEndpoints,
+
+	SubscriptionManager,
+
+	UNSUBSCRIBED,
+	SUBSCRIBED
 };

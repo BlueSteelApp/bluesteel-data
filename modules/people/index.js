@@ -38,7 +38,7 @@ const models = {
 					allowNull: false
 				}
 			},
-			hooks: {
+			validate: {
 				beforeCreate: async(instance,options) => {
 					const Person=sqlWrapper.getModel('Person');
 					const person = await Person.findByPk(instance.person_id,options);
@@ -95,7 +95,7 @@ const models = {
 					allowNull: false
 				}
 			},
-			hooks: {
+			validate: {
 				beforeCreate: async(instance,options) => {
 					const Person=sqlWrapper.getModel('Person');
 					const person = await Person.findByPk(instance.person_id,options);
