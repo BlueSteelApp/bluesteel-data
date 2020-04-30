@@ -228,10 +228,8 @@ Wrapper.prototype.assembleModels=function(models, options) {
 					foreignKey: target_field
 				});
 
-				console.log('source:',source,'target:',target);
 				target.addValidate(source.name, async function() {
 					const value = this[target_field];
-					console.log('checking',target_field,value);
 					if(!value) return;
 					if(this.previous && value == this.previous(target_field)) return;
 					const other = await source.findByPk(value,{
