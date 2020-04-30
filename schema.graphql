@@ -495,8 +495,7 @@ input PermissionSetFilter {
 type PermissionSetPermission {
   id: ID!
   permission_set_id: Int!
-  module: String!
-  value: String
+  permission: String!
   created_at: Date
   updated_at: Date
   PermissionSet: PermissionSet
@@ -505,8 +504,7 @@ type PermissionSetPermission {
 input PermissionSetPermissionFilter {
   ids: [ID]
   permission_set_id: Int
-  module: String
-  value: String
+  permission: String
   created_before: Date
   created_after: Date
   updated_before: Date
@@ -516,8 +514,7 @@ input PermissionSetPermissionFilter {
 input PermissionSetPermissionSave {
   id: ID
   permission_set_id: Int
-  module: String
-  value: String
+  permission: String
 }
 
 input PermissionSetSave {

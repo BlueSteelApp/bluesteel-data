@@ -116,6 +116,7 @@ ModulesWrapper.prototype.initialize=function(opts) {
 	});
 	this.initialized = true;
 	this.serviceLayer.initialize();
+	console.log('permissions:',this.serviceLayer.getDefinedPermissions());
 };
 
 ModulesWrapper.prototype.getGql=function() {

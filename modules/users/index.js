@@ -29,7 +29,7 @@ const models = {
 			}
 		},
 		allow_create: false,
-		allow_update: false
+		allow_update: false,
 	},
 
 	permission_set: {
@@ -44,6 +44,11 @@ const models = {
 				type: Sequelize.STRING(255),
 				allowNull: false
 			}
+		},
+
+		permissions: {
+			read: 'permissions.read',
+			edit: 'permissions.edit'
 		}
 	},
 	permission_set_permission: {
@@ -54,13 +59,10 @@ const models = {
 				type: Sequelize.INTEGER(11),
 				allowNull: false
 			},
-			module: {
-				type: Sequelize.STRING(64),
-				allowNull: false
-			},
-			value: {
-				type: Sequelize.STRING(64),
-				allowNull: true
+			permission: {
+				type: Sequelize.STRING(128),
+				allowNull: false,
+				unique: true
 			}
 		},
 		associations: [{
@@ -69,7 +71,12 @@ const models = {
 				type: 'ManyToOne',
 				source_field: 'permission_set_id'
 			}
-		}]
+		}],
+
+		permissions: {
+			read: 'permissions.read',
+			edit: 'permissions.edit'
+		}
 	},
 	user_permission_set: {
 		name: 'UserPermissionSet',
@@ -96,7 +103,12 @@ const models = {
 				type: 'OneToOne',
 				source_field: 'permission_set_id'
 			}
-		}]
+		}],
+
+		permissions: {
+			read: 'permissions.read',
+			edit: 'permissions.edit'
+		}
 	}
 };
 

@@ -21,13 +21,14 @@ GraphQlServer.prototype.start=async function() {
 	app.use(bodyParser.urlencoded({ extended: true }));
 	app.use(cors());
 
-	const sqlWrapper=configuredModules.sqlWrapper;
+	const {sqlWrapper,serviceLayer}=configuredModules;
 	const auth = new AuthHandler({sqlWrapper, authMethod});
 	await auth.initialize();
 
 	const server = new ApolloServer({
-		context: ({req:{user}}) => ({
+		context: async ({req:{user}}) => ({
 			user,
+			permissions: await serviceLayer.getPermissionsForUser(user.id)
 		}),
 		modules: gqlModules,
 		formatError: (err) => {
