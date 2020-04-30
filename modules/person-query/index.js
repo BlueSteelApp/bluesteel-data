@@ -25,7 +25,7 @@ module.exports={
 	name: 'PersonQuery',
 	models,
 	dir: __dirname,
-	gql: () => ({
+	gql: ({serviceLayer}) => ({
 		typeDefs: gql`
 			type PersonQueryResult {
 				count: Int
@@ -43,12 +43,12 @@ module.exports={
 		resolvers: {
 			Query: {
 				ExecutePersonQuery: async (root,{conditions},context) => {
-					const Person = context.wrapper.forType('Person');
+					const Person = serviceLayer.getService('Person',context);
 					const runner = Person.getYasqlQueryRunner({conditions, outputs: [{
 						name: 'id',
 						expression: 'id'
 					}]});
-					return {runner};
+					return runner.run({limit:100});
 				}
 			},
 			PersonQueryResult: {

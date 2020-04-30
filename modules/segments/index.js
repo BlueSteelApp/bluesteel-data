@@ -120,7 +120,7 @@ module.exports={
 	name: 'Segments',
 	dir: __dirname,
 	models,
-	gql: () => {
+	gql: ({serviceLayer}) => {
 		const typeDefs=gql`
 		extend type Mutation {
 			"""
@@ -138,9 +138,9 @@ module.exports={
 		const resolvers = {
 			Mutation: {
 				SegmentBuildJobCreate: async (root,{segment_id,create_paused=true},context) => {
-					const Segment = context.forType('Segment');
-					const SegmentBuild = context.forType('SegmentBuild');
-					const Job = context.forType('Job');
+					const Segment = serviceLayer.getService('Segment',context);
+					const SegmentBuild = serviceLayer.getService('SegmentBuild',context);
+					const Job = serviceLayer.getService('Job',context);
 
 					const segment = await Segment.findByPk(segment_id);
 					if(!segment) throw new Error('segment does not exist, or you do not have permission to view it');

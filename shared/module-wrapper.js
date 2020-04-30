@@ -120,7 +120,7 @@ ModulesWrapper.prototype.initialize=function(opts) {
 
 ModulesWrapper.prototype.getGql=function() {
 	if(!this.initialized) throw new Error('must call initialize first');
-	const{installed,sqlWrapper,gqlWrapper}=this;
+	const{installed,sqlWrapper,serviceLayer,gqlWrapper}=this;
 	const gqlParts = [];
 	sqlWrapper.getTypes().forEach(type => {
 		gqlParts.push(gqlWrapper.getModelDefsAndResolvers(type));
@@ -129,7 +129,7 @@ ModulesWrapper.prototype.getGql=function() {
 
 	installed.filter(x=>x.gql).forEach(x => {
 		try {
-			const r = x.gql({sqlWrapper});
+			const r = x.gql({sqlWrapper,serviceLayer});
 			if(Array.isArray(r)) r.forEach(y=>gqlParts.push(y));
 			else gqlParts.push(r);
 		} catch(e) {

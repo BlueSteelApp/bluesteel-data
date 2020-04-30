@@ -3,7 +3,6 @@ const Umzug = require('umzug');
 const fs=require('fs');
 const through2=require('through2');
 const es=require('event-stream');
-const ContextAwareWrapper=require('./context-aware-wrapper');
 const YasqlQueryRunner=require('./yasql-query');
 
 console.log('loading sql-wrapper');
@@ -367,11 +366,6 @@ Wrapper.prototype.getType=function(name) {
 	if(!this.defined[name]) throw new Error('type '+name+' does not exist or has not been registed');
 	return this.defined[name];
 }
-
-Wrapper.prototype.getContextAwareWrapper=function(options) {
-	options=Object.assign({},options,{sqlWrapper: this});
-	return new ContextAwareWrapper(options);
-};
 
 Wrapper.prototype.runMigrations=async function(migrationsPath) {
 	if(!migrationsPath) throw new Error('migrationsPath was not provided');

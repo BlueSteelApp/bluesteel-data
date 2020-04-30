@@ -13,9 +13,6 @@ ServiceLayer.prototype.initialize = function() {
 		const {
 			name,
 			model,
-
-			allow_create,
-			allow_update
 		}=def;
 
 		this.factories[name] = context => {
@@ -63,10 +60,11 @@ ServiceLayer.prototype.initialize = function() {
 				};
 			};
 
-			service.save = async function(object, options) {
-				if(allow_update == false && object.id) throw new Error('update is not supported for: '+name);
-				if(allow_create == false && !object.id) throw new Error('create is not supported for: '+name);
+			service.findOrCreate = async function(object, options) {
+				return model.findOrCreate(object,options);
+			};
 
+			service.save = async function(object, options) {
 				let result;
 
 				if(object.id) {

@@ -42,12 +42,12 @@ describe('segments-test', function() {
 		});
 
 		it('should create the segmentBuild and job (status=queued) based on the query', async function() {
-			const {resolvers} = segmentsModule.gql();
+			const {resolvers} = segmentsModule.gql(moduleWrapper);
 
 			// when
 			const segmentBuild = await resolvers.Mutation.SegmentBuildJobCreate(null,{
 				segment_id:1, create_paused:false
-			}, await sqlWrapper.getContextAwareWrapper({user:{id:1}}));
+			}, {});
 
 			// then
 			const {id,segment_id,query}=segmentBuild;
@@ -65,12 +65,12 @@ describe('segments-test', function() {
 		});
 
 		it('should create the segmentBuild and job (status=waiting) based on query', async function() {
-			const {resolvers} = segmentsModule.gql();
+			const {resolvers} = segmentsModule.gql(moduleWrapper);
 
 			// when
 			const segmentBuild = await resolvers.Mutation.SegmentBuildJobCreate(null,{
 				segment_id:1
-			}, await sqlWrapper.getContextAwareWrapper({user:{id:1}}));
+			}, {});
 
 			// then
 			const {id,segment_id,query}=segmentBuild;

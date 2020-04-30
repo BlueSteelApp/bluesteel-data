@@ -28,7 +28,6 @@ GraphQlServer.prototype.start=async function() {
 	const server = new ApolloServer({
 		context: ({req:{user}}) => ({
 			user,
-			wrapper:sqlWrapper.getContextAwareWrapper({user})
 		}),
 		modules: gqlModules,
 		formatError: (err) => {

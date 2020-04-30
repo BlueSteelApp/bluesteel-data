@@ -31,7 +31,7 @@ module.exports={
 	name: 'ClientModuleConfig',
 	models,
 	dir: __dirname,
-	gql: () => {
+	gql: ({serviceLayer}) => {
 		return {
 			typeDefs: gql`
 extend type Mutation {
@@ -42,7 +42,7 @@ extend type Mutation {
 				Mutation: {
 					ClientModuleConfigSet: async (root,args,context) => {
 						const{id,value}=args;
-						const fullResult = await context.wrapper.forType('ClientModuleConfig').findOrCreate({
+						const fullResult = await serviceLayer.getService('ClientModuleConfig',context).findOrCreate({
 							where: {id},
 							defaults: {value}
 						});
