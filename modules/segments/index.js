@@ -87,7 +87,8 @@ const models = {
 			},
 			status: {
 				type: sequelize.INTEGER(2),
-				allowNull: false
+				allowNull: false,
+				defaultValue: 1
 			},
 			added_at: {
 				type: sequelize.DATE(),
@@ -101,30 +102,16 @@ const models = {
 		paranoid: true,
 		associations: [{
 			name: 'Person',
-			build: (SegmentPerson,Person) => {
-				SegmentPerson.belongsTo(Person,{
-					validate: false,
-					as: 'Person',
-					through: 'person_id'
-				});
-				Person.hasMany(SegmentPerson,{
-					validate:false,
-					as: 'SegmentPerson',
-				});
+			options: {
+				type: 'ManyToOne',
+				source_field: 'person_id'
 			}
 		},{
 			name: 'Segment',
-			build: (SegmentPerson,Segment) => {
-				SegmentPerson.belongsTo(Segment,{
-					validate: false,
-					as: 'Segment',
-					through: 'segment_id'
-				});
-				Segment.hasMany(SegmentPerson,{
-					validate:false,
-					as: 'SegmentPerson',
-				});
-			}
+			options: {
+				type: 'ManyToOne',
+				source_field: 'segment_id'
+			},
 		}]
 	}
 };

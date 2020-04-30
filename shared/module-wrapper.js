@@ -1,5 +1,6 @@
 const SqlWrapper = require('./sql-wrapper');
 const GqlWrapper = require('./gql-wrapper');
+const ServiceLayer = require('./service-layer');
 // const path=require('path');
 const gql=require('graphql-tag');
 
@@ -33,16 +34,20 @@ const fullModuleList = [
 function ModulesWrapper(options) {
 	options=Object.assign({},options);
 
-	let{sqlWrapper,gqlWrapper}=options;
+	let{sqlWrapper,gqlWrapper,serviceLayer}=options;
 	if(!sqlWrapper) {
 		sqlWrapper = new SqlWrapper(options);
 	}
+	if(!serviceLayer) {
+		serviceLayer = new ServiceLayer({sqlWrapper});
+	}
 	if(!gqlWrapper) {
-		gqlWrapper = new GqlWrapper({sqlWrapper});
+		gqlWrapper = new GqlWrapper({sqlWrapper,serviceLayer});
 	}
 
 	this.sqlWrapper = sqlWrapper;
 	this.gqlWrapper = gqlWrapper;
+	this.serviceLayer = serviceLayer;
 
 	if(options.all_modules) options.modules = fullModuleList;
 	if(!options.modules||!options.modules.length) throw new Error('modules is a required option');
@@ -58,7 +63,7 @@ function ModulesWrapper(options) {
 		name: 'QueryRunner',
 		shared: true,
 		gql: () => ({typeDefs: gql(YasqlQueryRunner.typeDefs)})
-	}].concat(selected);
+	}].concat(selected).map(x => Object.assign({},x));
 
 	this.jobRunnerDefinitions={};
 	this.installed.filter(x=>x.jobs).forEach(m => {
@@ -110,6 +115,7 @@ ModulesWrapper.prototype.initialize=function(opts) {
 		sqlWrapper.assembleModels(models, opts);
 	});
 	this.initialized = true;
+	this.serviceLayer.initialize();
 };
 
 ModulesWrapper.prototype.getGql=function() {

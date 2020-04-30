@@ -39,11 +39,12 @@ const models = {
 				}
 			},
 			validate: {
-				beforeCreate: async(instance,options) => {
+				beforeCreate: async function() {
+					const instance = this;
 					const PersonEmail=sqlWrapper.getModel('PersonEmail');
 					const emailList = await PersonEmail.findAll({
 						where:{email:instance.email}
-					},options);
+					});
 					const email=emailList[0];
 					if(email && email.person_id != instance.person_id) {
 						throw new Error('email already exists for another person');
@@ -86,10 +87,6 @@ const models = {
 			},
 			validate: {
 				beforeCreate: async(instance,options) => {
-					const Person=sqlWrapper.getModel('Person');
-					const person = await Person.findByPk(instance.person_id,options);
-					if(!person) throw new Error('person does not exist');
-
 					const PersonPhone=sqlWrapper.getModel('PersonPhone');
 					const phoneList = await PersonPhone.findAll({
 						where:{phone:instance.phone}

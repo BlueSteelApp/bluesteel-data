@@ -128,6 +128,14 @@ Wrapper.prototype.assembleModels=function(models, options) {
 
 		const model=sequelize.define(name,fields,options);
 
+		// add transaction to object so it can be used in validations
+		model.addHook('beforeValidate', 'addTransaction', function(obj, options) {
+			obj._validationTransaction = options.transaction;
+		});
+		model.addHook('afterValidate', 'removeTransaction', function(obj) {
+			delete obj._validationTransaction;
+		});
+
 		if(model.addValidate) throw new Error('addValidate already exists');
 		model.addValidate = function(name, func) {
 			if(model.options.validate[name]) throw new Error(name+' validate already exists');
@@ -191,7 +199,9 @@ Wrapper.prototype.assembleModels=function(models, options) {
 					const value = this[source_field];
 					if(!value) return;
 					if(this.previous && value == this.previous(source_field)) return;
-					const other = await target.findByPk(value);
+					const other = await target.findByPk(value,{
+						transaction: this._validationTransaction
+					});
 					if(!other) throw new Error(target.name+' with id '+value+' does not exist');
 				});
 
@@ -225,7 +235,9 @@ Wrapper.prototype.assembleModels=function(models, options) {
 					console.log('checking',target_field,value);
 					if(!value) return;
 					if(this.previous && value == this.previous(target_field)) return;
-					const other = await source.findByPk(value);
+					const other = await source.findByPk(value,{
+						transaction: this._validationTransaction
+					});
 					if(!other) throw new Error(source.name+' with id '+value+' does not exist');
 				});
 

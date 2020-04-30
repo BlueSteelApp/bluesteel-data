@@ -1,10 +1,12 @@
-const DataLoader = require('dataloader');
 const {gql} = require('apollo-server-express');
+const async = require('async');
 
 function Wrapper(options) {
-	const{sqlWrapper}=options;
+	const{sqlWrapper,serviceLayer}=options;
 	if(!sqlWrapper) throw new Error('sqlWrapper required');
+	if(!serviceLayer) throw new Error('serviceLayer required');
 	this.sqlWrapper=sqlWrapper;
+	this.serviceLayer=serviceLayer;
 }
 
 function getGqlType({type,gqlType}) {
@@ -34,11 +36,11 @@ function getGqlType({type,gqlType}) {
 }
 
 Wrapper.prototype.getSaveDefAndResolvers=function(type) {
-	const{sqlWrapper}=this;
-	const {model,name,fields, associations, allow_create=true,allow_update=true}=type;
+	const{sqlWrapper, serviceLayer}=this;
+	const {model,name,fields, associations, allow_save=true, allow_create=true,allow_update=true}=type;
 	if(!model||!name)throw new Error('model and name required, got:'+JSON.stringify(type));
 
-	if(!allow_create&&!allow_update) return null;
+	if((!allow_create&&!allow_update) || !allow_save) return null;
 
 	const saveExtensions=[];
 	(associations||[]).forEach(x => {
@@ -93,61 +95,38 @@ Wrapper.prototype.getSaveDefAndResolvers=function(type) {
 
 	const resolvers={
 		Mutation: {
-			[`${name}Save`]: async (root,{record}) => {
+			[`${name}Save`]: async (root,{record}, context) => {
+				const service = serviceLayer.getService(name,context);
 				return sqlWrapper.sequelize.transaction(async transaction => {
-					let result;
-					if(record.id) {
-						const existing = await model.findByPk(record.id,{transaction});
-						if(!existing) throw new Error(`${name} does not exist`);
-						// only update current fields
-						Object.entries(record).filter(([x]) => fields[x]).forEach(([key,value]) => {
-							existing[key]=value;
-						});
-						await existing.save({transaction});
-						result = existing;
-					} else {
-						result = await model.create(record,{transaction});
-					}
+					let result = await service.save(record,{transaction});
+					console.log('created:',record);
+					await async.eachSeries(createAssociations, async assocation => {
+						const {target,sourceKeyField,identifierField}=assocation;
+						if(!record[target]) return;
 
-					// handle creating sub objects
-					for(let a in createAssociations) {
-						const {target,targetModel,sourceKeyField,identifierField}=createAssociations[a];
-						if(record[target]) {
+						let subSaves = record[target];
+						const targetService = serviceLayer.getService(target,context);
+						if(!Array.isArray(subSaves)) subSaves=[subSaves];
+						await async.eachSeries(subSaves, async sub => {
+							if(sub.id && !record.id) throw new Error('cannot update sub records with id if creating parent record');
 
-							let n=record[target];
-							if(!Array.isArray(n)) n=[n];
-							for(let i in n) {
-								const sub = Object.assign({},n[i]);
-								if(sub.id && !record.id) throw new Error('cannot update sub records with id if creating parent record');
-
-								if(sub[identifierField] && sub[identifierField] != record.id) {
-									throw new Error('cannot set '+identifierField+' to a different value than parent id');
-								}
-
-								sub[identifierField]=result[sourceKeyField];
-
-								if(sub.id) {
-									const existing = await targetModel.findByPk(sub.id,{transaction});
-									if(!existing) throw new Error(`${target} with id ${sub.id} does not exist`);
-									Object.assign(existing,sub);
-									await existing.save({transaction});
-								} else {
-									await targetModel.create(sub,{transaction});
-								}
+							if(sub[identifierField] && sub[identifierField] != record.id) {
+								throw new Error('cannot set '+identifierField+' to a different value than parent id');
 							}
-						}
-					}
+							sub[identifierField]=result[sourceKeyField];
+							await targetService.save(sub,{transaction});
+						});
+						console.log('done saving');
+					});
 					return result;
 				});
 			},
-			[`${name}Delete`]: async (root,{id}) => {
-				return sqlWrapper.sequelize.transaction(async transaction => {
-					if(!id) throw new Error(`An id is required for delete`);
-					const existing = await model.findByPk(id,{transaction});
-					if(!existing) throw new Error(`${name} does not exist`);
-					existing.destroy();
-					return existing;
-				});
+			[`${name}Delete`]: async (root,{id}, context) => {
+				const service = serviceLayer.getService(name, context);
+				const object = await service.findByPk(id);
+				if(!object) throw new Error(`${id} does not exist`);
+				await service.delete(id);
+				return object;
 			},
 		},
 	};
@@ -158,25 +137,11 @@ Wrapper.prototype.getSaveDefAndResolvers=function(type) {
 
 Wrapper.prototype.getModelDefsAndResolvers=function(type) {
 	const {model,name,fields,associations}=type;
-	const {sequelize}=this.sqlWrapper;
+	const {serviceLayer,sqlWrapper} = this;
+	const {sequelize}=sqlWrapper;
 	if(!sequelize) throw new Error('missing sequelize from sqlWrapper');
 
 	if(!model||!name)throw new Error('model and name required, got:'+JSON.stringify(type));
-	function getDataLoader(context) {
-		if(!context) throw new Error('context must be passed to getDataLoader');
-		context.cachedDataLoaders = context.cachedDataLoaders||{};
-		if(context.cachedDataLoaders[name]) return context.cachedDataLoaders[name];
-		context.cachedDataLoaders[name] = new DataLoader(async (ids) => {
-			const bulk = await model.findAll({
-				where: {id: ids}
-			});
-			const byId = {};
-			bulk.forEach(x=>byId[x.id]=x);
-			const results = ids.map(x=>byId[x]);
-			return results;
-		});
-		return context.cachedDataLoaders[name];
-	}
 
 	const fieldResolvers = {};
 	const topLevelResolvers = {};
@@ -209,14 +174,10 @@ Wrapper.prototype.getModelDefsAndResolvers=function(type) {
 					${aliasedTarget}List: [${targetName}]
 				}
 			`);
-			fieldResolvers[aliasedTarget+'List'] = async ({id}) => {
-				const root = await model.findByPk(id);try {
-					const r = await root['get'+aliasedTarget]();
-					return r;
-				} catch(e) {
-					console.error(e);
-					throw e;
-				}
+			fieldResolvers[aliasedTarget+'List'] = async ({id},args,context) => {
+				const service = serviceLayer.getService(name,context);
+				const root = await service.findByPk(id);
+				return root['get'+aliasedTarget]();
 			};
 		} else {
 			defs.push(`
@@ -224,15 +185,10 @@ Wrapper.prototype.getModelDefsAndResolvers=function(type) {
 					${aliasedTarget}: ${targetName}
 				}
 			`);
-			fieldResolvers[aliasedTarget] = async ({id}) => {
-				const root = await model.findByPk(id);
-				try {
-					const r = await root['get'+aliasedTarget]();
-					return r;
-				} catch(e) {
-					console.error(e);
-					throw e;
-				}
+			fieldResolvers[aliasedTarget] = async ({id},args,context) => {
+				const service = serviceLayer.getService(name,context);
+				const root = await service.findByPk(id);
+				return root['get'+aliasedTarget]();
 			}
 		}
 
@@ -244,15 +200,10 @@ Wrapper.prototype.getModelDefsAndResolvers=function(type) {
 				}
 			`);
 			topLevelResolvers[targetName]={
-				[aliasedSource+'List']: async ({id}) => {
-					const root=await targetModel.findByPk(id);
-					// const accessor=reverseAssociation.get;
-					try {
-						return await root['get'+aliasedSource]();
-					} catch(e) {
-						console.error(e);
-						throw e;
-					}
+				[aliasedSource+'List']: async ({id},args,context) => {
+					const service = serviceLayer.getService(targetName,context);
+					const root=await service.findByPk(id);
+					return root['get'+aliasedSource]();
 				}
 			}
 		} else {
@@ -262,14 +213,10 @@ Wrapper.prototype.getModelDefsAndResolvers=function(type) {
 				}
 			`);
 			topLevelResolvers[targetName]={
-				[aliasedSource]: async ({id}) => {
-					const root=await targetModel.findByPk(id);
-					try {
-						return await root['get'+aliasedSource]();
-					} catch(e) {
-						console.error(e);
-						throw e;
-					}
+				[aliasedSource]: async ({id},args,context) => {
+					const service = serviceLayer.getService(targetName,context);
+					const root=await service.findByPk(id);
+					return root['get'+aliasedSource]();
 				}
 			}
 		}
@@ -292,7 +239,6 @@ Wrapper.prototype.getModelDefsAndResolvers=function(type) {
 		ids:[ID]
 		${Object.entries(fields).map(([x,def])=>{
 			let type = getGqlType(def);
-			//if(!def.allowNull) type+='!';  Filters dont' have required fields
 			return `${x}:${type}`;
 		})}
 		created_before: Date
@@ -315,7 +261,7 @@ Wrapper.prototype.getModelDefsAndResolvers=function(type) {
 				console.error('missing id from:',root);
 				throw new Error('invalid - no id in obj');
 			}
-			const element = await getDataLoader(context).load(root.id);
+			const element = await serviceLayer.getService(name,context).findByPk(root.id);
 			if(!element) return null;
 			return element[x];
 		};
@@ -323,26 +269,9 @@ Wrapper.prototype.getModelDefsAndResolvers=function(type) {
 
 	const resolvers={
 		Query: {
-			[name]: (root,{id},context) => getDataLoader(context).load(id),
-			[name+'Stats']: async (root,{query},context) => {
-				const typeWrapper = context.wrapper.forType(name);
-				const invalidTargetStats = query.outputs.filter(x => x.target && x.target != name);
-				if(invalidTargetStats.length) throw new Error('invalid stats - must be against '+name);
-				query.conditions = query.conditions || [];
-				console.log("Getting runner");
-				const runner = typeWrapper.getYasqlQueryRunner(query);
-				console.log("Got runner,running");
-				const results = await runner.run();
-				console.log("Finished");
-				if(results.length != 1) throw new Error('Must return a single row');
-				const stats = results[0];
-				return {
-					query,
-					results: Object.entries(stats)
-						.map(([key,value]) => ({key,value}))
-				};
-			},
-			[name+"List"]: async (root,{filter,pageSize,page}) => {
+			[name]: (root,{id},context) => serviceLayer.getService(name,context).findByPk(id),
+			[name+'Stats']: async (root,{query},context) => query.getService(name,context).stats(query),
+			[name+"List"]: async (root,{filter,pageSize,page},context) => {
 				filter=filter||{};
 				pageSize = pageSize || 50;
 				page = page || 0;
@@ -354,14 +283,13 @@ Wrapper.prototype.getModelDefsAndResolvers=function(type) {
 						where[key]=filter[key];
 					});
 				}
-				return model.findAll({where,include,limit:pageSize,offset:pageSize*page});
+				return serviceLayer.getService(name,context).findAll({where,include,limit:pageSize,offset:pageSize*page});
 			}},
 		[name]: fieldResolvers
 	};
 
 	return {
 		typeDefs, resolvers:Object.assign({},topLevelResolvers,resolvers),
-		getDataLoader
 	};
 }
 
