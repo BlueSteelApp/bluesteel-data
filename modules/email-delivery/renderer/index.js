@@ -2,32 +2,38 @@ const Handlebars = require('handlebars');
 
 function EmailDeliveryRenderer(options) {
 	if(!options) throw new Error('options required');
-
-	this.sqlWrapper = options.sqlWrapper;
-	if(!this.sqlWrapper) throw new Error('options.sqlWrapper required');
-	this.email_blast_id = options.email_blast_id;
-	if(!this.email_blast_id) throw new Error('options.email_blast_id required');
-
-	this.EmailBlast = this.sqlWrapper.getModel('EmailBlast');
+	let {subject,html_body,text_body}=options;
+	if(!subject) throw new Error('options.subject required');
+	if(!text_body) throw new Error('options.text_body required');
+	if(!text_body) throw new Error('options.text_body required');
+	Object.assign(this,{subject,text_body,html_body});
+}
+EmailDeliveryRenderer.prototype.initialize=function() {
+	this.subjectTemplate = Handlebars.compile(this.subject);
+	this.textTemplate = Handlebars.compile(this.text_body);
+	this.htmlTemplate = Handlebars.compile(this.html_body);
 }
 
-EmailDeliveryRenderer.getReferencedFields=function() {
+const handlebarsFieldMatcher=/{{[{]?(.*?)[}]?}}/g;
 
+EmailDeliveryRenderer.prototype.getReferencedFields=function(){
+	return Object.keys([this.subject,this.text_body,this.html_body].filter(Boolean).reduce((a,b)=>{
+		let arr=[...b.matchAll(handlebarsFieldMatcher)].map(d=>d[1]); //match and grab the matching group
+		arr.forEach(s=>a[s]=true);
+		return a;
+	},{}));
 }
 
-EmailDeliveryRenderer.initialize=function() {
-	this.email_blast = this.EmailBlast.findByPk(this.email_blast_id);
-	if(!this.email_blast) throw new Error('invalid email_blast_id: '+this.email_blast_id);
+EmailDeliveryRenderer.prototype.validate=function() {};
 
-	const {text_body,html_body}=this.email_blast;
+EmailDeliveryRenderer.prototype.render=function({delivery,person}) {
+	let allMerges=Object.assign({},person,delivery); //delivery info trumps person info
+	return {
+			subject:this.subjectTemplate(allMerges),
+			html_body:this.textTemplate(allMerges),
+			text_body:this.htmlTemplate(allMerges),
+	};
+};
 
-	this.textTemplate = Handlebars.compile(text_body);
-	this.htmlTemplate = Handlebars.compile(html_body);
-}
-
-EmailDeliveryRenderer.validate=function() {
-	const {text_body,html_body}=this.email_blast;
-	const 
-}
 
 module.exports = EmailDeliveryRenderer;
