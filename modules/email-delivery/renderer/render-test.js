@@ -15,10 +15,13 @@ describe('email render wrapper', function() {
 			<p>Here's another link <a href="http://google.com?utm_source={{source_code}}">to google</a></p>
 		`,
 		text_body: `Hello {{given_name}},
-			here's a link http://google.com?utm_source={{source_code}}
-			http://google.com?utm_source={{source_code}}
+			here's a link: http://google.com?utm_source={{source_code}}
+			and here's another link: http://google.com?utm_source={{source_code}}
 			`,
-		status: 'LIST_BUILT'
+		status: 'LIST_BUILT',
+		linkRewriter:function(link,i){
+			return 'https://rewriter.com/?linkIndex='+i+'&url='+escape(link);
+		}
 	};
 
 	let delivery={email_blast_id:1, person_id:1, person_email: 'larry@zoolander.com', status: 0};
@@ -33,9 +36,19 @@ describe('email render wrapper', function() {
 		let {subject}=renderer.render({delivery,person});
 		assert.deepEqual({subject:`Hello Larry`},{subject});
 	});
-	it('should return back all the html links', function() {
-		let {html_links,html_body}=renderer.extractLinks(renderer.render({delivery,person}));
+	it('should get links', function() {
+		let links=renderer.getLinks();
+		assert.deepEqual([
+				{location:"text_body",href:"http://google.com?utm_source={{source_code}}"},
+				{location:"text_body",href:"http://google.com?utm_source={{source_code}}"},
+				{location:"html_body",href:"http://google.com?utm_source={{source_code}}"},
+				{location:"html_body",href:"http://google.com?utm_source={{source_code}}"}
+			],links);
+	});
+	it('should render the html', function() {
+		let {text_body,html_body}=renderer.render({delivery,person});
+		console.log("Text Body output=",text_body);
 		console.log("HTML Body output=",html_body);
-		assert.deepEqual(["http://google.com?utm_source=EM_123_ABC","http://google.com?utm_source=EM_123_ABC"],html_links);
+		assert.deepEqual([],[]);
 	});
 });
