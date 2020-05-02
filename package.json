@@ -27,6 +27,7 @@
     "babel-loader": "^8.0.5",
     "body-parser": "^1.18.3",
     "bull": "^3.13.0",
+    "cheerio": "^1.0.0-rc.3",
     "cors": "^2.8.5",
     "csv-parse": "^4.8.8",
     "dataloader": "^2.0.0",
