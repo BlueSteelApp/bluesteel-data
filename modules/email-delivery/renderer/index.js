@@ -53,7 +53,7 @@ EmailDeliveryRenderer.prototype.convertLinksToHandlebars=function(opts){
 	if (!text_body) throw new Error("extractLinks requires at least a text_body option");
 	let links=[];
 	let rewrote_text=(text_body || "").replace(urlMatcher,href=>{
-		links.push({location:"text_body",href:href.trim()});
+		links.push({location:"text_body",href:href});
 		return "{{{_links.["+(links.length-1)+"]}}}";
 	});
 	let rewrote_html=null;

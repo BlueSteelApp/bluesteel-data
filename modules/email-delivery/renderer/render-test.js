@@ -9,15 +9,14 @@ describe('email render wrapper', function() {
 		from_name: 'test-from-name',
 		from_email: 'test-from@bluesteelcrm.com',
 		source_code:'EM_123_ABC',
-		html_body: `
-			Hello {{given_name}},
-			<p>Here's a link <a href="http://google.com?utm_source={{source_code}}">to google</a></p>
-			<p>Here's another link <a href="http://google.com?utm_source={{source_code}}">to google</a></p>
-		`,
 		text_body: `Hello {{given_name}},
-			here's a link: http://google.com?utm_source={{source_code}}
-			and here's another link: http://google.com?utm_source={{source_code}}
-			`,
+
+here's a link: http://google.com?utm_source={{source_code}}
+
+and here's another link: http://google.com?utm_source={{source_code}}`,
+		html_body: `Hello {{given_name}},
+			<p>Here's a link <a href="http://google.com?utm_source={{source_code}}">to google</a></p>
+			<p>Here's another link <a href="http://google.com?utm_source={{source_code}}">to google</a></p>`,
 		status: 'LIST_BUILT',
 		linkRewriter:function(link,i){
 			return 'https://rewriter.com/?linkIndex='+i+'&url='+escape(link);
@@ -49,6 +48,15 @@ describe('email render wrapper', function() {
 		let {text_body,html_body}=renderer.render({delivery,person});
 		console.log("Text Body output=",text_body);
 		console.log("HTML Body output=",html_body);
-		assert.deepEqual([],[]);
+		//
+		assert.equal(text_body,`Hello Larry,
+
+here's a link: https://rewriter.com/?linkIndex=0&url=http%3A//google.com%3Futm_source%3DEM_123_ABC
+
+and here's another link: https://rewriter.com/?linkIndex=1&url=http%3A//google.com%3Futm_source%3DEM_123_ABC`);
+		assert.equal(html_body,` <html><head></head><body>Hello Larry,
+	<p>Here&apos;s a link <a href="https://rewriter.com/?linkIndex=2&url=http%3A//google.com%3Futm_source%3DEM_123_ABC">to google</a></p>
+	<p>Here&apos;s another link <a href="https://rewriter.com/?linkIndex=3&url=http%3A//google.com%3Futm_source%3DEM_123_ABC">to google</a></p>
+</body></html>`);
 	});
 });
