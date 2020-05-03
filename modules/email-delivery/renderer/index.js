@@ -1,6 +1,7 @@
 const Handlebars = require('handlebars');
 const cheerio=require('cheerio');
 
+
 function EmailDeliveryRenderer(options) {
 	if(!options) throw new Error('options required');
 	let {subject,html_body,text_body,source_code,linkRewriter}=options;
@@ -11,6 +12,12 @@ function EmailDeliveryRenderer(options) {
 	Object.assign(this,{subject,text_body,html_body,source_code,linkRewriter});
 }
 EmailDeliveryRenderer.prototype.initialize=function() {
+	const {BLUESTEEL_EMAIL_DELIVERY_ENDPOINT}=process.env;
+	if (!BLUESTEEL_EMAIL_DELIVERY_ENDPOINT){
+		console.error(Object.keys(process.env).filter(d=>d.indexOf('BLUESTEEL_')==0));
+		throw new Error("You must set a BLUESTEEL_EMAIL_DELIVERY_ENDPOINT");
+	}
+
 	this.subjectTemplate = Handlebars.compile(this.subject);
 
 	//Find all the referenced fields first
@@ -24,6 +31,11 @@ EmailDeliveryRenderer.prototype.initialize=function() {
 
 	this.textTemplate = Handlebars.compile(text_body);
 	this.htmlTemplate = html_body?Handlebars.compile(html_body):null;
+
+	this.linkRewriter=function(link,delivery_id,i){
+		return Promise.resolve(BLUESTEEL_EMAIL_DELIVERY_ENDPOINT+'/click/'+delivery_id+'/'+i+'?uri='+escape(link));
+		//return delay(100).then(()=>{return out;});
+	}
 }
 
 const handlebarsFieldMatcher=/{{[{]?(.*?)[}]?}}/g;

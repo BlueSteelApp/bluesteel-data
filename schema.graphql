@@ -112,6 +112,7 @@ type EmailBlast {
   Query: PersonQuery
   MessageSet: MessageSet
   EmailDeliveryList: [EmailDelivery]
+  EmailDeliveryEventList: [EmailDeliveryEvent]
 }
 
 input EmailBlastFilter {
@@ -155,6 +156,33 @@ type EmailDelivery {
   EmailBlast: EmailBlast
 }
 
+type EmailDeliveryEvent {
+  id: ID!
+  email_delivery_id: Int!
+  link_id: Int
+  event: EmailDeliveryEventType!
+  created_at: Date
+  updated_at: Date
+  Person: Person
+  EmailBlast: EmailBlast
+}
+
+input EmailDeliveryEventFilter {
+  ids: [ID]
+  email_delivery_id: Int
+  link_id: Int
+  event: EmailDeliveryEventType
+  created_before: Date
+  created_after: Date
+  updated_before: Date
+  updated_after: Date
+}
+
+enum EmailDeliveryEventType {
+  OPEN
+  CLICK
+}
+
 input EmailDeliveryFilter {
   ids: [ID]
   person_id: Int
@@ -175,6 +203,8 @@ enum EmailDeliveryStatus {
   HARD_BOUNCE
   SOFT_BOUNCE
   UNSUBSCRIBE
+  REJECTED
+  FAILED
 }
 
 type EmailGlobalSubscriptionStatus {
@@ -535,6 +565,7 @@ type Person {
   SegmentPersonList: [SegmentPerson]
   TransactionList: [Transaction]
   EmailDeliveryList: [EmailDelivery]
+  EmailDeliveryEventList: [EmailDeliveryEvent]
 }
 
 type PersonEmail {
@@ -747,6 +778,9 @@ type Query {
   EmailDelivery(id: ID!): EmailDelivery
   EmailDeliveryList(filter: EmailDeliveryFilter, pageSize: Int, page: Int): [EmailDelivery]
   EmailDeliveryStats(query: BlueSteelQueryInput!): QueriedStats
+  EmailDeliveryEvent(id: ID!): EmailDeliveryEvent
+  EmailDeliveryEventList(filter: EmailDeliveryEventFilter, pageSize: Int, page: Int): [EmailDeliveryEvent]
+  EmailDeliveryEventStats(query: BlueSteelQueryInput!): QueriedStats
   Me: User!
   upload_uri: String!
   ExecutePersonQuery(conditions: [BlueSteelQueryComponentInput]): PersonQueryResult

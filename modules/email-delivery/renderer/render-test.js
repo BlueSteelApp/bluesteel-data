@@ -1,12 +1,15 @@
 const assert=require('assert');
 const faker=require('faker');
 const EmailDeliveryRenderer = require('./');
+require("dotenv").config({path:'../../../.env'});
 
+/*
 function delay(t, v) {
    return new Promise(function(resolve) {
        setTimeout(resolve.bind(null, v), t)
    });
 }
+*/
 
 describe('email render wrapper', function() {
 	let email_blast={
@@ -24,11 +27,7 @@ and here's another link: http://google.com?utm_source={{source_code}}`,
 		html_body: `Hello {{given_name}},
 <p>Here's a link <a href="http://google.com?utm_source={{source_code}}">to google</a></p>
 <p>Here's another link <a href="http://google.com?utm_source={{source_code}}">to google</a></p>`,
-		status: 'LIST_BUILT',
-		linkRewriter:function(link,delivery_id,i){
-			let out='https://rewriter.com/?delivery_id='+delivery_id+'&linkIndex='+i+'&url='+escape(link);
-			return delay(100).then(()=>{return out;});
-		}
+		status: 'LIST_BUILT'
 	};
 
 	let delivery={id:123,email_blast_id:1, person_id:1, person_email: 'larry@zoolander.com', status: 0};
@@ -61,12 +60,12 @@ and here's another link: http://google.com?utm_source={{source_code}}`,
 		//
 		assert.equal(text_body,`Hello Larry,
 
-here's a link: https://rewriter.com/?delivery_id=123&linkIndex=0&url=http%3A//google.com%3Futm_source%3DEM_123_ABC
+here's a link: http://localhost:5000/delivery/click/123/0?uri=http%3A//google.com%3Futm_source%3DEM_123_ABC
 
-and here's another link: https://rewriter.com/?delivery_id=123&linkIndex=1&url=http%3A//google.com%3Futm_source%3DEM_123_ABC`);
+and here's another link: http://localhost:5000/delivery/click/123/1?uri=http%3A//google.com%3Futm_source%3DEM_123_ABC`);
 		assert.equal(html_body,`<html><head></head><body>Hello Larry,
-<p>Here&apos;s a link <a href="https://rewriter.com/?delivery_id=123&linkIndex=2&url=http%3A//google.com%3Futm_source%3DEM_123_ABC">to google</a></p>
-<p>Here&apos;s another link <a href="https://rewriter.com/?delivery_id=123&linkIndex=3&url=http%3A//google.com%3Futm_source%3DEM_123_ABC">to google</a></p></body></html>`);
+<p>Here&apos;s a link <a href="http://localhost:5000/delivery/click/123/2?uri=http%3A//google.com%3Futm_source%3DEM_123_ABC">to google</a></p>
+<p>Here&apos;s another link <a href="http://localhost:5000/delivery/click/123/3?uri=http%3A//google.com%3Futm_source%3DEM_123_ABC">to google</a></p></body></html>`);
 	});
 
 	it('should render 10K messages in <1 second',async function(){
