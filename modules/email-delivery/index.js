@@ -1,7 +1,8 @@
 const Sequelize=require('Sequelize');
 const {gql}=require('apollo-server-express');
 const async=require('async');
-const querystring=require('querystring');
+
+const TRANSPARENT_GIF_BUFFER = Buffer.from('R0lGODlhAQABAIAAAP///wAAACwAAAAAAQABAAACAkQBADs=', 'base64');
 
 // VALUES PLACED HERE CANNOT CHANGE ORDER.
 // ONLY NEW VALUES CAN BE ADDED.
@@ -141,7 +142,7 @@ function getEndpoints({sqlWrapper}) {
 	const EmailDelivery=sqlWrapper.getModel('EmailDelivery');
 	const EmailDeliveryEvent=sqlWrapper.getModel('EmailDeliveryEvent');
 
-	async function addEmailEvent(email_delivery_id,link_id,event) {
+	async function addEmailEvent(email_delivery_id,link_id,_event) {
 		if(email_delivery_id == null) {
 			console.error('invalid empty email_delivery_id:');
 			return;
@@ -151,9 +152,9 @@ function getEndpoints({sqlWrapper}) {
 			console.error('invalid email_delivery_id:',email_delivery_id);
 			return;
 		}
-		let event_id=getEventId(event);
+		let event=getEventId(_event);
 
-		await EmailDeliveryEvent.create({email_delivery_id,link_id,event_id});
+		await EmailDeliveryEvent.create({email_delivery_id,link_id,event});
 		return;
 	}
 
@@ -203,14 +204,16 @@ function getEndpoints({sqlWrapper}) {
 		handle: (req,res) => {
 			const {email_delivery_id}=req.params;
 			openQueue.push(email_delivery_id);
-			return res.jsonp('opened');
+			res.writeHead(200, { 'Content-Type': 'image/gif' });
+			res.end(TRANSPARENT_GIF_BUFFER, 'binary');
 		}
 	}, {
 		path: '/delivery/click/:email_delivery_id/:link_id',
 		handle: async (req,res) => {
 			const {email_delivery_id,link_id}=req.params;
-			const {uri}=querystring.parse(req.query);
 			clickQueue.push({email_delivery_id,link_id});
+			const {uri}=req.query;
+			if (!uri) return res.status(400).jsonp({query:req.query,message:"Invalid uri"});
 			return res.redirect(uri);
 		}
 	}];
