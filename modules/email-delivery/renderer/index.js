@@ -4,16 +4,16 @@ const cheerio=require('cheerio');
 
 function EmailDeliveryRenderer(options) {
 	if(!options) throw new Error('options required');
-	let {subject,html_body,text_body,source_code,linkRewriter}=options;
+	let {subject,html_body,text_body,source_code}=options;
 	if(!subject) throw new Error('options.subject required');
 	if(!text_body) throw new Error('options.text_body required');
 	if(!source_code) throw new Error('options.source_code required');
 
-	Object.assign(this,{subject,text_body,html_body,source_code,linkRewriter});
+	Object.assign(this,{subject,text_body,html_body,source_code});
 }
 EmailDeliveryRenderer.prototype.initialize=function() {
-	const {BLUESTEEL_EMAIL_DELIVERY_ENDPOINT}=process.env;
-	if (!BLUESTEEL_EMAIL_DELIVERY_ENDPOINT){
+	this.BLUESTEEL_EMAIL_DELIVERY_ENDPOINT=process.env.BLUESTEEL_EMAIL_DELIVERY_ENDPOINT;
+	if (!this.BLUESTEEL_EMAIL_DELIVERY_ENDPOINT){
 		console.error(Object.keys(process.env).filter(d=>d.indexOf('BLUESTEEL_')==0));
 		throw new Error("You must set a BLUESTEEL_EMAIL_DELIVERY_ENDPOINT");
 	}
@@ -31,12 +31,16 @@ EmailDeliveryRenderer.prototype.initialize=function() {
 
 	this.textTemplate = Handlebars.compile(text_body);
 	this.htmlTemplate = html_body?Handlebars.compile(html_body):null;
-
-	this.linkRewriter=function(link,delivery_id,i){
-		return Promise.resolve(BLUESTEEL_EMAIL_DELIVERY_ENDPOINT+'/click/'+delivery_id+'/'+i+'?uri='+escape(link));
-		//return delay(100).then(()=>{return out;});
-	}
 }
+
+EmailDeliveryRenderer.prototype.linkRewriter=function(link,delivery_id,i){
+	return Promise.resolve(this.BLUESTEEL_EMAIL_DELIVERY_ENDPOINT+'/click/'+delivery_id+'/'+i+'?uri='+escape(link));
+	//return delay(100).then(()=>{return out;});
+}
+EmailDeliveryRenderer.prototype.openImageURL=function(delivery_id){
+	return Promise.resolve(this.BLUESTEEL_EMAIL_DELIVERY_ENDPOINT+'/open/'+delivery_id);
+}
+
 
 const handlebarsFieldMatcher=/{{[{]?(.*?)[}]?}}/g;
 
@@ -76,6 +80,8 @@ EmailDeliveryRenderer.prototype.convertLinksToHandlebars=function(opts){
 			links.push({location:"html_body",href:href.trim()});
 			$(value).attr('href',"{{{_links.["+(links.length-1)+"]}}}");
 		});
+		$('body').append('<img src="{{{_open_image}}}"/>');
+
 		rewrote_html=$.html().trim();
 	}
 
@@ -99,6 +105,8 @@ EmailDeliveryRenderer.prototype.render=async function(o) {
 	let allMerges=Object.assign({},{source_code:this.source_code},person,delivery); //delivery info trumps person info
 	//First merge in the merge fields
 	allMerges._links=this.linkTemplates.map(f=>f(allMerges));
+
+	allMerges._open_image=await this.openImageURL(delivery.id);
 
 	//Then if we have a link rewriter, do that.
 	const rewriteLinks = async () => {

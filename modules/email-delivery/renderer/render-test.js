@@ -65,7 +65,7 @@ here's a link: http://localhost:5000/delivery/click/123/0?uri=http%3A//google.co
 and here's another link: http://localhost:5000/delivery/click/123/1?uri=http%3A//google.com%3Futm_source%3DEM_123_ABC`);
 		assert.equal(html_body,`<html><head></head><body>Hello Larry,
 <p>Here&apos;s a link <a href="http://localhost:5000/delivery/click/123/2?uri=http%3A//google.com%3Futm_source%3DEM_123_ABC">to google</a></p>
-<p>Here&apos;s another link <a href="http://localhost:5000/delivery/click/123/3?uri=http%3A//google.com%3Futm_source%3DEM_123_ABC">to google</a></p></body></html>`);
+<p>Here&apos;s another link <a href="http://localhost:5000/delivery/click/123/3?uri=http%3A//google.com%3Futm_source%3DEM_123_ABC">to google</a></p><img src="http://localhost:5000/delivery/open/123"></body></html>`);
 	});
 
 	it('should render 10K messages in <1 second',async function(){
