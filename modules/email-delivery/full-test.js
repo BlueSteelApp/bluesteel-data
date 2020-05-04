@@ -1,6 +1,6 @@
 const assert=require('assert');
-const {buildFromEnv} = require('../../../shared/module-wrapper');
-const EmailDeliveryListBuilder = require('./');
+const {buildFromEnv} = require('../../shared/module-wrapper');
+const EmailDeliveryListBuilder = require('./list-builder');
 
 describe('list-builder-test', function() {
 	let moduleWrapper,sqlWrapper;
@@ -60,7 +60,7 @@ describe('list-builder-test', function() {
 			from_email: 'test-from-email@test.com',
 			html_body: 'test-html',
 			text_body: 'test-text',
-
+			source_code:'TEST_ABC_123',
 			status: 'READY_TO_BUILD'
 		}, {validate:false});
 
@@ -96,4 +96,15 @@ describe('list-builder-test', function() {
 			}]);
 		});
 	});
+	describe('Delivering emails via the delivery engine', async function() {
+		it('should delivery correctly formatted emails', async function() {
+			const EmailDeliveryEngineWrapper=require('./engine');
+			const engine = new EmailDeliveryEngineWrapper({
+				sqlWrapper,
+				email_blast_id:1,
+				engine_type: process.env.BLUESTEEL_DELIVERY_ENGINE_TYPE
+			});
+			await engine.run();
+		});
+	})
 });

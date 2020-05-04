@@ -28,6 +28,7 @@ describe('email delivery engine wrapper', function() {
 				from_email: 'test-from@bluesteelcrm.com',
 				html_body: 'This is an html Body Hi hello',
 				text_body: 'test-text',
+				source_code:'TEST_ABC_123',
 				status: 'LIST_BUILT'
 			}, {validate:false});
 			await EmailDelivery.bulkCreate([

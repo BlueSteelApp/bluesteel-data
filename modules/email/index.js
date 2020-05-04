@@ -48,6 +48,10 @@ const models = {
 				type: sequelize.TEXT(),
 				allowNull: true
 			},
+			source_code:{
+				type: sequelize.STRING(255),
+				allowNull: true
+			},
 			status: {
 				type: sequelize.STRING(32),
 				defaultValue: 'DRAFT',

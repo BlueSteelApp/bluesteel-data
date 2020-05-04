@@ -1,5 +1,6 @@
 const through2 = require('through2');
 const {STATUS,INVERSE_STATUS}=require('../');
+const EmailDeliveryRenderer=require('../renderer');
 
 function EmailDeliveryEngineWrapper(options) {
 	this.options = options;
@@ -16,6 +17,7 @@ function EmailDeliveryEngineWrapper(options) {
 
 	this.EmailBlast = this.sqlWrapper.getModel('EmailBlast');
 	this.EmailDelivery = this.sqlWrapper.getModel('EmailDelivery');
+	this.Person = this.sqlWrapper.getModel('Person');
 }
 
 EmailDeliveryEngineWrapper.prototype.getEngine=async function() {
@@ -44,13 +46,19 @@ EmailDeliveryEngineWrapper.prototype.run=async function() {
 
 	await blast.save();
 
+	const renderer = new EmailDeliveryRenderer(blast);
+	renderer.initialize();
+	//let personFields=renderer.getReferencedFields();
+
 	const engine = await this.getEngine();
 
 	const queryStream = this.sqlWrapper.streamQuery(this.EmailDelivery, {
-		where:{email_blast_id: this.email_blast_id, status: 'QUEUED'}
+		where:{email_blast_id: this.email_blast_id, status: 'QUEUED'},
+		include:[{model:this.Person,as:"Person"}]
 	});
 
 	const deliveryStream = queryStream
+		.pipe(renderer.getRenderStream())
 		.pipe(engine.getEmailDeliveryStream())
 		.pipe(through2.obj(async (o,enc,cb) => {
 			const{person_id}=o;

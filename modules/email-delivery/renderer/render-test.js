@@ -54,16 +54,16 @@ and here's another link: http://google.com?utm_source={{source_code}}`,
 			],links);
 	});
 	it('should render the html',async function() {
-		let {text_body,html_body}=await renderer.render({delivery,person});
+		let {text,html}=await renderer.render({delivery,person});
 		//console.log("Text Body output=",text_body);
 		//console.log("HTML Body output=",html_body);
 		//
-		assert.equal(text_body,`Hello Larry,
+		assert.equal(text,`Hello Larry,
 
 here's a link: http://localhost:5000/delivery/click/123/0?uri=http%3A//google.com%3Futm_source%3DEM_123_ABC
 
 and here's another link: http://localhost:5000/delivery/click/123/1?uri=http%3A//google.com%3Futm_source%3DEM_123_ABC`);
-		assert.equal(html_body,`<html><head></head><body>Hello Larry,
+		assert.equal(html,`<html><head></head><body>Hello Larry,
 <p>Here&apos;s a link <a href="http://localhost:5000/delivery/click/123/2?uri=http%3A//google.com%3Futm_source%3DEM_123_ABC">to google</a></p>
 <p>Here&apos;s another link <a href="http://localhost:5000/delivery/click/123/3?uri=http%3A//google.com%3Futm_source%3DEM_123_ABC">to google</a></p><img src="http://localhost:5000/delivery/open/123"></body></html>`);
 	});

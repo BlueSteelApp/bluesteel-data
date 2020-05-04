@@ -1,15 +1,16 @@
 const Handlebars = require('handlebars');
 const cheerio=require('cheerio');
+const through2=require('through2');
 
 
 function EmailDeliveryRenderer(options) {
 	if(!options) throw new Error('options required');
-	let {subject,html_body,text_body,source_code}=options;
-	if(!subject) throw new Error('options.subject required');
-	if(!text_body) throw new Error('options.text_body required');
-	if(!source_code) throw new Error('options.source_code required');
+	let {from_name,from_email,subject,html_body,text_body,source_code}=options;
+	let o={from_name,from_email,subject,html_body,text_body,source_code};
+	let missing=Object.keys(o).filter(k=>!o[k]);
+	if (missing.length>0) throw new Error("Email Delivery -- missing fields:"+missing.join());
 
-	Object.assign(this,{subject,text_body,html_body,source_code});
+	Object.assign(this,o);
 }
 EmailDeliveryRenderer.prototype.initialize=function() {
 	this.BLUESTEEL_EMAIL_DELIVERY_ENDPOINT=process.env.BLUESTEEL_EMAIL_DELIVERY_ENDPOINT;
@@ -96,33 +97,70 @@ EmailDeliveryRenderer.prototype.convertLinksToHandlebars=function(opts){
 
 EmailDeliveryRenderer.prototype.validate=function() {};
 
+/*
+accepts an object with
+{delivery:{<delivery info>}
+ person:{person merge info}
+}
+
+and returns back content suitable for sending
+
+
+*/
+EmailDeliveryRenderer.prototype.getRenderStream=function(){
+	return through2.obj(async (o,enc,cb) => {
+		let out=await this.render(o);
+		return cb(null,out);
+	});
+}
+
 EmailDeliveryRenderer.prototype.render=async function(o) {
-	let {delivery,person}=o;
-	if (!delivery.id){
-		console.error("Invalid options",o);
-		throw "A delivery.id, the unique id of the delivery, is required";
+	if (!o || !o.dataValues || !o.dataValues.Person){
+			throw new Error("Email rendrered, invalid data coming from stream");
 	}
-	let allMerges=Object.assign({},{source_code:this.source_code},person,delivery); //delivery info trumps person info
+	let vals=o.dataValues;
+	let Person=o.dataValues.Person;
+	let allMerges=Object.assign({},Person);
+	for (let k in vals){
+		if (typeof vals[k]!='object') allMerges[k]=vals[k];
+	}
+	let email_delivery_id=allMerges.id;
+	if (allMerges.id!=o.dataValues.id) throw new Error("Invalid merge, email_delivery_id is not correct");
+	if (!email_delivery_id){
+		console.error("EmailDelivery, no email_delivery_id found in ",o);
+		throw new Error("A delivery.id, the unique id of the delivery, is required");
+	}
+	let to=allMerges.person_email;
+	if (!to){
+		throw new Error("No person_email available");
+	}
+	allMerges.origin_source_code=o.source_code;
+	allMerges.source_code=this.source_code;
+
 	//First merge in the merge fields
 	allMerges._links=this.linkTemplates.map(f=>f(allMerges));
 
-	allMerges._open_image=await this.openImageURL(delivery.id);
+	allMerges._open_image=await this.openImageURL(email_delivery_id);
 
 	//Then if we have a link rewriter, do that.
 	const rewriteLinks = async () => {
-		return Promise.all(allMerges._links.map((l,i)=>this.linkRewriter(l,delivery.id,i)))
+		return Promise.all(allMerges._links.map((l,i)=>this.linkRewriter(l,email_delivery_id,i)))
 	};
 
 	return rewriteLinks().then(links=>{
 		allMerges._links=links;
 
-		let text_body=this.textTemplate(allMerges);
-		let html_body=this.htmlTemplate?this.htmlTemplate(allMerges):null;
+		let subject=this.subjectTemplate(allMerges);
+		let text=this.textTemplate(allMerges);
+		let html=this.htmlTemplate?this.htmlTemplate(allMerges):null;
 		return {
-				subject:this.subjectTemplate(allMerges),
-				text_body,
-				html_body
-		};
+				email_delivery_id,
+				from_name:this.from_name,
+				from_email:this.from_email,
+				to,
+				subject,
+				text,
+				html};
 	});
 };
 

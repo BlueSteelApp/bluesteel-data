@@ -259,12 +259,12 @@ module.exports={
 		run: (job, {sqlWrapper}) => {
 			const email_blast_id = job.job_definition_id;
 			const EmailDeliveryEngineWrapper=require('./engine');
-			const builder = new EmailDeliveryEngineWrapper({
+			const engine = new EmailDeliveryEngineWrapper({
 				sqlWrapper,
 				email_blast_id,
-				engine_type: process.env.DELIVERY_ENGINE_TYPE
+				engine_type: process.env.BLUESTEEL_DELIVERY_ENGINE_TYPE
 			});
-			return builder.run();
+			return engine.run();
 		}
 	}]
 };
