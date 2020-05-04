@@ -61,8 +61,8 @@ EmailDeliveryEngineWrapper.prototype.run=async function() {
 		.pipe(renderer.getRenderStream())
 		.pipe(engine.getEmailDeliveryStream())
 		.pipe(through2.obj(async (o,enc,cb) => {
-			const{person_id}=o;
-			if(!person_id) return cb('missing person_id in result');
+			const{email_delivery_id}=o;
+			if(!email_delivery_id) return cb('missing person_id in result');
 
 			let {status}=o;
 			if(status == null) return cb('status not set on return');
@@ -70,7 +70,7 @@ EmailDeliveryEngineWrapper.prototype.run=async function() {
 			const saveStatus = INVERSE_STATUS[status] || status;
 			if(!STATUS[saveStatus]) return cb('invalid status provided: '+status);
 
-			await this.EmailDelivery.update({status:saveStatus},{where:{person_id}});
+			await this.EmailDelivery.update({status:saveStatus},{where:{id:email_delivery_id}});
 
 			return cb();
 		}));

@@ -47,7 +47,7 @@ EtherealTestEngine.prototype.getEmailDeliveryStream = function() {
 		console.log(info);
 
 		if(info.accepted.length == 1 && !info.rejected.length) {
-			return cb(null, {status: 'SENT', person_id:delivery.person_id, email_delivery_id,devEngineInfo: info});
+			return cb(null, {status: 'SENT', email_delivery_id,devEngineInfo: info});
 		} else {
 			return cb(null, {status: 'FAILED',email_delivery_id});
 		}

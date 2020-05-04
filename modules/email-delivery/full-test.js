@@ -97,6 +97,7 @@ describe('list-builder-test', function() {
 		});
 	});
 	describe('Delivering emails via the delivery engine', async function() {
+		this.timeout(10000);
 		it('should delivery correctly formatted emails', async function() {
 			const EmailDeliveryEngineWrapper=require('./engine');
 			const engine = new EmailDeliveryEngineWrapper({
