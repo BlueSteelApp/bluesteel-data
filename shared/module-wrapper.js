@@ -149,7 +149,12 @@ ModulesWrapper.prototype.getEndpoints=async function() {
 		.map(async x=>{
 			const arr = await x.getEndpoints({sqlWrapper});
 			if(!arr) throw new Error('failed to get endpoints for: '+x.name);
-			arr.forEach(y => endpoints.push(y));
+			arr.forEach(y => {
+				if(Array.isArray(y.method)) y.method.forEach(method => {
+					endpoints.push(Object.assign({},y,{method}));
+				})
+				else endpoints.push(y);
+			});
 		}));
 	return endpoints;
 }

@@ -181,15 +181,17 @@ SubscriptionManager.prototype.unsubscribeAll=async function({id:person_email_id}
 
 function getEndpoints({sqlWrapper}) {
 	const manager = new SubscriptionManager({sqlWrapper});
+	const SimpleUnsubscribe = require('./simple-unsubscribe');
+	const unsubscribeFormBuilder = new SimpleUnsubscribe();
 
-	const {getTokenForPersonEmail} = require('./tokens');
+	const {getPersonEmailFromToken} = require('./tokens');
 
 	return [{
 		path: '/subscriptions/:token/update',
 		method: 'post',
 		handle: async (req,res) => {
 			const {token}=req.params;
-			const parsed = await getTokenForPersonEmail(token);
+			const parsed = await getPersonEmailFromToken(token);
 			console.log('parsed:',parsed);
 			const updates = req.body.updates;
 
@@ -201,17 +203,29 @@ function getEndpoints({sqlWrapper}) {
 		path: '/subscriptions/:token/list',
 		handle: async (req,res) => {
 			const {token}=req.params;
-			const parsed = await getTokenForPersonEmail(token);
+			const parsed = await getPersonEmailFromToken(token);
 			const list = await manager.getSubscriptionInformation(parsed);
 			res.jsonp(list);
 		}
 	},{
-		path: '/subscriptions/:token/unsubscribeAll',
+		path: '/subscriptions/:token/unsubscribeForm',
 		handle: async (req,res) => {
 			const {token}=req.params;
-			const parsed = await getTokenForPersonEmail(token);
-			await manager.unsubscribeAll(parsed);
-			res.send('You have been unsubscribed');
+			res.send(unsubscribeFormBuilder.render({token}));
+		}
+	},{
+		path: '/subscriptions/:token/unsubscribeAll',
+		method: ['get','post'],
+		handle: async (req,res) => {
+			const {token}=req.params;
+			try {
+				const parsed = await getPersonEmailFromToken(token);
+				await manager.unsubscribeAll(parsed);
+				res.send('You have been unsubscribed');
+			} catch(e) {
+				console.error(e);
+				res.send('There was an error unsubscribing - please contact support')
+			}
 		}
 	}]
 }
