@@ -75,10 +75,12 @@ input BlueSteelQueryInput {
 function YasqlQueryRunner(options) {
 	const{sqlWrapper, query, target}=options;
 	if(!sqlWrapper || !query) throw new Error('sqlWrapper and query are required');
+	if(!target) throw new Error('target is required');
 	const {outputs,conditions}=query;
 	if(!outputs || !conditions) throw new Error('query.outputs and query.conditions and required');
-	if(!target) throw new Error('target is required');
+
 	const type = sqlWrapper.getType(target);
+	if (!type) throw new Error("sqlWarpper.getType("+target+") did not return anything");
 
 	this.sqlWrapper = sqlWrapper;
 	this.query = query;

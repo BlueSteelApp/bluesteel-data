@@ -270,7 +270,7 @@ Wrapper.prototype.getModelDefsAndResolvers=function(type) {
 	const resolvers={
 		Query: {
 			[name]: (root,{id},context) => serviceLayer.getService(name,context).findByPk(id),
-			[name+'Stats']: async (root,{query},context) => query.getService(name,context).stats(query),
+			[name+'Stats']: async (root,{query},context) =>serviceLayer.getService(name,context).stats(query),
 			[name+"List"]: async (root,{filter,pageSize,page},context) => {
 				filter=filter||{};
 				pageSize = pageSize || 50;

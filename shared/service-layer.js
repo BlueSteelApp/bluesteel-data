@@ -34,6 +34,8 @@ ServiceLayer.prototype.getPermissionsForUser = async function(user_id) {
 }
 
 ServiceLayer.prototype.initialize = function() {
+	const thisServiceLayer=this;
+	if (!this.sqlWrapper) throw new Error("sqlWrapper not defined");
 	const {defined} = this.sqlWrapper;
 	this.User = this.sqlWrapper.getModel('User');
 
@@ -83,10 +85,11 @@ ServiceLayer.prototype.initialize = function() {
 			};
 
 			service.getYasqlQueryRunner = function(query) {
+				if (!thisServiceLayer.sqlWrapper) throw new Error("No sqlWrapper");
 				assertRead();
 				return new YasqlQueryRunner({
-					sqlWrapper: this.sqlWrapper,
-					target: this.type.name,
+					sqlWrapper: thisServiceLayer.sqlWrapper,
+					target: name,
 					query
 				});
 			};
