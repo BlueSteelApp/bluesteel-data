@@ -282,6 +282,57 @@ input FileImportFilter {
   updated_after: Date
 }
 
+type Form {
+  id: ID!
+  label: String
+  type: String!
+  header: String
+  fields: String
+  required_fields: String!
+  segments: String
+  presubmit: String
+  button_text: String
+  footer: String
+  default_source_code: String
+  html_json: String
+  created_at: Date
+  updated_at: Date
+}
+
+input FormFilter {
+  ids: [ID]
+  label: String
+  type: String
+  header: String
+  fields: String
+  required_fields: String
+  segments: String
+  presubmit: String
+  button_text: String
+  footer: String
+  default_source_code: String
+  html_json: String
+  created_before: Date
+  created_after: Date
+  updated_before: Date
+  updated_after: Date
+}
+
+input FormSave {
+  id: ID
+  label: String
+  type: String
+  header: String
+  fields: String
+  required_fields: String
+  segments: String
+  presubmit: String
+  button_text: String
+  footer: String
+  default_source_code: String
+  html_json: String
+}
+
 type Job {
   id: ID!
   label: String!
@@ -395,6 +446,8 @@ type Mutation {
   PermissionSetPermissionDelete(id: ID!): PermissionSetPermission
   UserPermissionSetSave(record: UserPermissionSetSave!): UserPermissionSet
   UserPermissionSetDelete(id: ID!): UserPermissionSet
+  FormSave(record: FormSave!): Form
+  FormDelete(id: ID!): Form
   PersonQuerySave(record: PersonQuerySave!): PersonQuery
   PersonQueryDelete(id: ID!): PersonQuery
   LinkSave(record: LinkSave!): Link
@@ -676,6 +729,9 @@ type Query {
   FileImport(id: ID!): FileImport
   FileImportList(filter: FileImportFilter, pageSize: Int, page: Int): [FileImport]
   FileImportStats(query: SteamEngineQueryInput!): QueriedStats
+  Form(id: ID!): Form
+  FormList(filter: FormFilter, pageSize: Int, page: Int): [Form]
+  FormStats(query: SteamEngineQueryInput!): QueriedStats
   PersonQuery(id: ID!): PersonQuery
   PersonQueryList(filter: PersonQueryFilter, pageSize: Int, page: Int): [PersonQuery]
   PersonQueryStats(query: SteamEngineQueryInput!): QueriedStats

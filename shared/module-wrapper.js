@@ -13,6 +13,7 @@ const fullModuleList = [
 	'jobs',
 	'files',
 	'imports',
+	'forms',
 	'person-query',
 
 	'links',
