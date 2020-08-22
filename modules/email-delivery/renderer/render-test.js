@@ -17,7 +17,7 @@ describe('email render wrapper', function() {
 		message_set_id: 1,
 		subject: 'Hello {{given_name}}',
 		from_name: 'test-from-name',
-		from_email: 'test-from@bluesteelcrm.com',
+		from_email: 'test-from@steamengine.io',
 		source_code:'EM_123_ABC',
 		text_body: `Hello {{given_name}},
 

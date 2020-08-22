@@ -262,7 +262,7 @@ module.exports={
 			const engine = new EmailDeliveryEngineWrapper({
 				sqlWrapper,
 				email_blast_id,
-				engine_type: process.env.BLUESTEEL_DELIVERY_ENGINE_TYPE
+				engine_type: process.env.STEAMENGINE_DELIVERY_ENGINE_TYPE
 			});
 			return engine.run();
 		}

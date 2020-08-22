@@ -250,7 +250,7 @@ Wrapper.prototype.getModelDefsAndResolvers=function(type) {
 		${name}(id:ID!): ${name}
 		${name}List(filter:${name}Filter,pageSize:Int,page:Int): [${name}]
 
-		${name}Stats(query:BlueSteelQueryInput!): QueriedStats
+		${name}Stats(query:SteamEngineQueryInput!): QueriedStats
 	}
 	${associationDefs}`;
 

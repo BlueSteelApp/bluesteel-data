@@ -18,7 +18,7 @@ services:
     ports:
     - "6379:6379"
 
-  bluesteel-migrate:
+  steamengine-migrate:
     image: "node:alpine"
     working_dir: /home/node/app
     volumes:
@@ -27,7 +27,7 @@ services:
     env_file:
     - "./.dev.env"
 
-  bluesteel-signup-intake:
+  steamengine-signup-intake:
     image: "node:alpine"
     working_dir: /home/node/app
     volumes:
@@ -38,19 +38,19 @@ services:
     ports:
     - "4343:4343"
 
-  bluesteel-upload:
+  steamengine-upload:
     image: "node:alpine"
     working_dir: /home/node/app
     volumes:
     - "./:/home/node/app"
-    - "upload:/tmp/bluesteel/files"
+    - "upload:/tmp/steamengine/files"
     command: "node_modules/nodemon/bin/nodemon ./upload/cli"
     env_file:
     - "./.dev.env"
     ports:
     - "4000:4000"
 
-  bluesteel-job-manager:
+  steamengine-job-manager:
     image: "node:alpine"
     working_dir: /home/node/app
     volumes:
@@ -59,17 +59,17 @@ services:
     env_file:
     - "./.dev.env"
 
-  bluesteel-job-client:
+  steamengine-job-client:
     image: "node:alpine"
     working_dir: /home/node/app
     volumes:
     - "./:/home/node/app"
-    - "upload:/tmp/bluesteel/files"
+    - "upload:/tmp/steamengine/files"
     command: "node_modules/nodemon/bin/nodemon ./jobs-manager/cli client"
     env_file:
     - "./.dev.env"
 
-  bluesteel-core:
+  steamengine-core:
     image: "node:alpine"
     ports:
     - "5000:5000"

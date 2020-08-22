@@ -37,7 +37,7 @@ module.exports={
 			}
 
 			extend type Query {
-				ExecutePersonQuery(conditions:[BlueSteelQueryComponentInput]): PersonQueryResult
+				ExecutePersonQuery(conditions:[SteamEngineQueryComponentInput]): PersonQueryResult
 			}
 		`,
 		resolvers: {

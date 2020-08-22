@@ -1,11 +1,11 @@
 const {v4:uuid}=require('uuid');
 const crypto=require('crypto');
 
-const {BLUESTEEL_UNSUBSCRIBE_TOKEN_KEY}=process.env;
-if(!BLUESTEEL_UNSUBSCRIBE_TOKEN_KEY) {
-	console.log('no BLUESTEEL_UNSUBSCRIBE_TOKEN_KEY set - unsubscribe tokens will not be maintained through shutdown');
+const {STEAMENGINE_UNSUBSCRIBE_TOKEN_KEY}=process.env;
+if(!STEAMENGINE_UNSUBSCRIBE_TOKEN_KEY) {
+	console.log('no STEAMENGINE_UNSUBSCRIBE_TOKEN_KEY set - unsubscribe tokens will not be maintained through shutdown');
 }
-const tokenKey = BLUESTEEL_UNSUBSCRIBE_TOKEN_KEY || uuid();
+const tokenKey = STEAMENGINE_UNSUBSCRIBE_TOKEN_KEY || uuid();
 
 module.exports = {
 	getTokenForPersonEmail: function(id) {

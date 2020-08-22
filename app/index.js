@@ -3,8 +3,8 @@ const {buildSequelizeFromEnv} = require('../shared/sql-wrapper');
 const ModuleWrapper=require('../shared/module-wrapper');
 require('dotenv').config();
 
-const {BLUESTEEL_AUTH_METHOD}=process.env;
-if (!BLUESTEEL_AUTH_METHOD) throw new Error("An environment variable 'BLUESTEEL_AUTH_METHOD' is required");
+const {STEAMENGINE_AUTH_METHOD}=process.env;
+if (!STEAMENGINE_AUTH_METHOD) throw new Error("An environment variable 'STEAMENGINE_AUTH_METHOD' is required");
 
 
 
@@ -15,7 +15,7 @@ configuredModules.initialize();
 
 const server = new GraphQlServer({
 	configuredModules,
-	authMethod: BLUESTEEL_AUTH_METHOD
+	authMethod: STEAMENGINE_AUTH_METHOD
 });
 server.start().catch(e => {
 	console.error(e);

@@ -103,7 +103,7 @@ describe('list-builder-test', function() {
 			const engine = new EmailDeliveryEngineWrapper({
 				sqlWrapper,
 				email_blast_id:1,
-				engine_type: process.env.BLUESTEEL_DELIVERY_ENGINE_TYPE
+				engine_type: process.env.STEAMENGINE_DELIVERY_ENGINE_TYPE
 			});
 			await engine.run();
 		});

@@ -1,7 +1,7 @@
 const async=require('async');
 const { v4: uuid } = require('uuid');
 
-const {BLUESTEEL_SIGNUP_PROCESS_PAYLOAD_LIMIT}=process.env;
+const {STEAMENGINE_SIGNUP_PROCESS_PAYLOAD_LIMIT}=process.env;
 
 function SignupIntake(options) {
 	const {sqlWrapper}=options;
@@ -9,7 +9,7 @@ function SignupIntake(options) {
 
 	const model = sqlWrapper.getModel('SignupRaw');
 	this.model = model;
-	this.payloadLimit = options.payloadLimit || BLUESTEEL_SIGNUP_PROCESS_PAYLOAD_LIMIT || 1000;
+	this.payloadLimit = options.payloadLimit || STEAMENGINE_SIGNUP_PROCESS_PAYLOAD_LIMIT || 1000;
 }
 
 SignupIntake.prototype.initialize=async function() {

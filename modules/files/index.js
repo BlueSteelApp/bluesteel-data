@@ -1,7 +1,7 @@
 const sequelize=require('sequelize');
 const {gql}=require('apollo-server-express');
 
-const {BLUESTEEL_UPLOAD_URI}=process.env;
+const {STEAMENGINE_UPLOAD_URI}=process.env;
 
 const models = {
 	upload: {
@@ -27,7 +27,7 @@ async function getEndpoints({sqlWrapper}) {
 	const FileUpload = require('./upload');
 	const fileUpload = new FileUpload({
 		sqlWrapper: sqlWrapper,
-		uploadFileTempDir: process.env.BLUESTEEL_UPLOAD_FILE_TMP_DIR
+		uploadFileTempDir: process.env.STEAMENGINE_UPLOAD_FILE_TMP_DIR
 	});
 
 	await fileUpload.initialize();
@@ -63,8 +63,8 @@ extend type Query {
 		const resolvers = {
 			Query: {
 				upload_uri: () => {
-					if(!BLUESTEEL_UPLOAD_URI) throw new Error('BLUESTEEL_UPLOAD_URI is not set');
-					return BLUESTEEL_UPLOAD_URI;
+					if(!STEAMENGINE_UPLOAD_URI) throw new Error('STEAMENGINE_UPLOAD_URI is not set');
+					return STEAMENGINE_UPLOAD_URI;
 				}
 			}
 		};

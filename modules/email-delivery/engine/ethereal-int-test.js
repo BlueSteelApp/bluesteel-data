@@ -25,7 +25,7 @@ describe('email delivery engine wrapper', function() {
 				message_set_id: 1,
 				subject: 'test-subject',
 				from_name: 'test-from-name',
-				from_email: 'test-from@bluesteelcrm.com',
+				from_email: 'test-from@steamengine.io',
 				html_body: 'This is an html Body Hi hello',
 				text_body: 'test-text',
 				source_code:'TEST_ABC_123',

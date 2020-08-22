@@ -5,9 +5,9 @@ const async=require('async');
 
 const typeDefs = `
 
-type BlueSteelQueryComponent {
-	and: [BlueSteelQueryComponent]
-	or: [BlueSteelQueryComponent]
+type SteamEngineQueryComponent {
+	and: [SteamEngineQueryComponent]
+	or: [SteamEngineQueryComponent]
 
 	"""
 	The type that this output/having is run against. It will default to the target
@@ -33,9 +33,9 @@ type BlueSteelQueryComponent {
 	having: String
 }
 
-type BlueSteelQuery {
-	outputs: [BlueSteelQueryComponent]
-	conditions: [BlueSteelQueryComponent]
+type SteamEngineQuery {
+	outputs: [SteamEngineQueryComponent]
+	conditions: [SteamEngineQueryComponent]
 }
 
 type QueriedStatResult {
@@ -44,16 +44,16 @@ type QueriedStatResult {
 }
 
 type QueriedStats {
-	query: BlueSteelQuery
+	query: SteamEngineQuery
 	results: [QueriedStatResult]
 }
 
 """
-See documentation for BlueSteelQueryComponent
+See documentation for SteamEngineQueryComponent
 """
-input BlueSteelQueryComponentInput {
-	and: [BlueSteelQueryComponentInput]
-	or: [BlueSteelQueryComponentInput]
+input SteamEngineQueryComponentInput {
+	and: [SteamEngineQueryComponentInput]
+	or: [SteamEngineQueryComponentInput]
 
 	name: String
 
@@ -66,9 +66,9 @@ input BlueSteelQueryComponentInput {
 	"""
 	target: String
 }
-input BlueSteelQueryInput {
-	outputs: [BlueSteelQueryComponentInput]
-	conditions: [BlueSteelQueryComponentInput]
+input SteamEngineQueryInput {
+	outputs: [SteamEngineQueryComponentInput]
+	conditions: [SteamEngineQueryComponentInput]
 }
 `;
 

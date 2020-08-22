@@ -2,7 +2,7 @@ require('dotenv').config();
 
 function JobClient(options) {
 	options=options||{};
-	const queueType = options.queueType || process.env.BLUESTEEL_JOB_QUEUE_TYPE || 'bull';
+	const queueType = options.queueType || process.env.STEAMENGINE_JOB_QUEUE_TYPE || 'bull';
 	if(queueType == 'bull') {
 		const bull=require('./bull-queue');
 		this.client=new bull.client(options);

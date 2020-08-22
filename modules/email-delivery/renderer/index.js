@@ -13,10 +13,10 @@ function EmailDeliveryRenderer(options) {
 	Object.assign(this,o);
 }
 EmailDeliveryRenderer.prototype.initialize=function() {
-	this.BLUESTEEL_EMAIL_DELIVERY_ENDPOINT=process.env.BLUESTEEL_EMAIL_DELIVERY_ENDPOINT;
-	if (!this.BLUESTEEL_EMAIL_DELIVERY_ENDPOINT){
-		console.error(Object.keys(process.env).filter(d=>d.indexOf('BLUESTEEL_')==0));
-		throw new Error("You must set a BLUESTEEL_EMAIL_DELIVERY_ENDPOINT");
+	this.STEAMENGINE_EMAIL_DELIVERY_ENDPOINT=process.env.STEAMENGINE_EMAIL_DELIVERY_ENDPOINT;
+	if (!this.STEAMENGINE_EMAIL_DELIVERY_ENDPOINT){
+		console.error(Object.keys(process.env).filter(d=>d.indexOf('STEAMENGINE_')==0));
+		throw new Error("You must set a STEAMENGINE_EMAIL_DELIVERY_ENDPOINT");
 	}
 
 	this.subjectTemplate = Handlebars.compile(this.subject);
@@ -35,11 +35,11 @@ EmailDeliveryRenderer.prototype.initialize=function() {
 }
 
 EmailDeliveryRenderer.prototype.linkRewriter=function(link,delivery_id,i){
-	return Promise.resolve(this.BLUESTEEL_EMAIL_DELIVERY_ENDPOINT+'/click/'+delivery_id+'/'+i+'?uri='+escape(link));
+	return Promise.resolve(this.STEAMENGINE_EMAIL_DELIVERY_ENDPOINT+'/click/'+delivery_id+'/'+i+'?uri='+escape(link));
 	//return delay(100).then(()=>{return out;});
 }
 EmailDeliveryRenderer.prototype.openImageURL=function(delivery_id){
-	return Promise.resolve(this.BLUESTEEL_EMAIL_DELIVERY_ENDPOINT+'/open/'+delivery_id);
+	return Promise.resolve(this.STEAMENGINE_EMAIL_DELIVERY_ENDPOINT+'/open/'+delivery_id);
 }
 
 

@@ -58,7 +58,7 @@ GraphQlServer.prototype.start=async function() {
 	});
 
 
-	app.get('/', (req, res) => res.send('Hello BlueSteel'));
+	app.get('/', (req, res) => res.send('Hello SteamEngine'));
 
 	app.listen({ port: 5000 }, () =>
 		console.log(`🚀 Server ready at http://localhost:5000`)

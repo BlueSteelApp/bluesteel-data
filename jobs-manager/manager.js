@@ -1,8 +1,8 @@
 require('dotenv').config();
 
 const {
-	BLUESTEEL_JOB_QUEUE_TYPE,
-	BLUESTEEL_JOB_QUEUE_JOB_LIMIT
+	STEAMENGINE_JOB_QUEUE_TYPE,
+	STEAMENGINE_JOB_QUEUE_JOB_LIMIT
 }=process.env;
 
 function JobEventHandler(options) {
@@ -57,7 +57,7 @@ JobEventHandler.prototype.handleJobError=async function({jobId,error}) {
 
 function JobQueue(options) {
 	options=options||{};
-	const queueType = options.queueType || BLUESTEEL_JOB_QUEUE_TYPE || 'bull';
+	const queueType = options.queueType || STEAMENGINE_JOB_QUEUE_TYPE || 'bull';
 
 	const eventHandler = options.eventHandler;
 	options.onStart = ({jobId}) => eventHandler.handleJobStart({jobId});
@@ -91,7 +91,7 @@ function JobManager(options) {
 	this.jobQueue=options.queue || new JobQueue(options);
 	this.Job=options.Job;
 	if(!this.Job) throw new Error('Job and JobData are required');
-	this.job_limit = options.job_limit || BLUESTEEL_JOB_QUEUE_JOB_LIMIT || 10;
+	this.job_limit = options.job_limit || STEAMENGINE_JOB_QUEUE_JOB_LIMIT || 10;
 }
 JobManager.prototype.start=async function() {
 	await this.jobQueue.start();

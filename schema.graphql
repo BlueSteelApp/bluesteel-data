@@ -1,54 +1,3 @@
-type BlueSteelQuery {
-  outputs: [BlueSteelQueryComponent]
-  conditions: [BlueSteelQueryComponent]
-}
-
-type BlueSteelQueryComponent {
-  and: [BlueSteelQueryComponent]
-  or: [BlueSteelQueryComponent]
-
-  """
-  The type that this output/having is run against. It will default to the target
-  specified by the parent query
-  """
-  target: String
-
-  """Field name in the result. Currently only used for outputs."""
-  name: String
-
-  """
-  The yasql expression run against the target specified. Should evaluate to a
-  single value, ie count(*) or concat(x,y)
-  """
-  expression: String
-
-  """
-  Narrows the results of this expression - only to be used if the target
-  is different from the base type
-  """
-  having: String
-}
-
-"""See documentation for BlueSteelQueryComponent"""
-input BlueSteelQueryComponentInput {
-  and: [BlueSteelQueryComponentInput]
-  or: [BlueSteelQueryComponentInput]
-  name: String
-  expression: String
-  having: String
-
-  """
-  The type that this output/having is run against. It will default to the target
-  specified by the parent query
-  """
-  target: String
-}
-
-input BlueSteelQueryInput {
-  outputs: [BlueSteelQueryComponentInput]
-  conditions: [BlueSteelQueryComponentInput]
-}
-
 type Campaign {
   id: ID!
   label: String
@@ -695,98 +644,98 @@ type QueriedStatResult {
 }
 
 type QueriedStats {
-  query: BlueSteelQuery
+  query: SteamEngineQuery
   results: [QueriedStatResult]
 }
 
 type Query {
   User(id: ID!): User
   UserList(filter: UserFilter, pageSize: Int, page: Int): [User]
-  UserStats(query: BlueSteelQueryInput!): QueriedStats
+  UserStats(query: SteamEngineQueryInput!): QueriedStats
   PermissionSet(id: ID!): PermissionSet
   PermissionSetList(filter: PermissionSetFilter, pageSize: Int, page: Int): [PermissionSet]
-  PermissionSetStats(query: BlueSteelQueryInput!): QueriedStats
+  PermissionSetStats(query: SteamEngineQueryInput!): QueriedStats
   PermissionSetPermission(id: ID!): PermissionSetPermission
   PermissionSetPermissionList(filter: PermissionSetPermissionFilter, pageSize: Int, page: Int): [PermissionSetPermission]
-  PermissionSetPermissionStats(query: BlueSteelQueryInput!): QueriedStats
+  PermissionSetPermissionStats(query: SteamEngineQueryInput!): QueriedStats
   UserPermissionSet(id: ID!): UserPermissionSet
   UserPermissionSetList(filter: UserPermissionSetFilter, pageSize: Int, page: Int): [UserPermissionSet]
-  UserPermissionSetStats(query: BlueSteelQueryInput!): QueriedStats
+  UserPermissionSetStats(query: SteamEngineQueryInput!): QueriedStats
   ClientModuleConfig(id: ID!): ClientModuleConfig
   ClientModuleConfigList(filter: ClientModuleConfigFilter, pageSize: Int, page: Int): [ClientModuleConfig]
-  ClientModuleConfigStats(query: BlueSteelQueryInput!): QueriedStats
+  ClientModuleConfigStats(query: SteamEngineQueryInput!): QueriedStats
   Job(id: ID!): Job
   JobList(filter: JobFilter, pageSize: Int, page: Int): [Job]
-  JobStats(query: BlueSteelQueryInput!): QueriedStats
+  JobStats(query: SteamEngineQueryInput!): QueriedStats
   JobData(id: ID!): JobData
   JobDataList(filter: JobDataFilter, pageSize: Int, page: Int): [JobData]
-  JobDataStats(query: BlueSteelQueryInput!): QueriedStats
+  JobDataStats(query: SteamEngineQueryInput!): QueriedStats
   File(id: ID!): File
   FileList(filter: FileFilter, pageSize: Int, page: Int): [File]
-  FileStats(query: BlueSteelQueryInput!): QueriedStats
+  FileStats(query: SteamEngineQueryInput!): QueriedStats
   FileImport(id: ID!): FileImport
   FileImportList(filter: FileImportFilter, pageSize: Int, page: Int): [FileImport]
-  FileImportStats(query: BlueSteelQueryInput!): QueriedStats
+  FileImportStats(query: SteamEngineQueryInput!): QueriedStats
   PersonQuery(id: ID!): PersonQuery
   PersonQueryList(filter: PersonQueryFilter, pageSize: Int, page: Int): [PersonQuery]
-  PersonQueryStats(query: BlueSteelQueryInput!): QueriedStats
+  PersonQueryStats(query: SteamEngineQueryInput!): QueriedStats
   Link(id: ID!): Link
   LinkList(filter: LinkFilter, pageSize: Int, page: Int): [Link]
-  LinkStats(query: BlueSteelQueryInput!): QueriedStats
+  LinkStats(query: SteamEngineQueryInput!): QueriedStats
   SignupRaw(id: ID!): SignupRaw
   SignupRawList(filter: SignupRawFilter, pageSize: Int, page: Int): [SignupRaw]
-  SignupRawStats(query: BlueSteelQueryInput!): QueriedStats
+  SignupRawStats(query: SteamEngineQueryInput!): QueriedStats
   Person(id: ID!): Person
   PersonList(filter: PersonFilter, pageSize: Int, page: Int): [Person]
-  PersonStats(query: BlueSteelQueryInput!): QueriedStats
+  PersonStats(query: SteamEngineQueryInput!): QueriedStats
   PersonEmail(id: ID!): PersonEmail
   PersonEmailList(filter: PersonEmailFilter, pageSize: Int, page: Int): [PersonEmail]
-  PersonEmailStats(query: BlueSteelQueryInput!): QueriedStats
+  PersonEmailStats(query: SteamEngineQueryInput!): QueriedStats
   PersonPhone(id: ID!): PersonPhone
   PersonPhoneList(filter: PersonPhoneFilter, pageSize: Int, page: Int): [PersonPhone]
-  PersonPhoneStats(query: BlueSteelQueryInput!): QueriedStats
+  PersonPhoneStats(query: SteamEngineQueryInput!): QueriedStats
   Segment(id: ID!): Segment
   SegmentList(filter: SegmentFilter, pageSize: Int, page: Int): [Segment]
-  SegmentStats(query: BlueSteelQueryInput!): QueriedStats
+  SegmentStats(query: SteamEngineQueryInput!): QueriedStats
   SegmentBuild(id: ID!): SegmentBuild
   SegmentBuildList(filter: SegmentBuildFilter, pageSize: Int, page: Int): [SegmentBuild]
-  SegmentBuildStats(query: BlueSteelQueryInput!): QueriedStats
+  SegmentBuildStats(query: SteamEngineQueryInput!): QueriedStats
   SegmentPerson(id: ID!): SegmentPerson
   SegmentPersonList(filter: SegmentPersonFilter, pageSize: Int, page: Int): [SegmentPerson]
-  SegmentPersonStats(query: BlueSteelQueryInput!): QueriedStats
+  SegmentPersonStats(query: SteamEngineQueryInput!): QueriedStats
   Transaction(id: ID!): Transaction
   TransactionList(filter: TransactionFilter, pageSize: Int, page: Int): [Transaction]
-  TransactionStats(query: BlueSteelQueryInput!): QueriedStats
+  TransactionStats(query: SteamEngineQueryInput!): QueriedStats
   Subscription(id: ID!): Subscription
   SubscriptionList(filter: SubscriptionFilter, pageSize: Int, page: Int): [Subscription]
-  SubscriptionStats(query: BlueSteelQueryInput!): QueriedStats
+  SubscriptionStats(query: SteamEngineQueryInput!): QueriedStats
   EmailSubscriptionStatus(id: ID!): EmailSubscriptionStatus
   EmailSubscriptionStatusList(filter: EmailSubscriptionStatusFilter, pageSize: Int, page: Int): [EmailSubscriptionStatus]
-  EmailSubscriptionStatusStats(query: BlueSteelQueryInput!): QueriedStats
+  EmailSubscriptionStatusStats(query: SteamEngineQueryInput!): QueriedStats
   EmailGlobalSubscriptionStatus(id: ID!): EmailGlobalSubscriptionStatus
   EmailGlobalSubscriptionStatusList(filter: EmailGlobalSubscriptionStatusFilter, pageSize: Int, page: Int): [EmailGlobalSubscriptionStatus]
-  EmailGlobalSubscriptionStatusStats(query: BlueSteelQueryInput!): QueriedStats
+  EmailGlobalSubscriptionStatusStats(query: SteamEngineQueryInput!): QueriedStats
   Campaign(id: ID!): Campaign
   CampaignList(filter: CampaignFilter, pageSize: Int, page: Int): [Campaign]
-  CampaignStats(query: BlueSteelQueryInput!): QueriedStats
+  CampaignStats(query: SteamEngineQueryInput!): QueriedStats
   MessageSet(id: ID!): MessageSet
   MessageSetList(filter: MessageSetFilter, pageSize: Int, page: Int): [MessageSet]
-  MessageSetStats(query: BlueSteelQueryInput!): QueriedStats
+  MessageSetStats(query: SteamEngineQueryInput!): QueriedStats
   EmailBlast(id: ID!): EmailBlast
   EmailBlastList(filter: EmailBlastFilter, pageSize: Int, page: Int): [EmailBlast]
-  EmailBlastStats(query: BlueSteelQueryInput!): QueriedStats
+  EmailBlastStats(query: SteamEngineQueryInput!): QueriedStats
   EmailTemplate(id: ID!): EmailTemplate
   EmailTemplateList(filter: EmailTemplateFilter, pageSize: Int, page: Int): [EmailTemplate]
-  EmailTemplateStats(query: BlueSteelQueryInput!): QueriedStats
+  EmailTemplateStats(query: SteamEngineQueryInput!): QueriedStats
   EmailDelivery(id: ID!): EmailDelivery
   EmailDeliveryList(filter: EmailDeliveryFilter, pageSize: Int, page: Int): [EmailDelivery]
-  EmailDeliveryStats(query: BlueSteelQueryInput!): QueriedStats
+  EmailDeliveryStats(query: SteamEngineQueryInput!): QueriedStats
   EmailDeliveryEvent(id: ID!): EmailDeliveryEvent
   EmailDeliveryEventList(filter: EmailDeliveryEventFilter, pageSize: Int, page: Int): [EmailDeliveryEvent]
-  EmailDeliveryEventStats(query: BlueSteelQueryInput!): QueriedStats
+  EmailDeliveryEventStats(query: SteamEngineQueryInput!): QueriedStats
   Me: User!
   upload_uri: String!
-  ExecutePersonQuery(conditions: [BlueSteelQueryComponentInput]): PersonQueryResult
+  ExecutePersonQuery(conditions: [SteamEngineQueryComponentInput]): PersonQueryResult
   PersonListExtra(filter: PersonFilterExtra, pageSize: Int, page: Int): [Person]
 }
 
@@ -906,6 +855,57 @@ input SignupRawSave {
   email: String
   phone: String
   source_code: String
+}
+
+type SteamEngineQuery {
+  outputs: [SteamEngineQueryComponent]
+  conditions: [SteamEngineQueryComponent]
+}
+
+type SteamEngineQueryComponent {
+  and: [SteamEngineQueryComponent]
+  or: [SteamEngineQueryComponent]
+
+  """
+  The type that this output/having is run against. It will default to the target
+  specified by the parent query
+  """
+  target: String
+
+  """Field name in the result. Currently only used for outputs."""
+  name: String
+
+  """
+  The yasql expression run against the target specified. Should evaluate to a
+  single value, ie count(*) or concat(x,y)
+  """
+  expression: String
+
+  """
+  Narrows the results of this expression - only to be used if the target
+  is different from the base type
+  """
+  having: String
+}
+
+"""See documentation for SteamEngineQueryComponent"""
+input SteamEngineQueryComponentInput {
+  and: [SteamEngineQueryComponentInput]
+  or: [SteamEngineQueryComponentInput]
+  name: String
+  expression: String
+  having: String
+
+  """
+  The type that this output/having is run against. It will default to the target
+  specified by the parent query
+  """
+  target: String
+}
+
+input SteamEngineQueryInput {
+  outputs: [SteamEngineQueryComponentInput]
+  conditions: [SteamEngineQueryComponentInput]
 }
 
 type Subscription {
