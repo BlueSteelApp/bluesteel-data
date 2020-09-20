@@ -18,11 +18,17 @@ FileUpload.prototype.initialize=async function() {
 			cb(null, this.uploadFileTempDir);
 		},
 		filename: function (req, file, cb) {
-			cb(null, uuid());
+			console.log(file);
+			let type=file.originalname;
+			if (type.indexOf(".")>0){
+				type=type.split(".").pop();
+			}else type="unknown";
+
+			cb(null, uuid()+"."+type);
 		}
 	});
 	const uploadMulter=this.uploadMulter=multer({storage});
-	this.single=uploadMulter.single('upload_file');
+	this.single=uploadMulter.single('file');
 	let tmpStat;
 	try {
 		tmpStat = await new Promise((res,rej) => fs.stat(this.uploadFileTempDir, (e,r) => {
@@ -42,14 +48,15 @@ FileUpload.prototype.uploadRequest=async function({req,res}) {
 	const result = await new Promise((resolve,reject) => {
 		this.single(req, res, e => {
 			if(e) return reject(e);
-			if(!req.file || !req.file.path) return reject('invalid file in req');
+			if(!req.file || !req.file.path) return reject('Invalid or no file param in req');
 			resolve(req.file);
 		});
 	});
 
 	const uploadFile = {
 		label: 'Upload - '+start,
-		file_path: path.join(this.uploadFileTempDir,result.filename)
+		file_path: path.join(this.uploadFileTempDir,result.filename),
+		original_filename:result.originalname
 	};
 
 	const file = await this.File.create(uploadFile);

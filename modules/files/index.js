@@ -16,7 +16,10 @@ const models = {
 				type: sequelize.TEXT(),
 				allowNull :true
 			},
-
+			original_filename: {
+				type: sequelize.TEXT(),
+				allowNull :true
+			}
 		},
 		allow_update: false,
 		allow_create: false

@@ -8,7 +8,7 @@ const fs = require('fs');
 const axios = require('axios');
 
 const form = new FormData();
-form.append('upload_file', fs.createReadStream(filename));
+form.append('file', fs.createReadStream(filename));
 
 axios.create({
 	headers: form.getHeaders()

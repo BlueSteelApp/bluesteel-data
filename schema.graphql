@@ -243,6 +243,7 @@ type File {
   id: ID!
   label: String!
   file_path: String
+  original_filename: String
   created_at: Date
   updated_at: Date
   FileImport: FileImport
@@ -252,6 +253,7 @@ input FileFilter {
   ids: [ID]
   label: String
   file_path: String
+  original_filename: String
   created_before: Date
   created_after: Date
   updated_before: Date
